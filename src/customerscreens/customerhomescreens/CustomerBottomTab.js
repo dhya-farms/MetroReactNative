@@ -7,14 +7,12 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import CustomerHome from './CustomerHome';
 import PropertyScreenNavigator from '../../navigations/PropertyScreenNavigator';
 import FavProperties from './FavProperties';
+import SettingsScreenNavigator from '../../navigations/SettingsScreenNavigator';
+import CustomerProfile from './CustomerProfile';
 // ... other screen imports
 
 const Tab = createBottomTabNavigator();
 
-const BookingScreen = () => <View />;
-const FavoritesScreen = () => <View />;
-const ProfileScreen = () => <View />;
-const SettingsScreen = () => <View />;
 
 const screenOptions = ({ route }) => ({
   headerShown: false,
@@ -65,7 +63,7 @@ const screenOptions = ({ route }) => ({
     height: 60,
     backgroundColor: '#1D9BF0',
     borderTopWidth: 0, // Hide top border
-    paddingHorizontal: 5,
+    paddingHorizontal: 10,
   },
   tabBarShowLabel: false,
 });
@@ -76,15 +74,15 @@ const BottomTabNavigator = () => {
       <Tab.Screen name="Home" component={CustomerHome} />
       <Tab.Screen name="properties" component={PropertyScreenNavigator} />
       <Tab.Screen name="Favorites" component={FavProperties} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen name="Profile" component={CustomerProfile} />
+      <Tab.Screen name="Settings" component={SettingsScreenNavigator} />
     </Tab.Navigator>
   );
 };
 
 const styles = StyleSheet.create({
   iconContainer: {
-    width: 85,
+    width: 95,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

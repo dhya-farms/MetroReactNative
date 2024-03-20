@@ -2,10 +2,10 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-const HeaderContainer = ({ title, ImageLeft, ImageRight }) => {
+const HeaderContainer = ({ title, ImageLeft, ImageRight, onPress }) => {
   return (
     <View style={styles.headerContainer}>
-      <TouchableOpacity style={styles.backArrowButton}>
+      <TouchableOpacity style={styles.backArrowButton} onPress={onPress}>
        <Image
             source={ImageLeft}
             style={styles.bellIcon}
@@ -29,8 +29,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 20,
-        paddingVertical: 15,
-        paddingTop: 35, // Adjust padding as needed
+        paddingVertical: 15,// Adjust padding as needed
         backgroundColor: '#fff',
         shadowColor: '#000',
         shadowOffset: {

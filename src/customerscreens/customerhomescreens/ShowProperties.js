@@ -40,7 +40,7 @@ const galleryImages = [
 
 
 
-const ShowProperties = () => {
+const ShowProperties = ({navigation}) => {
   const fullText = `Lorem ipsum dolor sit amet consectetur. Malesuada urna egestas ultricies facilisi. Purus ut est faucibus habitasse. Sodales et justo pellentesque orci facilisis quam nulla. Lorem ipsum dolor sit amet consectetur. Malesuada urna egestas ultricies facilisi. Purus ut est faucibus habitasse. Sodales et justo pellentesque orci facilisis quam nulla. Lorem ipsum dolor sit amet consectetur. Malesuada urna egestas ultricies facilisi. Purus ut est faucibus habitasse. Sodales et justo pellentesque orci facilisis quam nulla. Lorem ipsum dolor sit amet consectetur. Malesuada urna egestas ultricies facilisi. Purus ut est faucibus habitasse. Sodales et justo pellentesque orci facilisis quam nulla.`;
   const [textShown, setTextShown] = useState(false);
   const scrollViewRef = useRef();
@@ -75,7 +75,8 @@ const ShowProperties = () => {
     <ScrollView ref={scrollViewRef} style={styles.container} contentContainerStyle={styles.contentContainer}>
     <HeaderContainer title="Properties" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
-      ImageRight={require('../../../assets/images/belliconblue.png')}/>
+      ImageRight={require('../../../assets/images/belliconblue.png')}
+      onPress={()=>{navigation.goBack()}}/>
       
     <SafeAreaView style={styles.slidingContainer}>
       <SlidingCarousel/>
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
   },
   plotContainer: {
     width: '90%',
-    backgroundColor: '#fff', // Assuming a white background
+     // Assuming a white background
   },
   plotHeader: {
     fontFamily: 'Poppins',

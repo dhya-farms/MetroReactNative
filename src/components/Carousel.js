@@ -9,7 +9,7 @@ const { width: screenWidth } = Dimensions.get('window');
 const cardWidth = 320; // Fixed card width
 const cardMargin = (screenWidth - cardWidth) / 2;
 
-const Carousel = ({ data, onSortPress }) => {
+const Carousel = ({ data, onSortPress, isHeartVisible= false }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [liked, setLiked] = useState(false);
 
@@ -25,13 +25,13 @@ const Carousel = ({ data, onSortPress }) => {
       <Image source={item.imageUrl} style={styles.image} />
       </TouchableOpacity>
       <View style={styles.lrContainer}>
-             <TouchableOpacity onPress={onLikePress}>
+        {isHeartVisible ? <TouchableOpacity onPress={onLikePress}>
                     <MaterialIcons
                     name={liked ? 'favorite' : 'favorite-border'}
                     size={24}
                     color={liked ? 'red' : 'white'}
                     />
-        </TouchableOpacity>
+        </TouchableOpacity> : null}
         <View style={styles.ratingContainer}>
           <MaterialIcons name="star" size={20} color="gold" />
           <Text style={styles.rating}>{item.rating}</Text>
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
   paginationContainer: {
     position: 'absolute', // Absolute position for the pagination container
-    bottom: 122, // Position at the bottom of the image view
+    bottom: 132, // Position at the bottom of the image view
     left: 0,
     right: 0,
     flexDirection: 'row',

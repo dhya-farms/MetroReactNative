@@ -30,23 +30,17 @@ const CustomerProfile = ({navigation}) => {
     const [budget, setBudget] = useState('')
     const [type, setType] = useState('')
 
-  const handleSortPress = () => {
-    navigation.navigate('Show Properties')
-  };  
-
-  const handleMyPropPress = ()=>{
-    navigation.navigate('Property Details')
-  }
   
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <HeaderContainer title="Profile" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
-      ImageRight={require('../../../assets/images/belliconblue.png')}/>
+      ImageRight={require('../../../assets/images/belliconblue.png')}
+      onPress={()=>{navigation.goBack()}}/>
       <View style={styles.imageContainer}>
       <Image source={require('../../../assets/images/person.png')} style={styles.personImage} />
       </View>
-      <Text style={styles.cnText}>Hari Kowshick</Text>
+      <Text style={styles.cnText}>Hari Kowshik</Text>
       <View style={styles.textInputContainer}>
       <FloatingLabelInput
             label="Email Id"
@@ -86,7 +80,7 @@ const CustomerProfile = ({navigation}) => {
             onChangeText={setType}
           />
       </View>
-      <SubmitSaveButton onPress={{}} text1="Save" text2="Submit Queries"/>
+      <SubmitSaveButton onPress={()=>{}} text1="Save" text2="Submit Queries"/>
     </ScrollView>
   );
 };
@@ -121,7 +115,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 50, // Set the height
     backgroundColor: 'white', // Set the background color
-    marginBottom: 20, // Add a bottom margin
+    marginBottom: 10, // Add a bottom margin
   },
   cnText:{
     fontFamily: 'Poppins',

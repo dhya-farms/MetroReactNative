@@ -175,7 +175,7 @@ const CustomerHome = () => {
         />
       </View>
 
-      <View style={styles.categoryContainer}>
+      <View style={{width: '100%', marginVertical: 20, marginHorizontal: 5,}}>
       <FlatList
         ref={flatListRef}
         horizontal
@@ -183,8 +183,6 @@ const CustomerHome = () => {
         data={categories}
         renderItem={renderItem}
         keyExtractor={item => item.key}
-        contentContainerStyle={styles.categoryContainer}
-        style={{width: '100%'}}
       />
       </View>
       <View style={{width: '100%', alignItems: 'center', justifyContent: 'center'}}>
@@ -355,6 +353,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 40, // Height of the button
     paddingHorizontal: 10,
+    marginLeft: 10,
   },
   categoryText: {
     color: '#000', // Text color

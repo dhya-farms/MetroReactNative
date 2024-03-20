@@ -1,9 +1,9 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import MobileLoginScreen from '../customerscreens/loginscreens/MobileLoginScreen';
-import MailLoginScreen from '../customerscreens/loginscreens/MailLoginScreen';
-import OtpScreen from '../customerscreens/loginscreens/OtpScreen';
-import RegisterUserScreen from '../customerscreens/loginscreens/RegisterUserScreen';
+import MobileLoginScreen from '../screens/loginscreens/MobileLoginScreen';
+import MailLoginScreen from '../screens/loginscreens/MailLoginScreen';
+import OtpScreen from '../screens/loginscreens/OtpScreen';
+import RegisterUserScreen from '../screens/loginscreens/RegisterUserScreen';
 
 const LoginScreen = createNativeStackNavigator();
 

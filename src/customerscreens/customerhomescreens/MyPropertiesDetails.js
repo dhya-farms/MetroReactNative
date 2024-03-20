@@ -42,7 +42,7 @@ const amenities = [
 
 
 
-const MyPropertiesDetails = () => {
+const MyPropertiesDetails = ({navigation}) => {
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('Details');
   const [tokenDetailsVisible, setTokenDetailsVisible]= useState(false)
@@ -147,7 +147,8 @@ const MyPropertiesDetails = () => {
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
     <HeaderContainer title="My Properties" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
-      ImageRight={require('../../../assets/images/belliconblue.png')}/>
+      ImageRight={require('../../../assets/images/belliconblue.png')}
+      onPress={()=>{navigation.goBack()}}/>
     <SafeAreaView style={styles.slidingContainer}>
       <SlidingCarousel/>
     </SafeAreaView>

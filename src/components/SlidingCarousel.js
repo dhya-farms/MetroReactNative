@@ -5,13 +5,15 @@ const images = [
   require('../../assets/images/caurosal1.png'),
   require('../../assets/images/caurosal2.png'),
   require('../../assets/images/caurosal3.png'),
+  require('../../assets/images/caurosal1.png'), // Assuming you have a fourth image
 ];
 
-const windowWidth = Dimensions.get('window').width;
-const windowHeight = windowWidth * (9 / 16); // example for a 16:9 aspect ratio
 
-const Pagination = ({index, scrollToIndex}) => {
+const imageWidth = 170;
+const imageHeight = 170; 
+const marginHorizontal = 20;
 
+const Pagination = ({ index, scrollToIndex }) => {
   return (
     <View style={styles.paginationWrapper}>
       {images.map((_, i) => (
@@ -28,62 +30,85 @@ const Pagination = ({index, scrollToIndex}) => {
 export default function SlidingCarousel() {
   const [index, setIndex] = useState(0);
   const flatListRef = useRef();
-  const indexRef = useRef(0); // Create a ref to keep track of the current index
+  const indexRef = useRef(0);
 
-  // Update both the state and the ref whenever the index changes
   const updateIndex = (newIndex) => {
     indexRef.current = newIndex;
     setIndex(newIndex);
   };
 
   const scrollToIndex = (i) => {
-    flatListRef.current.scrollToIndex({ animated: true, index: i });
-    updateIndex(i); // Use updateIndex to keep state and ref in sync
+    // Corrected offset calculation to include the margins
+    const offset = i * (imageWidth + (marginHorizontal * 2));
+    flatListRef.current.scrollToOffset({ animated: true, offset });
+    updateIndex(i);
   };
+
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // Use the ref to get the current index inside the interval
-      const nextIndex = indexRef.current === images.length - 1 ? 0 : indexRef.current + 1;
+      let nextIndex = (indexRef.current + 1) % images.length;
       scrollToIndex(nextIndex);
-    }, 4000); // Change image every 4 seconds
+    }, 4000);
 
-    // Clear the interval when the component unmounts or index changes
     return () => clearInterval(interval);
-  }, []); 
+  }, []);
 
 
   return (
-    <View style={styles.imageContainer}>
-      <FlatList
-        ref={flatListRef}
-        data={images}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={(event) => {
-          const newIndex = Math.round(event.nativeEvent.contentOffset.x / windowWidth);
-          setIndex(newIndex);
-        }}
-        renderItem={({ item }) => (
-          <Image source={item} style={styles.image} />
-        )}
-        keyExtractor={(_, i) => i.toString()}
-      />
-      <Pagination index={index} scrollToIndex={scrollToIndex} />
+    <View style={styles.carouselContainer}>
+      <View style={styles.imageContainer}>
+        <FlatList
+          style={{width: 320, borderRadius: 10}}
+          ref={flatListRef}
+          data={images}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={(event) => {
+            // Calculate the visible part of the FlatList, which should match the width of a single item including margins
+            const contentOffset = event.nativeEvent.contentOffset.x;
+            const newIndex = Math.floor(contentOffset / (imageWidth + (styles.image.marginHorizontal * 2)));
+            if (newIndex !== index) {
+              setIndex(newIndex);
+            }
+          }}
+          renderItem={({ item }) => (
+            <Image source={item} style={styles.image} />
+          )}
+          keyExtractor={(_, i) => i.toString()}
+        />
+        <Pagination index={index} scrollToIndex={scrollToIndex} />
+      </View>
     </View>
   );
 }
 
+
+
 const styles = StyleSheet.create({
-  imageContainer:{
-    width: '100%',
+  carouselContainer: {
+    flex: 1, // Takes the full height of the parent container
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  imageContainer: {
+    width: 525, // Fixed width as requested
+    height: imageHeight, // Make sure the container has enough height for the images
     justifyContent: 'center',
     alignItems: 'center',
   },
+  image: {
+    width: imageWidth, // Set to the fixed width of 170 as requested
+    height: imageHeight, // Set to the fixed height of 170 as requested
+    borderRadius: 10,
+    // Adjust the margin so that the total width of the item equals to the view size used in onMomentumScrollEnd
+    marginHorizontal: marginHorizontal,
+  },
   paginationWrapper: {
     position: 'absolute',
-    top: 190,
+    top: 160,
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -101,16 +126,4 @@ const styles = StyleSheet.create({
   activeDot: {
     backgroundColor: 'blue',
   },
-  imageContainer:{
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  image:{
-    width: 170,
-    height: 170,
-    borderRadius: 10,
-    marginHorizontal: 20,
-    marginVertical: 20,
-  }
 });

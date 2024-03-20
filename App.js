@@ -4,19 +4,9 @@ import * as Font from 'expo-font';
 import { useEffect } from 'react';
 import { NavigationContainer} from '@react-navigation/native';
 import { createNativeStackNavigator} from '@react-navigation/native-stack';
-import HomeScreenNavigator from './src/navigations/HomeScreenNavigator';
-import LoginScreenNavigator from './src/navigations/LoginScreenNavigator';
-import CustomerHome from './src/customerscreens/customerhomescreens/CustomerHome';
-import CustomerBottomTabNavigator from './src/customerscreens/customerhomescreens/CustomerBottomTab';
-import CustomerProperties from './src/customerscreens/customerhomescreens/CustomerProperties';
-import ShowProperties from './src/customerscreens/customerhomescreens/ShowProperties';
-import SlidingCarousel from './src/components/SlidingCarousel';
-import TabBar from './src/components/TabComponent';
-import FavProperties from './src/customerscreens/customerhomescreens/FavProperties';
-import MyPropertiesDetails from './src/customerscreens/customerhomescreens/MyPropertiesDetails';
 import { Provider as PaperProvider } from 'react-native-paper';
-import ImageCarousel from './src/components/ImageCaurosel';
-import CustomerProfile from './src/customerscreens/customerhomescreens/CustomerProfile';
+import AdminBottomTab from './src/screens/adminscreens/AdminBottomTab';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,11 +31,22 @@ export default function App() {
   }, []); 
 
   return (
-    <View>
-    <Text>Hello, Expo!</Text>
-    </View>
-   /*
-   <NavigationContainer>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer>
+      <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+            gestureEnabled: true,
+            gestureDirection: 'vertical',
+          }}
+          initialRouteName="AdminBottomTab" // Default initial route
+        >
+      <Stack.Screen name= 'AdminBottomTab' component={AdminBottomTab}/>
+      </Stack.Navigator>
+    </NavigationContainer>
+    </GestureHandlerRootView>
+   /*<PaperProvider>
+    <NavigationContainer>
     <Stack.Navigator
           screenOptions={{
             headerShown: false,
@@ -59,7 +60,7 @@ export default function App() {
         <Stack.Screen name= 'CustomerBottomTab' component={CustomerBottomTabNavigator}/>
       </Stack.Navigator>
     </NavigationContainer>
-    */
+    </PaperProvider>*/
   );
 }
 

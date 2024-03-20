@@ -38,12 +38,13 @@ const dataArray = [
 
 
 
-const FavProperties = () => {
+const FavProperties = ({navigation}) => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
     <HeaderContainer title="Favourites" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
-      ImageRight={require('../../../assets/images/belliconblue.png')}/>
+      ImageRight={require('../../../assets/images/belliconblue.png')}
+      onPress={()=>{navigation.goBack()}}/>
     <Carousel data={dataArray} />
     </ScrollView>
   );

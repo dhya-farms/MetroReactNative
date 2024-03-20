@@ -109,9 +109,10 @@ const CustomerProperties = ({navigation}) => {
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <HeaderContainer title="Properties" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
-      ImageRight={require('../../../assets/images/belliconblue.png')}/>
-      <SortHeader title="My Properties" onSortPress={handleMyPropPress} />
-      <Carousel data={dataArray} />
+      ImageRight={require('../../../assets/images/belliconblue.png')}
+      onPress={()=>{navigation.goBack()}}/>
+      <SortHeader title="My Properties" />
+      <Carousel data={dataArray}  onSortPress={handleMyPropPress}/>
      <SortHeader title="Properties" onSortPress={handleSortPress} isSortVisible={false} />
      <Carousel data={dataArray}  onSortPress={handleSortPress} />
      <Carousel data={dataArray}  onSortPress={handleSortPress}/>

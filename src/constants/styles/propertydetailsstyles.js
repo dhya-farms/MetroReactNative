@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
     },
     cityConatiner:{
-      marginVertical: 20,
+      marginVertical: 30,
       marginLeft: 40,
       width: '90%',
       alignItems: 'flex-start',
@@ -40,7 +40,6 @@ const styles = StyleSheet.create({
     },
     plotContainer: {
       width: '90%',
-      backgroundColor: '#fff', // Assuming a white background
     },
     plotHeader: {
       fontFamily: 'Poppins',

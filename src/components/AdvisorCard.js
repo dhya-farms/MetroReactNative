@@ -41,14 +41,7 @@ const AdvisorCard = () => {
   
   const styles = StyleSheet.create({
     card: {
-      backgroundColor: '#FFF',
-      borderRadius: 10,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.2,
-      shadowRadius: 1,
-      elevation: 3,
-      width: '80%',
+      width: '90%',
       alignItems: 'center',
       marginBottom: 16,
     },
