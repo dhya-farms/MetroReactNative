@@ -2,7 +2,8 @@ import React from 'react';
 import { View, ScrollView, StyleSheet} from 'react-native';
 import SortHeader from '../../components/SortHeader';
 import HeaderContainer from '../../components/HeaderContainer';
-import CustomerCard from '../../components/CustomerCard';
+import ContactCard from '../../components/ContactCard';
+import styles from '../../constants/styles/customercontactscreenstyles';
 
 
 const CustomerData = [
@@ -11,6 +12,7 @@ const CustomerData = [
         name: 'Suraj',
         number: '+91-9486077810',
         mailId: 'suraj@gmail.com', 
+        progress: "Site Visit",
         personimage: require('../../../assets/images/person.png'),
     },
     {
@@ -18,6 +20,7 @@ const CustomerData = [
         name: 'Ravi',
         number: '+91-9486077810',
         mailId: 'ravi@gmail.com', 
+        progress: "Token Advance",
         personimage: require('../../../assets/images/person.png'),
     },
     {
@@ -25,6 +28,7 @@ const CustomerData = [
         name: 'Darshan',
         number: '+91-9486077810',
         mailId: 'darshan@gmail.com', 
+        progress: "Documentation",
         personimage: require('../../../assets/images/person.png'),
     }
 ]
@@ -32,7 +36,7 @@ const CustomerData = [
 
 
 
-const AdminCustomerList = ({navigation}) => {
+const CustomerContactScreen = ({navigation}) => {
 
   
   return (
@@ -42,32 +46,16 @@ const AdminCustomerList = ({navigation}) => {
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}/>
       <View style={{zIndex: 2000, justifyContent: 'space-between', alignItems: 'center', width: '100%'}}>
-      <SortHeader title="Customer List"  />
+      <SortHeader title="Contact Form"  />
       </View>
       <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-        <CustomerCard customerData={CustomerData} isHorizontal={false}  onCardPress={() => {
-            navigation.navigate("Client", { screen: "List Customer Details"});
+        <ContactCard customerData={CustomerData} onCardPress={() => {
+            navigation.navigate("SO Client", { screen: "SO Customer Details"});
         }}/>
       </View>
     </ScrollView>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white'
-  },
-  contentContainer: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingBottom: 50,
-  },
-  filterText: {
-    color: '#ffffff',
-  }
-  
-});
 
-export default AdminCustomerList;
+export default CustomerContactScreen;

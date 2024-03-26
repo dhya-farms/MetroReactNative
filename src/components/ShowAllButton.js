@@ -18,12 +18,12 @@ const ShowAllButton = ({text, onPress}) => {
 
 const styles = StyleSheet.create({
   showAllContainer: {
-    width: '90%',
+    width: '95%',
     flexDirection: 'row',
     justifyContent: 'space-between', 
     alignItems: 'center',
     padding: 10,
-    margin: 10, 
+    margin: 5, 
   },
   
   showAllText: {

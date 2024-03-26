@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, Button} 
+import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, Button, StatusBar} 
 from 'react-native';
 import { SafeAreaView } from 'react-native';
 import styles from '../../constants/styles/propertydetailsstyles';
@@ -145,6 +145,7 @@ const MyPropertiesDetails = ({navigation}) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <StatusBar/>
     <HeaderContainer title="My Properties" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}

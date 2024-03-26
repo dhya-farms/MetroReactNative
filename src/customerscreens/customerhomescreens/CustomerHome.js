@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, StyleSheet, FlatList, Dimensions} 
+import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, StyleSheet, FlatList, Dimensions, StatusBar} 
 from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ProgressBar from '../../components/ProgressBar';
@@ -55,9 +55,9 @@ const images = [
     // Add more card data here
   ];
 
-  const Card = ({ card }) => {
+  const Card = ({ card, onPress }) => {
     return (
-      <View style={styles.card}>
+      <TouchableOpacity style={styles.card} onPress={onPress}>
         <Image source={card.image} style={styles.cardImage} />
         <View style={styles.cardContent}>
           <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
@@ -70,7 +70,7 @@ const images = [
             <Text style={styles.cardAddress}>{card.address}</Text>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -79,7 +79,7 @@ const { width } = Dimensions.get('window');
 
 
 
-const CustomerHome = () => {
+const CustomerHome = ({navigation}) => {
   const [selectedCategoryKey, setSelectedCategoryKey] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -156,6 +156,7 @@ const CustomerHome = () => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+       <StatusBar/>
        <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Home</Text>
         <TouchableOpacity style={styles.filterButton}>
@@ -218,7 +219,9 @@ const CustomerHome = () => {
       <ProgressBar progress={0.2} />
       <View style={styles.updateContainer}>
         <Text style={styles.updateText}>Properties</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => {
+          navigation.navigate("properties", { screen: "Customer Properties"});
+       }}>
           <Text style={styles.seeAllText}>See all</Text>
         </TouchableOpacity>
       </View>
@@ -229,12 +232,16 @@ const CustomerHome = () => {
       contentContainerStyle={styles.contentContainer}
     >
       {cards.map((card, index) => (
-        <Card key={index} card={card} />
+        <Card key={index} card={card} onPress={() => {
+          navigation.navigate("properties", { screen: "Property Details"});
+       }}/>
       ))}
     </ScrollView>
     <View style={styles.updateContainer}>
         <Text style={styles.updateText}>New Projects</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => {
+          navigation.navigate("properties", { screen: "Customer Properties"});
+       }}>
           <Text style={styles.seeAllText}>See all</Text>
         </TouchableOpacity>
     </View>
@@ -245,7 +252,9 @@ const CustomerHome = () => {
       contentContainerStyle={styles.contentContainer}
     >
       {cards.map((card, index) => (
-        <Card key={index} card={card} />
+        <Card key={index} card={card}  onPress={() => {
+          navigation.navigate("properties", { screen: "Show Properties"});
+       }} />
       ))}
     </ScrollView>
     <AdvisorCard/>
@@ -256,12 +265,14 @@ const CustomerHome = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'white'
   },
   contentContainer: {
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingBottom: 50,
+    backgroundColor: 'white'
   },
   headerContainer: {
     width: '100%',

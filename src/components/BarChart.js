@@ -5,7 +5,7 @@ import { Svg, Rect, Text, Line, G } from 'react-native-svg';
 const BarChart = ({ data, barWidth, barColor }) => {
   // Screen width and chart height based on your design
   const screenWidth = 335;
-  const chartHeight = 220; // Height of the chart
+  const chartHeight = 230; // Height of the chart
   const yAxisWidth = 40; // Width reserved for Y-axis labels
 
   // Convert data values to percentages of the chart height
@@ -37,9 +37,10 @@ const BarChart = ({ data, barWidth, barColor }) => {
           return (
             <Text
               key={`yLabel-${index}`}
-              x={yAxisWidth - 4}
+              x={yAxisWidth - 8}
               y={chartHeight - yAxisWidth - (yLabel / 100) * (chartHeight - yAxisWidth)}
-              fontSize="12"
+              fontSize="7"
+              fontFamily='Poppins'
               textAnchor="end"
               fill="#49545A"
             >
@@ -52,8 +53,8 @@ const BarChart = ({ data, barWidth, barColor }) => {
         {['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'].map((month, index) => (
           <Text
             key={`month-${month}`}
-            x={yAxisWidth + index * (barWidth + 10) + barWidth / 2}
-            y={chartHeight - 4}
+            x={yAxisWidth + index * (barWidth + 10) + barWidth / 4}
+            y={chartHeight - 8}
             fontSize="10"
             fontFamily='Poppins'
             textAnchor="middle"

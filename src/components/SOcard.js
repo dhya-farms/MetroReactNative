@@ -105,20 +105,23 @@ const Card = ({ name, number, mailId, points, clients, source }) => {
     marginVertical: 10,// This adds a shadow on Android
     },
     profileImage: {
-        width: 60, // Adjust size as needed
-        height: 60, // Adjust size as needed
+        width: 60, 
+        height: 60,
         borderRadius: 30, // Half the width/height to make it round
         // ... any other styling for the image
       },
       infoContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 8, // Adjust spacing as needed
+        width: '100%',
+        marginVertical: 8, 
+        // Adjust spacing as needed
       },
       infoText:{
         fontFamily: 'Poppins',
         fontWeight: '500',
         fontSize: 13,
+        flex: 1,
       },
       icon:{
         marginRight: 10,
@@ -127,6 +130,7 @@ const Card = ({ name, number, mailId, points, clients, source }) => {
         fontFamily: 'Poppins',
         fontSize: 20,
         fontWeight: '600',
+        flex: 1,
       },
       showMore:{
         color: '#00C400',

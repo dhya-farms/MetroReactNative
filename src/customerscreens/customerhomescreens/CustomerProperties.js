@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions} 
+import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, StatusBar} 
 from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import SortHeader from '../../components/SortHeader';
@@ -107,6 +107,7 @@ const CustomerProperties = ({navigation}) => {
   
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <StatusBar/>
       <HeaderContainer title="Properties" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
@@ -129,6 +130,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingBottom: 50,
+    backgroundColor: 'white'
   },
   filterText: {
     color: '#ffffff',

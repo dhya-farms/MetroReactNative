@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { PRIMARY_COLOR, SECONDARY_COLOR } from '../constants/constantstyles/colors';
 
-const DateInput = ({ label, value, onChange, enabled }) => {
+const DateInput = ({ label, value, onChange, enabled, textColor }) => {
   const [show, setShow] = useState(false);
 
   const handleWebChange = (event) => {
@@ -39,8 +40,8 @@ const DateInput = ({ label, value, onChange, enabled }) => {
         <TouchableOpacity onPress={() => enabled && setShow(true)} style={styles.iconContainer}>
           <Text style={styles.calendarIcon}>📅</Text>
           <View style={styles.valueContainer}>
-            <Text style={styles.fromText}>{label}</Text>
-            <Text style={styles.dateText}>{value}</Text>
+            <Text style={[styles.fromText, { color: textColor }]}>{label}</Text>
+            <Text style={[styles.dateText, { color: textColor }]}>{value}</Text>
           </View>
         </TouchableOpacity>
       );
@@ -112,8 +113,9 @@ const CustomDateSelector = () => {
           <RadioButton id="multiple" label="Multiple date range" />
         </View>
         <View style={styles.fromToContainer}>
-        <DateInput label="From" value={fromDate} onChange={handleFromDateChange} enabled={true} />
-        <DateInput label="To" value={toDate} onChange={handleToDateChange} enabled={dateRange === 'multiple'} />
+        <DateInput label="From" value={fromDate} onChange={handleFromDateChange} enabled={true} textColor={PRIMARY_COLOR}/>
+        <DateInput label="To" value={toDate} onChange={handleToDateChange} enabled={dateRange === 'multiple'} 
+        textColor={dateRange === 'multiple' ? PRIMARY_COLOR : SECONDARY_COLOR} />
         </View>
       </View>
     );

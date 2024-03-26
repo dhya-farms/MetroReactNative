@@ -68,7 +68,7 @@ const screenOptions = ({ route }) => ({
   tabBarShowLabel: false,
 });
 
-const BottomTabNavigator = () => {
+const CustomerBottomTab = () => {
   return (
     <Tab.Navigator screenOptions={screenOptions}>
       <Tab.Screen name="Home" component={CustomerHome} />
@@ -100,4 +100,4 @@ const styles = StyleSheet.create({
   // tabBar style was moved into screenOptions
 });
 
-export default BottomTabNavigator;
+export default CustomerBottomTab;

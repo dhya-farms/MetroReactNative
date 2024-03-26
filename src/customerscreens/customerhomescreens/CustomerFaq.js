@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, TextInput} 
+import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, TextInput, StatusBar} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import FaqDropdown from '../../components/FaqDropdown';
@@ -20,6 +20,7 @@ const CustomerFaq = ({navigation}) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <StatusBar/>
       <HeaderContainer title="FAQ's" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
@@ -61,6 +62,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
+    backgroundColor: 'white',
     paddingBottom: 50,
   },
   faqContainer:{

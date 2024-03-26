@@ -70,9 +70,12 @@ const DailyReport = ({navigation}) => {
         <ReportCard reportData={reportData} onPress={handleReportPress}/>
       </View>
       <ShowAllButton text="Revenue" onPress={()=>{}}/>
+      <View style={styles.rlContainer}>
+        <View style={styles.rlCircle}></View>
+        <Text style={styles.rlText}>Revenue</Text>
+      </View>
       <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
       <LineChartGraph
-     
         data={data}
       />
       </View>
@@ -109,6 +112,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#FFFFFF'
+  },
+  rlContainer:{
+    width: '90%',
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginVertical: 10,
+  },
+  rlCircle:{
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#A4CD3C',
+    marginRight: 5,
+ 
+    
+  },
+  rlText:{
+    fontFamily: 'Poppins',
+    fontWeight: '500',
+    fontSize: 12,
+    textAlign: 'center'
   }
 });
 

@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1D9BF0',
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 4,
   },
   arText: {
     fontFamily: 'Poppins',

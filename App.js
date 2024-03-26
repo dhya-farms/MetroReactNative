@@ -7,6 +7,17 @@ import { createNativeStackNavigator} from '@react-navigation/native-stack';
 import { Provider as PaperProvider } from 'react-native-paper';
 import AdminBottomTab from './src/screens/adminscreens/AdminBottomTab';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import SOhome from './src/screens/soscreens/SOhome';
+import SOproperties from './src/screens/soscreens/SOproperties';
+import SOpropertiesDetails from './src/screens/soscreens/SOpropertiesDetails';
+import AddCustomerScreen from './src/screens/soscreens/AddCustomer';
+import SObottomTab from './src/screens/soscreens/SObottomTab';
+import CustomerContactScreen from './src/screens/soscreens/CustomerContactScreen';
+import SoCustomerDetails from './src/screens/soscreens/SoCustomerDetails';
+import CustomerTokenAdvance from './src/screens/soscreens/CustomerTokenAdvance';
+import CustomerDocumentation from './src/screens/soscreens/CustomerDocumentation';
+import CustomerPaymentMethod from './src/screens/soscreens/CustomerPaymentMethod';
+import CustomerBottomTab from './src/customerscreens/customerhomescreens/CustomerBottomTab';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,7 +42,7 @@ export default function App() {
   }, []); 
 
   return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
+     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>
       <Stack.Navigator
           screenOptions={{

@@ -8,7 +8,7 @@ import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 
 
-const AdminSettings = ({navigation}) => {
+const SOsettings = ({navigation}) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [cmModalVisible, setCmModalVisible] = useState(false)
   const [modalTitle, setModalTitle] = useState(''); // New state for title
@@ -113,4 +113,4 @@ const styles = StyleSheet.create({
   
 });
 
-export default AdminSettings;
+export default SOsettings;

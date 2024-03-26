@@ -20,7 +20,7 @@ const SdCard = ({ sitename, price, bgimage, onPress }) => {
   );
 };
 
-const SiteDetailsCard = ({siteData, navigation})=>{
+const SiteDetailsCard = ({siteData, onCardPress})=>{
     return (
         <FlatList
           data={siteData}
@@ -31,9 +31,7 @@ const SiteDetailsCard = ({siteData, navigation})=>{
               sitename={item.sitename}
               price={item.price}
               bgimage={item.bgimage}
-              onPress={()=> navigation.navigate("Sites", { 
-                screen: "Admin Properties Details" 
-              })}
+              onPress={() => onCardPress()}
             />
           )}
           keyExtractor={item => item.id}
@@ -63,6 +61,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         flexDirection: 'row',
         justifyContent: 'space-between',
+        alignItems: 'center',
         width: '100%',
         padding: 10, // Adjust to your padding
       },
@@ -80,8 +79,8 @@ const styles = StyleSheet.create({
       },
       siteName:{
         fontFamily: 'Poppins',
-        fontWeight: '600',
-        fontSize: 12,
+        fontWeight: '500',
+        fontSize: 14,
         color: '#FFFFFF',
         flexWrap: 'wrap',
       },

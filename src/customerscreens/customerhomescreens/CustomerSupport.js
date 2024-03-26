@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, TextInput} 
+import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, TextInput, StatusBar} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import ContactButton from '../../components/ContactButton';
@@ -20,6 +20,7 @@ const CustomerSupport = ({navigation}) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <StatusBar/>
       <HeaderContainer title="Support" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}

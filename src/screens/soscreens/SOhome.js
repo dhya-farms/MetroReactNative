@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity, Text, Image, StatusBar} 
 from 'react-native';
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 import ShowAllButton from '../../components/ShowAllButton';
 import SOcards from '../../components/SOcard';
 import OfficeUpdateView from '../../components/OfficeUpdateView';
 import CustomerCard from '../../components/CustomerCard';
 import SiteDetailsCard from '../../components/SiteDetailsCard';
+import styles from '../../constants/styles/sohomestyles';
 
 
 const cardData = [
@@ -105,7 +107,7 @@ const SOdata  = [
 ]
 
 
-const AdminHome = ({navigation}) => {
+const SOhome = ({navigation}) => {
   
 
   return (
@@ -120,85 +122,42 @@ const AdminHome = ({navigation}) => {
           />
         </TouchableOpacity>
       </View>
+      <View style={styles.userContainer}>
+        <View style={styles.userNameContainer}>
+            <Text style={styles.unText}>Good Morning</Text>
+            <Text style={[styles.unText, {fontWeight: '600', fontSize: 20}]}>Mr.Dharshan (SO)</Text>
+        </View>
+        <View style={styles.imageContainer}>
+        <Image
+            source={require('../../../assets/images/gsoperson.jpg')}
+            style={styles.userImage}
+          />
+        </View>
+      </View>
       <ShowAllButton text="Office Updates"/>
       <View style={{width: '100%'}}>
-        <OfficeUpdateView cardData={cardData}/>
+        <OfficeUpdateView cardData={cardData}
+        textContainerStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}/>
       </View>
       <View style={styles.separator} />
-      <ShowAllButton text="Customers" onPress={()=> navigation.navigate("Client", { 
-      screen: "Customer List" 
-    })}/>
+      <ShowAllButton text="Customers" onPress={() => {
+            navigation.navigate("SO Client", { screen: "Customer Contact Screen"});
+        }}/>
       <View style={{width: '100%'}}>
         <CustomerCard customerData={CustomerData} onCardPress={() => {
-            navigation.navigate("Client", { screen: "List Customer Details"});
+            navigation.navigate("SO Client", { screen: "SO Customer Details"});
         }}/>
       </View>
-      <ShowAllButton text="Site Details" onPress={()=> navigation.navigate("Sites", { 
-      screen: "Admin Properties" 
-    })}/>
+      <View style={styles.separator} />
+      <ShowAllButton text="Site Details" onPress={()=> navigation.navigate("SO Sites", { 
+      screen: "SO Properties" })}/>
       <View style={{width: '100%'}}>
         <SiteDetailsCard siteData={siteData} onCardPress={() => {
-           navigation.navigate("Sites", { screen: "Admin Properties Details"});
+            navigation.navigate("SO Sites", { screen: "SO Properties Details"});
         }}/>
-      </View>
-      <ShowAllButton text="SO List" onPress={()=> navigation.navigate("SO", { 
-      screen: "SO Officers List" 
-    })}/>
-      <View style={{width: '100%', justifyContent: 'center', alignItems: 'center', marginHorizontal: 20}}>
-        <SOcards data={SOdata} navigation={navigation}/>
       </View>
     </ScrollView>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    backgroundColor: 'white'
-  },
-  contentContainer: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingBottom: 50,
-  },
-  headerContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15, // Adjust padding as needed
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#424242',
-    fontFamily: 'Poppins'
-  },
-  filterButton: {
-    // Define if you need specific styles for your button
-  },
-  bellIcon: {
-    width: 34, // Adjust size as needed
-    height: 34, // Adjust size as needed
-  },
-  separator: {
-    height: 1,
-    backgroundColor: '#C4C4C4',
-    alignSelf: 'center',
-    width: '90%',
-    marginVertical: 16,
-  },
-});
-
-export default AdminHome;
+export default SOhome;

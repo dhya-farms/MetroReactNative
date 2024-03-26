@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const ImageCard = ({ name, date, title, description, source, personimage }) => {
+const ImageCard = ({ name, date, title, description, source, personimage, textContainerStyle }) => {
   return (
     <View style={styles.cardContainer}>
       <Image source={source} style={styles.cardImage} />
@@ -13,8 +13,8 @@ const ImageCard = ({ name, date, title, description, source, personimage }) => {
         <Text style={styles.cardDate}>{date}</Text>
         </View>
       </View>
-      <View style={styles.textContainer}>
-        <View style={{flex: 1}}>
+      <View style={[styles.textContainer, textContainerStyle]}>
+        <View style={{flex: 1, marginRight: 5}}>
         <Text style={styles.cardTitle}>{title}</Text>
         <Text style={styles.cardDescription}>{description}</Text>
         </View>
@@ -26,7 +26,7 @@ const ImageCard = ({ name, date, title, description, source, personimage }) => {
   );
 };
 
-const OfficeUpdateView = ({cardData})=>{
+const OfficeUpdateView = ({cardData, textContainerStyle})=>{
     return (
         <FlatList
           data={cardData}
@@ -40,6 +40,7 @@ const OfficeUpdateView = ({cardData})=>{
               description={item.description}
               source={item.source}
               personimage={item.personimage}
+              textContainerStyle={textContainerStyle}
             />
           )}
           keyExtractor={item => item.id}
@@ -66,11 +67,13 @@ const styles = StyleSheet.create({
     },
       textContainer: {
         position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
+        bottom: 3,
+        left: 5,
+        right: 5,
         flexDirection: 'row',
-        padding: 10, // Adjust to your padding
+        alignItems: 'center',
+        borderRadius: 5,
+        padding: 5, // Adjust to your padding
       },
       cardTitle: {
         fontFamily: 'Poppins',

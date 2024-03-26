@@ -23,7 +23,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         width: '90%',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        marginVertical: 20,
     },
     Enquirebutton:{
         paddingVertical: 14,
@@ -32,7 +33,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#1D9BF0',
         justifyContent: 'center',
         alignItems: 'center',
-        marginVertical: 20,
     },
     enText:{
         fontFamily: 'Poppins',

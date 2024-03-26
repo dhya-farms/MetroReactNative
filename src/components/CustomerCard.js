@@ -48,19 +48,15 @@ const ItemSeparator = () => (
   <View style={styles.itemSeparator} />
 );
 
-const CustomerCard = ({customerData, isHorizontal = true, navigation})=>{
-  const handleCardPress = () => {
-    navigation.navigate("Client", { 
-      screen: "List Customer Details" 
-    })
-  };
+const CustomerCard = ({customerData, isHorizontal = true, onCardPress})=>{
+
     return (
         <FlatList
           data={customerData}
           horizontal={isHorizontal}
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => handleCardPress()}>
+            <TouchableOpacity onPress={() => onCardPress()}>
             <Card
               name={item.name}
               number={item.number}
@@ -122,9 +118,10 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         width: '100%',
         marginVertical: 16,
-      },
+    },
     progressContainer: {
-        padding: 20,
+        width: '100%',
+        padding: 15,
         marginTop: 10,
         alignItems: 'center',
         justifyContent: 'space-around',
@@ -152,7 +149,8 @@ const styles = StyleSheet.create({
         fontSize: 10,
     },
     iconContainer:{
-        alignItems: 'center'
+        alignItems: 'center',
+  
     },
     smIconsContainer:{
         flexDirection: 'row',

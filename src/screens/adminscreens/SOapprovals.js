@@ -46,7 +46,7 @@ const SOApprovals = ({navigation}) => {
       <SortHeader title="Approval"  />
       </View>
       <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-        <CardScrollView data={data} isHorizontal= {false}/>
+        <CardScrollView data={data} isHorizontal= {false} navigation={navigation}/>
         </View>
     </ScrollView>
   );

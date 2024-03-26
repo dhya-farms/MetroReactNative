@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, StatusBar} 
+import React from 'react';
+import { ScrollView, StyleSheet,  StatusBar} 
 from 'react-native';
-import { SafeAreaView } from 'react-native';
-import LayoutHeader from '../../components/LayoutHeader';
-import HeaderContainer from '../../components/HeaderContainer';
+import SortHeader from '../../components/SortHeader';
 import Carousel from '../../components/Carousel';
+import HeaderContainer from '../../components/HeaderContainer';
 
 
 const dataArray = [
@@ -38,15 +37,25 @@ const dataArray = [
 
 
 
-const FavProperties = ({navigation}) => {
+
+const SOproperties = ({navigation}) => {
+
+  const handleSortPress = () => {
+    navigation.navigate("SO Properties Details")
+  
+  };  
+
+  
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-    <StatusBar/>
-    <HeaderContainer title="Favourites" 
+      <StatusBar/>
+      <HeaderContainer title="Properties" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}/>
-    <Carousel data={dataArray} />
+     <SortHeader title="Properties"  isSortVisible={false} />
+     <Carousel data={dataArray}  onSortPress={handleSortPress} isHeartVisible= {false} />
+     <Carousel data={dataArray}  onSortPress={handleSortPress} isHeartVisible= {false}/>
     </ScrollView>
   );
 };
@@ -54,14 +63,18 @@ const FavProperties = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'white'
   },
   contentContainer: {
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingBottom: 50,
-    backgroundColor: 'white'
   },
+  filterText: {
+    color: '#ffffff',
+  }
+  
 });
 
-export default FavProperties;
+export default SOproperties;
