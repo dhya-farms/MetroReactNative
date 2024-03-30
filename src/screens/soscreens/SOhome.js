@@ -1,9 +1,7 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet, TouchableOpacity, Text, Image, StatusBar} 
+import { View, ScrollView, TouchableOpacity, Text, Image, StatusBar} 
 from 'react-native';
-import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 import ShowAllButton from '../../components/ShowAllButton';
-import SOcards from '../../components/SOcard';
 import OfficeUpdateView from '../../components/OfficeUpdateView';
 import CustomerCard from '../../components/CustomerCard';
 import SiteDetailsCard from '../../components/SiteDetailsCard';
@@ -76,35 +74,6 @@ const siteData = [
     }
 ]
 
-const SOdata  = [
-    {
-        id: 1,
-        name: 'Hari Kowshick',
-        number: '+91-9486077810',
-        mailId: 'hari@gmail.com',
-        points: '7Metro Points',
-        clients: '3 Clients',
-        source: require('../../../assets/images/soperson.png')
-    },
-    {
-        id: 2,
-        name: 'Ranjith',
-        number: '+91-9486077810',
-        mailId: 'ranjith@gmail.com',
-        points: '6Metro Points',
-        clients: '2 Clients',
-        source: require('../../../assets/images/soperson.png')
-    },
-    {
-        id: 3,
-        name: 'Dinesh',
-        number: '+91-9486077810',
-        mailId: 'dinesh@gmail.com',
-        points: '10Metro Points',
-        clients: '5 Clients',
-        source: require('../../../assets/images/soperson.png')
-    }
-]
 
 
 const SOhome = ({navigation}) => {
@@ -134,7 +103,9 @@ const SOhome = ({navigation}) => {
           />
         </View>
       </View>
-      <ShowAllButton text="Office Updates"/>
+      <ShowAllButton text="Office Updates"  onPress={() => {
+            navigation.navigate("SO Home", { screen: "Office Updates"});
+        }}/>
       <View style={{width: '100%'}}>
         <OfficeUpdateView cardData={cardData}
         textContainerStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}/>

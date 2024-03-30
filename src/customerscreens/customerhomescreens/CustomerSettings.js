@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, StatusBar} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import LogOutModal from '../../modals/LogoutModal';
 import LogOutConfirmModal from '../../modals/LogOutConfirmModel';
+import styles from '../../constants/styles/customersettingsstyles';
 
 
 
@@ -36,12 +37,14 @@ const CustomerSettings = ({navigation}) => {
   // This will be called when "Yes" is pressed on the logout modal
   const handleLogout = () => {
     handleShowConfirmModal("Logged Out Successfully");
-    setModalVisible(false); // Close the logout modal
+    setModalVisible(false); 
+    navigation.navigate("MBlogin");
   };
     
   const handleDeleteAccount = () => {
     handleShowConfirmModal("Your Account Has Been Deleted");
     setModalVisible(false); // Close the delete account modal
+    navigation.navigate("MBlogin");
   };
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -88,59 +91,5 @@ const CustomerSettings = ({navigation}) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  contentContainer: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingBottom: 50,
-    backgroundColor: 'white'
-  },
-  settingsContainer:{
-    width: '90%',
-    alignItems: 'center'
-  },
-  settingsButton:{
-    width: '80%',
-    paddingVertical: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#1D9BF0',
-    marginVertical: 30,
-    borderRadius: 5
-  },
-  settingsText:{
-    fontFamily: 'Poppins',
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#1D9BF0'
-  },
-  settingsBtnContainer:{
-    width: '90%',
-    alignItems: 'center',
-    marginTop: 40,
-  },
-  settingsbtn:{
-    width: '60%',
-    backgroundColor: '#1D9BF0',
-    borderRadius: 5,
-    paddingVertical: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginVertical: 15,
-  },
-  btnText:{
-    fontFamily: 'Poppins',
-    fontWeight: '500',
-    fontSize: 12,
-    color: 'white'
-  }
-
-  
-});
 
 export default CustomerSettings;

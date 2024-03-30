@@ -17,12 +17,35 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
     );
   };
 
-const DetailsInputModal = ({ modalVisible, setModalVisible, pickupDonePress }) => {
+const DetailsInputModal = ({ modalVisible, setModalVisible, onDone }) => {
   // State for input fields
   const [pickupAddress, setPickupAddress] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [property, setProperty] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleDonePress = () => {
+    // Reset error message at each attempt
+    setErrorMessage('');
+
+    // Validate inputs
+    if (!pickupAddress || !date || !time || !property) {
+      setErrorMessage('Please fill all the details.'); // Update error message state
+      return;
+    }
+
+    // If validation passes, proceed to call the onDone callback
+    onDone({
+      pickupAddress,
+      date,
+      time,
+      property,
+    });
+
+    // Close the modal
+    setModalVisible(false);
+  };
 
   return (
     <Modal
@@ -53,7 +76,10 @@ const DetailsInputModal = ({ modalVisible, setModalVisible, pickupDonePress }) =
             value={property}
             onChangeText={setProperty}
           />
-          <TouchableOpacity style={styles.doneButton} onPress={pickupDonePress}>
+          {errorMessage !== '' && (
+            <Text style={styles.errorText}>{errorMessage}</Text> // Display the error message
+          )}
+          <TouchableOpacity style={styles.doneButton} onPress={handleDonePress}>
             <Text style={styles.doneButtonText}>Done</Text>
           </TouchableOpacity>
         </View>
@@ -109,6 +135,13 @@ const styles = StyleSheet.create({
   },
   doneButtonText: {
     color: "white",
+    fontFamily: 'Poppins',
+    fontWeight: '500',
+    fontSize: 14,
+  },
+  errorText: {
+    color: 'red', // Example style for error message
+    fontSize: 14,
     fontFamily: 'Poppins',
     fontWeight: '500',
     fontSize: 14,

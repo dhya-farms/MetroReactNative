@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions} 
+import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, StatusBar} 
 from 'react-native';
 import SortHeader from '../../components/SortHeader';
 import Carousel from '../../components/Carousel';
@@ -46,6 +46,7 @@ const SalesOfficerList = ({navigation}) => {
   
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <StatusBar/>
       <HeaderContainer title="Sales Officer List" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
@@ -54,7 +55,9 @@ const SalesOfficerList = ({navigation}) => {
       <SortHeader title="SO List"  />
       </View>
       <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-        <SOcards data={SOdata} isHorizontal={false}  navigation={navigation}/>
+        <SOcards data={SOdata} isHorizontal={false}   onCardPress={() => {
+           navigation.navigate("SO", { screen: "SO Officers Details"});
+        }}/>
       </View>
     </ScrollView>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, CheckBox, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import styles from '../../constants/styles/customerdocumentationstyles';
 import SortHeader from '../../components/SortHeader';

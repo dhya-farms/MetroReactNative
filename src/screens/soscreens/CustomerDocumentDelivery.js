@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions} 
+import React from 'react';
+import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
-import { TextInput } from 'react-native-paper';
 import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 
@@ -29,6 +28,10 @@ const CustomerDocumentDelivery = ({route, navigation}) => {
     
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <HeaderContainer title="Document" 
+          ImageLeft={require('../../../assets/images/back arrow icon.png')}
+          ImageRight={require('../../../assets/images/belliconblue.png')}
+          onPress={()=>{navigation.goBack()}}/>
          <View style={styles.docDetailsContainer}>
                <View style={styles.docTextContaner}>
                   <Text style={styles.doctext}>Documentation</Text>
@@ -91,7 +94,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
       },
       nextConatainer:{
-        width: '90%',
+        width: '100%',
         justifyContent: 'center',
         alignItems: 'center',
         marginVertical: 20,

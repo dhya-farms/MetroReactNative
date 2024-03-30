@@ -11,36 +11,36 @@ const requestTypes = {
   DD: 'Due diligence',
 };
 
-const Card = ({ name, customer, property, requestDate, navigation }) => {
-  const [selectedRequest, setSelectedRequest] = useState(null);
+const Card = ({ name, customer, property, requestDate, onPress }) => {
+  const [selectedRequestIndex, setSelectedRequestIndex] = useState(null);
   const [requestType, setRequestType] = useState('Select a request');
 
-  const handleCardPress = () => {
-    navigation.navigate("Client", { 
-      screen: "List Customer Details" 
-    })
-  };
 
-
-  const handleRequestPress = (type) => {
-    setSelectedRequest(type);
+  const handleRequestPress = (type, index) => {
+    setSelectedRequestIndex(index); // Store the index of the selected request
     setRequestType(requestTypes[type]);
   };
 
-  const RequestButton = ({ type }) => (
-    <TouchableOpacity
-      style={[
-        styles.requestButton,
-        selectedRequest === type && styles.selectedRequestButton
-      ]}
-      onPress={() => handleRequestPress(type)}
-    >
-      <Text style={styles.requestButtonText}>{type}</Text>
-    </TouchableOpacity>
-  );
+  const RequestButton = ({ type, index }) => {
+    // Determine if the button should have the selected style
+    const isSelected = index <= selectedRequestIndex;
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.requestButton,
+          isSelected && styles.selectedRequestButton // Apply selected style based on index
+        ]}
+        onPress={() => handleRequestPress(type, index)}
+      >
+         <Text style={[styles.ButtonText, isSelected && styles.requestButtonText]}>{type}</Text>
+      </TouchableOpacity>
+    );
+  };
+
 
   return (
-    <TouchableOpacity style={styles.card} onPress={handleCardPress}>
+    <TouchableOpacity style={styles.card} onPress={onPress}>
     <View>
       <Text style={styles.name}>{name}</Text>
       <View style={styles.detailRow}>
@@ -56,10 +56,11 @@ const Card = ({ name, customer, property, requestDate, navigation }) => {
         <Text style={styles.value}>{requestDate}</Text>
       </View>
       <View style={styles.requestButtonsContainer}>
-        {Object.keys(requestTypes).map((type) => (
-          <RequestButton key={type} type={type} />
-        ))}
-      </View>
+          {Object.keys(requestTypes).map((type, index) => (
+            // Pass the index to each RequestButton
+            <RequestButton key={type} type={type} index={index} />
+          ))}
+        </View>
       <View style={styles.separator} />
       <View style={styles.requestTypeContainer}>
         <Text style={styles.label}>Requested For: </Text>
@@ -73,7 +74,7 @@ const Card = ({ name, customer, property, requestDate, navigation }) => {
   );
 };
 
-const CardScrollView = ({ data, isHorizontal= true, navigation }) => (
+const CardScrollView = ({ data, isHorizontal= true, onCardPress }) => (
   <ScrollView horizontal={isHorizontal} showsHorizontalScrollIndicator={false} 
   style={styles.scrollView} contentContainerStyle={!isHorizontal ? styles.contentStyle : {}}>
     {data.map((item, index) => (
@@ -84,7 +85,7 @@ const CardScrollView = ({ data, isHorizontal= true, navigation }) => (
         property={item.property}
         requestDate={item.requestDate}
         requestType={item.requestType}
-        navigation={navigation}
+        onPress={() => onCardPress()}
       />
     ))}
   </ScrollView>
@@ -166,11 +167,17 @@ const styles = StyleSheet.create({
   selectedRequestButton: {
     backgroundColor: '#1D9BF0',
   },
-  requestButtonText: {
+  ButtonText:{
     fontFamily: 'Poppins',
     fontWeight: '600',
     fontSize: 10,
     color: '#000'
+  },
+  requestButtonText: {
+    fontFamily: 'Poppins',
+    fontWeight: '600',
+    fontSize: 10,
+    color: '#fff'
   },
   contentStyle:{
     justifyContent: 'center',

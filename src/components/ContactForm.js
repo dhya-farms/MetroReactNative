@@ -31,12 +31,22 @@ const ContactForm = ({onContinuePress}) => {
 
   const handleSubmit = () => {
     if (!name || !mobileNumber || !email || !address || !aop || !occupation || !budget || !type) {
-      setError(true); // Set error to true if any field is empty
+        setError(true); // Set error to true if any field is empty
     } else {
-      setError(false); // Reset error state
-      onContinuePress(name, mobileNumber, true); // Proceed with filled data
+        setError(false); // Reset error state
+        const customerDetails = {
+            name, 
+            mobileNumber, 
+            email, 
+            address, 
+            aop, 
+            occupation, 
+            budget, 
+            type
+        };
+        onContinuePress(customerDetails); // Proceed with filled data
     }
-  };
+};
 
 
   return (
@@ -110,7 +120,8 @@ const styles = StyleSheet.create({
     width: '80%',
     height: 40, // Set the height
     backgroundColor: 'white', // Set the background color
-    marginBottom: 20, // Add a bottom margin
+    marginBottom: 20,
+    color: 'black' // Add a bottom margin
   },
 
   buttonContainer: {

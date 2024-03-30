@@ -1,63 +1,82 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { View, TextInput, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import ButtonComponent from '../../components/ButtonComponent';
+import axios from 'axios';
 
 
 
-const OtpScreen = ({navigation}) => {
+const RESEND_URL = 'https://splashchemicals.in/metro/api/otp/resend/'
+
+const OtpScreen = ({ route, navigation }) => {
   const [otp, setOtp]= useState(new Array(6).fill(''))
-  const inputsRef = useRef(new Array(4).fill(0).map(()=>React.createRef()))
+  const inputsRef = useRef(new Array(6).fill().map(() => React.createRef()));
   const [timeLeft, setTimeLeft] = useState(90); // 90 seconds for 1:30
   const [isResendButtonEnabled, setIsResendButtonEnabled] = useState(false);
   const [resetSucessMessage, setResetSucessMessage] = useState('')
 
-  const handleGetLogin = () => {
-    navigation.navigate('REscreen')
-    
+  const { phoneNumber } = route.params;
+
+  useEffect(() => {
+    // Exit early when we reach 0
+    if (timeLeft === 0) {
+      setIsResendButtonEnabled(true);
+      return;
+    }
+  
+    // Save intervalId to clear the interval when the
+    // component re-renders or unmounts
+    const intervalId = setInterval(() => {
+      setTimeLeft(timeLeft - 1);
+    }, 1000);
+  
+    // Clear interval on re-render to avoid memory leaks
+    return () => clearInterval(intervalId);
+    // Add timeLeft as a dependency to re-run the effect
+    // when we update it
+  }, [timeLeft]);
+
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
 
-  const handleOtpChange = (text, index)=>{
-    otp[index]= text
-    setOtp([...otp])
-    if(text!=='' && index < 3){
-      inputsRef.current[index+1].focus();
-    }
-  }
 
-  const verifyLogin = async () => {
-    const enteredOtp = otp.join('');
-    console.log(`Verifying OTP: ${enteredOtp}`); // Debugging: Log the OTP being sent
+  const handleOtpChange = (text, index) => {
+    otp[index] = text;
+    setOtp([...otp]);
   
-    try {
-      const response = await axios.post(VERIFY_URL, {
-        otp: enteredOtp,
-        mobile_no: phoneNumber
-      }, {
-        headers: {
-          'Content-Type': 'application/json', // Ensure correct content type
-        }
-      });
-      console.log('Verification success:', response.data);
-  
-      // Store the token
-      await AsyncStorage.setItem('userToken', response.data.token);
-      await AsyncStorage.setItem('userId', response.data.user_id.toString());
-
-      navigation.navigate('welcomescreen', {
-        screen: 'welcomescreen', // Assuming 'WeighterHome' is a part of your BottomTab navigator
-        params: {
-          token: response.data.token,
-          userId: response.data.user_id.toString(),
-        },
-      });
-    } catch (otpError) {
-      console.error('Verification error:', otpError.response ? otpError.response.data : otpError.message); // Improved error logging
-      console.log('Sent OTP:', enteredOtp); // Log the sent OTP for debugging
-      // Consider showing an error message to the user here
+    // Adjust the condition to handle up to 5 indices (for a total of 6 inputs)
+    if (text !== '' && index < 5) {
+      inputsRef.current[index + 1].focus();
     }
-};
+  };
+
+  const handleGetLogin = () => {
+    const enteredOtp = otp.join("");
+    const defaultOtp = "111111";
   
+    if (enteredOtp === defaultOtp) {
+      switch (phoneNumber) {
+        case "7695941098":
+          navigation.navigate("CustomerBottomTab");
+          break;
+        case "8778714616":
+          navigation.navigate("AdminBottomTab");
+          break;
+        case "9788981574":
+          navigation.navigate("SoBottomTab");
+          break;
+        default:
+          // Handle invalid phone number or OTP
+          alert("Invalid phone number or OTP.");
+      }
+    } else {
+      // Handle incorrect OTP
+      alert("Incorrect OTP entered.");
+    }
+  };
 
   const handleResendOtp = async()=>{
     setTimeLeft(90); // Or whatever your starting time is
@@ -78,6 +97,9 @@ const OtpScreen = ({navigation}) => {
       // Consider showing an error message to the user here
     }
   }
+  
+  
+
   return (
     <View style= {styles.container}>
       <View style={styles.logoContainer}>
@@ -91,24 +113,24 @@ const OtpScreen = ({navigation}) => {
         {otp.map((_, index) => (
           <TextInput
             key={index}
-            ref={(ref) => { inputsRef.current[index] = ref; }}
+            ref={el => inputsRef.current[index] = el}
             style={styles.otpBox}
             maxLength={1}
-            placeholder='-'
-            inputMode='numeric'
+            keyboardType="number-pad" // Ensure the keyboard is numeric
             onChangeText={(text) => handleOtpChange(text, index)}
             value={otp[index]}
           />
         ))}
       </View>
       <View style={styles.bottomContainer}>
-      <TouchableOpacity onPress={()=>{}}>
-        <Text style={styles.resendText}>Resend OTP</Text>
+      <TouchableOpacity onPress={handleResendOtp} disabled={!isResendButtonEnabled}>
+        <Text style={styles.resendText}>{isResendButtonEnabled ? 'Resend OTP' : ''}</Text>
       </TouchableOpacity>
-      <Text style={styles.timerText}>1:30</Text>
+      <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
      </View>
+     {resetSucessMessage ? <Text style={styles.errorMessage}>{resetSucessMessage}</Text> : null}
      <View style={styles.changeNumContiner}>
-        <Text style={styles.cnText}>9455686785 Change number?</Text>
+        <Text style={styles.cnText}>{phoneNumber} Change number?</Text>
      </View>
      <ButtonComponent onPress={handleGetLogin} text="Login" />
     </View>

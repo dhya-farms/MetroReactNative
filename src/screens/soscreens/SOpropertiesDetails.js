@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions} 
+import { View, Text, TouchableOpacity, Image, ScrollView} 
 from 'react-native';
 import SlidingCarousel from '../../components/SlidingCarousel';
 import { SafeAreaView } from 'react-native';
@@ -7,7 +7,7 @@ import LayoutHeader from '../../components/LayoutHeader';
 import { TabBar } from '../../components/TabComponent';
 import EnquireContainer from '../../components/EnquireContainer';
 import HeaderContainer from '../../components/HeaderContainer';
-import styles from '../../constants/styles/sopropertydetailsstyles';
+import styles from '../../constants/styles/commonpropertydetailsstyles';
 
 
 

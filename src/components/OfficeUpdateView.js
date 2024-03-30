@@ -26,11 +26,15 @@ const ImageCard = ({ name, date, title, description, source, personimage, textCo
   );
 };
 
-const OfficeUpdateView = ({cardData, textContainerStyle})=>{
+const ItemSeparator = () => (
+  <View style={styles.itemSeparator} />
+);
+
+const OfficeUpdateView = ({cardData, textContainerStyle, isHorizontal= true})=>{
     return (
         <FlatList
           data={cardData}
-          horizontal
+          horizontal={isHorizontal}
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
             <ImageCard
@@ -44,6 +48,7 @@ const OfficeUpdateView = ({cardData, textContainerStyle})=>{
             />
           )}
           keyExtractor={item => item.id}
+          ItemSeparatorComponent={isHorizontal ? null : ItemSeparator}
           style={styles.flatList}
         />
       );
@@ -58,7 +63,8 @@ const styles = StyleSheet.create({
         width: 268, // Set your desired card width
         height: 179, // Set your desired card height
         position: 'relative',
-        marginHorizontal: 15, // Allows absolute positioning within
+        marginHorizontal: 15,
+        marginVertical: 10, // Allows absolute positioning within
       },
     cardImage: {
         width: '100%',
@@ -119,6 +125,14 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: '#424242', // Date color
         fontSize: 12, // Adjust font size
+      },
+      itemSeparator: {
+        height: 2,
+        backgroundColor: '#C4C4C4',
+        alignSelf: 'center',
+        width: '90%',
+        marginVertical: 16,
+  
       },
  });
 

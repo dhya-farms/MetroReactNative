@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-const RemarkModal = ({ visible, onClose, onSubmit }) => {
+const RemarkModal = ({ visible, onClose, onSubmit, category }) => {
   const [remarks, setRemarks] = useState('');
 
   const handleRemarkSubmit = () => {
-    onSubmit(remarks);
-    setRemarks(''); // Reset after submit
-    onClose(); // Close modal
+    onSubmit(category); // Pass the category to the onSubmit function
+    setRemarks(''); // Optionally reset remarks if needed
   };
 
   return (
@@ -22,7 +21,7 @@ const RemarkModal = ({ visible, onClose, onSubmit }) => {
         <View style={styles.modalView}>
           <View style={styles.sortdropContainer}> 
             <Text style={styles.sortbyText}>Remarks(optional)</Text>
-            <MaterialIcons name="close" size={15} color="#1D9BF0"  onPress={handleRemarkSubmit}/>
+            <MaterialIcons name="close" size={15} color="#1D9BF0"  onPress={onClose}/>
           </View>
          <View style={styles.separator} />
             <TextInput

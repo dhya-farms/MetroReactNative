@@ -6,10 +6,15 @@ import MyPropertiesDetails from '../customerscreens/customerhomescreens/MyProper
 
 const PropertyScreen = createNativeStackNavigator();
 
-const PropertyScreenNavigator = () => {
+
+
+const PropertyScreenNavigator = ({ route }) => {
+
+  const { params } = route;
+
   return (
     <PropertyScreen.Navigator screenOptions={{ headerShown: false }}>
-      <PropertyScreen.Screen name="Customer Properties" component={CustomerProperties} />
+      <PropertyScreen.Screen name="Customer Properties" component={CustomerProperties} initialParams={params}/>
       <PropertyScreen.Screen name="Show Properties" component={ShowProperties} />
       <PropertyScreen.Screen name="Property Details" component={MyPropertiesDetails}/>
     </PropertyScreen.Navigator>

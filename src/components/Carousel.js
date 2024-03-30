@@ -1,113 +1,111 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, StyleSheet, FlatList, Dimensions, TouchableOpacity} from 'react-native';
+import { View, Text, Image, StyleSheet, FlatList, Dimensions, TouchableOpacity, ScrollView} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-const { width } = Dimensions.get('window');
 
 
 
 const { width: screenWidth } = Dimensions.get('window');
-const cardWidth = 320; // Fixed card width
-const cardMargin = (screenWidth - cardWidth) / 2;
+const cardWidth = 320;
 
-const Carousel = ({ data, onSortPress, isHeartVisible= false }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [liked, setLiked] = useState(false);
-
-  const flatListRef = useRef();
+const Carousel = ({ data, onSortPress, isHeartVisible = true }) => {
+  
 
   const PropertyCard = ({ item }) => {
-    const onLikePress = () => {
-      setLiked(!liked);
-    };
-  return (
-    <View style={styles.card}>
-      <TouchableOpacity onPress={onSortPress}>
-      <Image source={item.imageUrl} style={styles.image} />
-      </TouchableOpacity>
-      <View style={styles.lrContainer}>
-        {isHeartVisible ? <TouchableOpacity onPress={onLikePress}>
-                    <MaterialIcons
-                    name={liked ? 'favorite' : 'favorite-border'}
-                    size={24}
-                    color={liked ? 'red' : 'white'}
-                    />
-        </TouchableOpacity> : null}
-        <View style={styles.ratingContainer}>
-          <MaterialIcons name="star" size={20} color="gold" />
-          <Text style={styles.rating}>{item.rating}</Text>
-        </View> 
-      </View>
-      {renderPagination()}
-      <View style={styles.cardContent}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.description}>{item.description}</Text>
-        <View style={styles.locationContainer}>
-          <MaterialIcons name="place" size={20} color="#757575" />
-          <Text style={styles.location}>{item.location}</Text>
-        </View>
-        
-      </View>
-    </View>
-  );
-};
+    const [liked, setLiked] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const imageScrollRef = useRef();
+    const images = [item.image1, item.image2, item.image3].filter(Boolean);
 
-const renderPagination = () => {
-    return (
-      <View style={styles.paginationContainer}>
-        {data.map((_, index) => (
-          <View
-            key={index}
-            style={[
+    useEffect(() => {
+      if (images.length <= 1) return;
+
+      const interval = setInterval(() => {
+        setCurrentImageIndex(prevIndex => {
+          const nextIndex = prevIndex === images.length - 1 ? 0 : prevIndex + 1;
+          if (imageScrollRef.current) {
+            imageScrollRef.current.scrollTo({ x: cardWidth * nextIndex, animated: true });
+          }
+          return nextIndex;
+        });
+      }, 3000);
+      return () => clearInterval(interval);
+    }, [images.length]);
+
+    const onLikePress = () => setLiked(!liked);
+
+    const renderPagination = () => {
+      if (images.length <= 1) return null; // Don't render pagination for a single image
+  
+      return (
+        <View style={styles.paginationContainer}>
+          {images.map((_, index) => (
+            <View key={index} style={[
               styles.paginationDot,
-              currentIndex === index ? styles.paginationDotActive : styles.paginationDotInactive,
-            ]}
-          />
-        ))}
+              currentImageIndex === index ? styles.paginationDotActive : styles.paginationDotInactive,
+            ]} />
+          ))}
+        </View>
+      );
+    };
+
+    return (
+      <View style={styles.card}>
+        <TouchableOpacity onPress={onSortPress}>
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            ref={imageScrollRef}
+            style={styles.scrollViewContainer}
+            onMomentumScrollEnd={(e) => {
+              const pageIndex = Math.round(e.nativeEvent.contentOffset.x / cardWidth);
+              setCurrentImageIndex(pageIndex);
+            }}
+          > 
+           {images.map((imgSrc, index) => (
+            // Each image is wrapped in a View with the correct width.
+            <View key={index} style={{ width: cardWidth, height: 196 }}>
+              <Image source={imgSrc} style={styles.image} />
+            </View>
+          ))}
+          </ScrollView>
+        </TouchableOpacity>
+        <View style={styles.lrContainer}>
+          {isHeartVisible && (
+            <TouchableOpacity onPress={onLikePress}>
+              <MaterialIcons name={liked ? 'favorite' : 'favorite-border'} size={24} color={liked ? 'red' : 'white'} />
+            </TouchableOpacity>
+          )}
+          <View style={styles.ratingContainer}>
+            <MaterialIcons name="star" size={20} color="gold" />
+            <Text style={styles.rating}>{item.rating}</Text>
+          </View>
+        </View>
+        {renderPagination()}
+        <View style={styles.cardContent}>
+          <Text style={styles.title}>{item.title}</Text>
+          <Text style={styles.description}>{item.description}</Text>
+          <View style={styles.locationContainer}>
+            <MaterialIcons name="place" size={20} color="#757575" />
+            <Text style={styles.location}>{item.location}</Text>
+          </View>
+        </View>
       </View>
     );
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex(prevIndex => {
-        const nextIndex = prevIndex === data.length - 1 ? 0 : prevIndex + 1;
-        // Scroll to the next index using the FlatList ref
-        if (flatListRef.current) {
-          flatListRef.current.scrollToIndex({ animated: true, index: nextIndex });
-        }
-        return nextIndex;
-      });
-    }, 3000); // Change image every 5 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <View style={styles.carouselContainer}>
-    <FlatList
-      ref={flatListRef}
-      data={data}
-      renderItem={PropertyCard}
-      keyExtractor={(_, index) => index.toString()}
-      horizontal
-      pagingEnabled
-      showsHorizontalScrollIndicator={false}
-      onMomentumScrollEnd={(event) => {
-        const currentPage = Math.floor(event.nativeEvent.contentOffset.x / cardWidth);
-        setCurrentIndex(currentPage);
-      }}
-      getItemLayout={(data, index) => ({
-        length: cardWidth,
-        offset: cardWidth * index,
-        index,
-      })}
-      style={styles.flatListStyle}
-      contentContainerStyle={{
-        alignItems: 'center' // Ensures that the FlatList children are centered
-      }}
-    />
-  </View>
-
+      <FlatList
+        data={data}
+        renderItem={({ item }) => (
+          <PropertyCard item={item} onSortPress={onSortPress} isHeartVisible={isHeartVisible} />
+        )}
+        keyExtractor={item => item.id}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ alignItems: 'center' }}
+      />
+    </View>
   );
 };
 
@@ -120,7 +118,8 @@ const styles = StyleSheet.create({
   },
   flatListStyle: {
     flexGrow: 0, // This prevents the FlatList from growing to accommodate all items
-    width: cardWidth, // Set the width of the FlatList to the width of a single card
+    width: screenWidth,
+    borderRadius: 10 // Set the width of the FlatList to the width of a single card
   },
   card: {
     width: cardWidth, // Adjust the width as necessary
@@ -135,10 +134,9 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 186, // Adjust the height as necessary
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    resizeMode: 'cover',
+    height: '100%', // Adjust the height as necessary
+    borderRadius: 10,
+    resizeMode: 'cover'
   },
   lrContainer:{
     flexDirection: 'row',
@@ -210,9 +208,10 @@ const styles = StyleSheet.create({
   paginationDotInactive: {
     backgroundColor: '#C4C4C4',
   },
+  scrollViewContainer:{
+    width: cardWidth,
+    
+  }
 });
 
 export default Carousel;
-
-// Usage example:
-// <Carousel data={dataArray} />

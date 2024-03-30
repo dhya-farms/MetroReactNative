@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity,  ScrollView, StyleSheet} 
+import { View, Text, TouchableOpacity,  ScrollView, StyleSheet, StatusBar} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import LogOutModal from '../../modals/LogoutModal';
@@ -38,14 +38,17 @@ const AdminSettings = ({navigation}) => {
   const handleLogout = () => {
     handleShowConfirmModal("Logged Out Successfully");
     setModalVisible(false); // Close the logout modal
+    navigation.navigate("MBlogin");
   };
     
   const handleDeleteAccount = () => {
     handleShowConfirmModal("Your Account Has Been Deleted");
     setModalVisible(false); // Close the delete account modal
+    navigation.navigate("MBlogin");
   };
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <StatusBar/>
       <HeaderContainer title="Settings" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}

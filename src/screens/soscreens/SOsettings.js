@@ -38,11 +38,13 @@ const SOsettings = ({navigation}) => {
   const handleLogout = () => {
     handleShowConfirmModal("Logged Out Successfully");
     setModalVisible(false); // Close the logout modal
+    navigation.navigate("MBlogin");
   };
     
   const handleDeleteAccount = () => {
     handleShowConfirmModal("Your Account Has Been Deleted");
     setModalVisible(false); // Close the delete account modal
+    navigation.navigate("MBlogin");
   };
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>

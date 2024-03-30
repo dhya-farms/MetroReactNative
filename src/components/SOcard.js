@@ -40,15 +40,11 @@ const Card = ({ name, number, mailId, points, clients, source }) => {
 
   const ItemSeparator = () => <View style={styles.itemSeparator} />;
 
-  const SOcards = ({ data, isHorizontal = true , navigation}) => {
-    const handleCardPress = () => {
-      navigation.navigate("SO", { 
-        screen: "SO Officers Details" 
-      })
-    };
+  const SOcards = ({ data, isHorizontal = true , onCardPress}) => {
+
     const renderItem = (item, index) => (
       <React.Fragment key={item.id}>
-        <TouchableOpacity onPress={() => handleCardPress()}>
+        <TouchableOpacity  onPress={() => onCardPress()}>
         <Card
           name={item.name}
           number={item.number}

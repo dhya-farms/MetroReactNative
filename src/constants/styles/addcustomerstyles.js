@@ -86,6 +86,12 @@ const styles = StyleSheet.create({
       fontWeight: '500',
       fontSize: 14,
       },
+      message:{
+        fontFamily: 'Poppins',
+        color: "green",
+        fontWeight: '500',
+        fontSize: 14,
+      }
   });
 
 export default styles;

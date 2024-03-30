@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, Button} 
+import React, { useCallback, useState } from 'react';
+import { View, Text, TouchableOpacity, Image, ScrollView} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -10,7 +10,7 @@ import AddressModal from '../../modals/AddressModal';
 import DropAddessConfimModal from '../../modals/DropAddressConfirmModal';
 import ConfirmationModal from '../../modals/ConfirmationModal';
 import PaymentModal from '../../modals/PaymentModal';
-import { PRIMARY_COLOR, SECONDARY_COLOR } from '../../constants/constantstyles/colors';
+import { SECONDARY_COLOR } from '../../constants/constantstyles/colors';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../../constants/styles/socustomerdetailsstyles';

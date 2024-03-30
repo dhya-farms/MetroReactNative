@@ -41,7 +41,7 @@ const AdvisorCard = () => {
   
   const styles = StyleSheet.create({
     card: {
-      width: '90%',
+      width: '95%',
       alignItems: 'center',
       marginBottom: 16,
     },
@@ -59,7 +59,7 @@ const AdvisorCard = () => {
       alignItems: 'center',
     },
     advisorContainer: {
-      width: '90%', // You might need to adjust this based on your layout
+      width: '95%', // You might need to adjust this based on your layout
       borderWidth: 1,
       borderColor: '#ADADAD',
       borderRadius: 10,

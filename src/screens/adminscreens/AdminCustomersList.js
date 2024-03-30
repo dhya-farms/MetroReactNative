@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet} from 'react-native';
+import { View, ScrollView, StyleSheet, StatusBar} from 'react-native';
 import SortHeader from '../../components/SortHeader';
 import HeaderContainer from '../../components/HeaderContainer';
 import CustomerCard from '../../components/CustomerCard';
@@ -37,6 +37,7 @@ const AdminCustomerList = ({navigation}) => {
   
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} >
+      <StatusBar/>
       <HeaderContainer title="Customers" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}

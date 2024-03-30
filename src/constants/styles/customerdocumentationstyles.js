@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
       fontSize: 14,  
     },
     nextConatainer:{
-      width: '90%',
+      width: '100%',
       justifyContent: 'center',
       alignItems: 'center',
       marginVertical: 20,

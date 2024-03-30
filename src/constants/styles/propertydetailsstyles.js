@@ -9,6 +9,7 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'flex-start',
       paddingBottom: 50,
+      backgroundColor: 'white'
     },
     slidingContainer:{
       width: '100%',

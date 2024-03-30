@@ -1,9 +1,10 @@
-import React from 'react';
-import { View, ScrollView, StyleSheet} from 'react-native';
+import React, { useEffect, useState} from 'react';
+import { View, ScrollView} from 'react-native';
 import SortHeader from '../../components/SortHeader';
 import HeaderContainer from '../../components/HeaderContainer';
 import ContactCard from '../../components/ContactCard';
 import styles from '../../constants/styles/customercontactscreenstyles';
+import { listCustomers } from '../../apifunctions/listCustomersApi';
 
 
 const CustomerData = [
@@ -37,6 +38,30 @@ const CustomerData = [
 
 
 const CustomerContactScreen = ({navigation}) => {
+  const [apiCustomers, setApiCustomers] = useState([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+        try {
+            const customers = await listCustomers();
+            // Transform if needed, or directly set the fetched data
+            const customerData = customers.map((customer, index) => ({
+              id: (index + 1).toString(), // Generate an ID
+              name: customer.name,
+              number: customer.mobile_no,
+              mailId: `${customer.name.toLowerCase()}@example.com`, // Dummy email ID
+              progress: "Initial Contact", // Dummy progress state
+              personimage: require('../../../assets/images/person.png'), // Default image path
+          }));
+
+          setApiCustomers(customerData)
+        } catch (error) {
+            console.error('Error fetching customer data:', error);
+        }
+    };
+
+    loadData();
+}, []);
 
   
   return (
@@ -49,7 +74,7 @@ const CustomerContactScreen = ({navigation}) => {
       <SortHeader title="Contact Form"  />
       </View>
       <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-        <ContactCard customerData={CustomerData} onCardPress={() => {
+        <ContactCard customerData={apiCustomers} onCardPress={() => {
             navigation.navigate("SO Client", { screen: "SO Customer Details"});
         }}/>
       </View>

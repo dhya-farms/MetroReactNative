@@ -17,12 +17,36 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
     );
   };
 
-const PaymentModal = ({ modalVisible, setModalVisible, paymentConfirmPress}) => {
+const PaymentModal = ({ modalVisible, setModalVisible, onDone}) => {
   // State for input fields
   const [payAmount, setPayAmount] = useState('');
   const [desc, setDesc] = useState('');
   const [payType, setPayType] = useState('');
   const [refno, setRefNo] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleDonePress = () => {
+    // Reset error message at each attempt
+    setErrorMessage('');
+
+    // Validate inputs
+    if (!payAmount || !desc || !payType || !refno) {
+      setErrorMessage('Please fill all the details.'); // Update error message state
+      return;
+    }
+
+    // If validation passes, proceed to call the onDone callback
+    onDone({
+      payAmount,
+      desc,
+      payType,
+      refno,
+    });
+
+    // Close the modal
+    setModalVisible(false);
+  };
+
 
   return (
     <Modal
@@ -53,7 +77,10 @@ const PaymentModal = ({ modalVisible, setModalVisible, paymentConfirmPress}) => 
             value={refno}
             onChangeText={setRefNo}
           />
-          <TouchableOpacity style={styles.doneButton} onPress={paymentConfirmPress}>
+           {errorMessage !== '' && (
+            <Text style={styles.errorText}>{errorMessage}</Text> // Display the error message
+          )}
+          <TouchableOpacity style={styles.doneButton} onPress={handleDonePress}>
             <Text style={styles.doneButtonText}>Sumbit</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.doneButton} onPress={()=> setModalVisible(false)}>
@@ -114,6 +141,13 @@ const styles = StyleSheet.create({
   },
   doneButtonText: {
     color: "white",
+    fontFamily: 'Poppins',
+    fontWeight: '500',
+    fontSize: 14,
+  },
+  errorText: {
+    color: 'red', // Example style for error message
+    fontSize: 14,
     fontFamily: 'Poppins',
     fontWeight: '500',
     fontSize: 14,

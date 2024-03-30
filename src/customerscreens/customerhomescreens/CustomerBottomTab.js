@@ -72,7 +72,20 @@ const CustomerBottomTab = () => {
   return (
     <Tab.Navigator screenOptions={screenOptions}>
       <Tab.Screen name="Home" component={CustomerHome} />
-      <Tab.Screen name="properties" component={PropertyScreenNavigator} />
+      <Tab.Screen
+        name="properties"
+        component={PropertyScreenNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: e => {
+            // Prevent default action
+            e.preventDefault();
+
+            // Navigate to the desired screen with params
+            navigation.navigate("properties", { screen: "Customer Properties", params: { showBoth: true}});
+
+          },
+        })}
+      />
       <Tab.Screen name="Favorites" component={FavProperties} />
       <Tab.Screen name="Profile" component={CustomerProfile} />
       <Tab.Screen name="Settings" component={SettingsScreenNavigator} />

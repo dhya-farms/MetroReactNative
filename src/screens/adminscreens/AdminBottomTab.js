@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import AdminPropertyNavigator from '../../navigations/AdminScreenNavigator';
@@ -9,16 +9,6 @@ import SoscreenNavigator from '../../navigations/SOscreenNavigator';
 import AdminSettings from './AdminSettings';
 
 const Tab = createBottomTabNavigator();
-
-// Screens for each tab (Dummy Components)
-const HomeScreen = () => <View />;
-const SiteScreen = () => <View />;
-const ProfileScreen = ()=> <View/>
-const SOscreen = ()=> <View/>
-const SettingsScreen = () => <View />;
-// ... other screens
-
-
 
 
 const CustomTabBarButton = ({ children, onPress, focused }) => (

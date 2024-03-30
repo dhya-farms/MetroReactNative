@@ -49,7 +49,7 @@ export default function SlidingCarousel() {
     const interval = setInterval(() => {
       let nextIndex = (indexRef.current + 1) % images.length;
       scrollToIndex(nextIndex);
-    }, 4000);
+    }, 2500);
 
     return () => clearInterval(interval);
   }, []);

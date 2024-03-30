@@ -1,15 +1,53 @@
 import React, { useState } from 'react';
 import { View, Image, StyleSheet, Dimensions, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import ButtonComponent from '../../components/ButtonComponent';
+import axios from 'axios';
+
+
+const OTP_GENERATE_URL = 'https://splashchemicals.in/metro/api/otp/generate/'
 
 const MobileLoginScreen = ({navigation}) => {
     const [phoneNumber, setPhoneNumber] = useState('')
+    const [errorMessage, setErrorMessage] = useState('')
+    const [otpMessage, setOtpMessage] = useState('')
 
-    const handleGetOTP = () => {
-        // Logic to handle OTP request
-        navigation.navigate("OTscreen")
-      };
+
+    const handleLogin = async () => {
+      try {
+        const phoneNumberPattern = /^[6789]\d{9}$/;
+    
+        // Reset messages
+        setErrorMessage('');
+        setOtpMessage('');
+    
+        // Check if phone number matches the pattern
+        if (!phoneNumberPattern.test(phoneNumber)) {
+          // Set error message if phone number is invalid
+          setErrorMessage('Please enter a valid phone number.');
+          return; // Stop the function execution
+        }
+    
+        // If phone number is valid, proceed with API call
+        const response = await axios.post(OTP_GENERATE_URL, {
+          mobile_no: phoneNumber
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+    
+        setOtpMessage('Otp has been Generated');
+        // Clear the error message when OTP is successfully generated
+        setErrorMessage('');
+        setTimeout(() => navigation.navigate('OTscreen', { phoneNumber }), 3000);
+      } catch (error) {
+        console.log(error);
+        // Set an error message and clear the OTP message in case of API call failure
+        setErrorMessage(`${error}`);
+        setOtpMessage('');
+      }
+    };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <Image
@@ -30,11 +68,15 @@ const MobileLoginScreen = ({navigation}) => {
         <TextInput 
           style={styles.input} 
           inputMode="numeric"
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
           placeholderTextColor="#424242"
         />
       </View>
       </View>
-      <ButtonComponent onPress={handleGetOTP} text="Get OTP" />
+      {otpMessage ? <Text style={styles.otpMessage}>{otpMessage}</Text> : null}
+      {errorMessage ? <Text style={styles.errorMessage}>{errorMessage}</Text> : null}
+      <ButtonComponent onPress={handleLogin} text="Get OTP" />
       <Image
         source={require('../../../assets/images/orframe.png')}
         style={styles.orimage}
@@ -61,6 +103,7 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'white'
   },
   contentContainer: {
     flexGrow: 1,

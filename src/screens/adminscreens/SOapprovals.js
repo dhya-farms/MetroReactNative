@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions} 
+import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, StatusBar} 
 from 'react-native';
 import SortHeader from '../../components/SortHeader';
 import HeaderContainer from '../../components/HeaderContainer';
@@ -38,6 +38,7 @@ const SOApprovals = ({navigation}) => {
   
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <StatusBar/>
       <HeaderContainer title="Approval List" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
@@ -46,7 +47,9 @@ const SOApprovals = ({navigation}) => {
       <SortHeader title="Approval"  />
       </View>
       <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-        <CardScrollView data={data} isHorizontal= {false} navigation={navigation}/>
+        <CardScrollView data={data} isHorizontal= {false} onCardPress={() => {
+           navigation.navigate("Client", { screen: "List Customer Details"});
+        }}/>
         </View>
     </ScrollView>
   );
@@ -55,6 +58,7 @@ const SOApprovals = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'white'
   },
   contentContainer: {
     flexGrow: 1,

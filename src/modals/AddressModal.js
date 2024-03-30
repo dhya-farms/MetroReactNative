@@ -17,9 +17,29 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
     );
   };
 
-const AddressModal = ({ modalVisible, setModalVisible,  addressConfirmationPress}) => {
+const AddressModal = ({ modalVisible, setModalVisible,  onDone}) => {
   // State for input fields
   const [pickupAddress, setPickupAddress] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleAddressPress = () => {
+    // Reset error message at each attempt
+    setErrorMessage('');
+
+    // Validate inputs
+    if (!pickupAddress) {
+      setErrorMessage('Please fill the address.'); // Update error message state
+      return;
+    }
+
+    // If validation passes, proceed to call the onDone callback
+    onDone({
+      pickupAddress,
+    });
+
+    // Close the modal
+    setModalVisible(false);
+  };
 
   return (
     <Modal
@@ -36,8 +56,10 @@ const AddressModal = ({ modalVisible, setModalVisible,  addressConfirmationPress
             value={pickupAddress}
             onChangeText={setPickupAddress}
           />
-          
-          <TouchableOpacity style={styles.doneButton} onPress={addressConfirmationPress}>
+           {errorMessage !== '' && (
+            <Text style={styles.errorText}>{errorMessage}</Text> // Display the error message
+          )}
+          <TouchableOpacity style={styles.doneButton} onPress={handleAddressPress}>
             <Text style={styles.doneButtonText}>Done</Text>
           </TouchableOpacity>
         </View>
@@ -102,7 +124,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins',
     fontWeight: '500',
     fontSize: 14,
-  }
+  },
+  errorText: {
+    color: 'red', // Example style for error message
+    fontSize: 14,
+    fontFamily: 'Poppins',
+    fontWeight: '500',
+    fontSize: 14,
+  },
   // ... Add other styles you might need
 });
 

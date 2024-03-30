@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "metroproject",
-    "slug": "metroproject",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "name": "metrosmart",
+    "slug": "metrosmart",
+    "version": "0.0.2",
+    "orientation": "default",
+    "icon": "./assets/images/metrologo.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/images/metrologo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -15,21 +15,40 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+      "supportsTablet": true,
+      "runtimeVersion": {
+        "policy": "sdkVersion"
       },
-      "package": "com.ganeshkumarthennavan.metroproject"
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses camera to upload profile picture."
+      },
+      "splash": {
+        "backgroundColor": "#FFFFFF",
+        "resizeMode": "contain",
+        "image": "./assets/images/metrologo.png",
+        "tabletImage": "./assets/images/metrologo.png"
+      },
+      "buildNumber": "3",
+      "bundleIdentifier": "com.metrosmart.app"
+    },  
+    "android":{
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/Newmetro.jpeg",
+        "backgroundColor": "#FFFFFF"
+      },
+      "runtimeVersion": {
+        "policy": "sdkVersion"
+      },
+      "jsEngine": "hermes",
+      "package": "com.metrosmart.app",
+      "versionCode": 50
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/images/metrologo.png"
     },
     "extra": {
       "eas": {
-        "projectId": "63320563-8e5e-471a-89be-254d65f23e96"
+        "projectId": "2dda807b-6981-4f54-a378-fa953dca0a1f"
       }
     }
   }

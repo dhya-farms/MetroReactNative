@@ -7,17 +7,11 @@ import SOpropertyNavigator from '../../navigations/SOpropertyNavigator';
 import AddCustomerScreen from './AddCustomer';
 import SOCustomerScreenNavigator from '../../navigations/SOCustomerScreenNavigator';
 import SOsettings from './SOsettings';
+import SOhomeScreenNavigator from '../../navigations/SOhomeScreenNavigator';
 
 
 const Tab = createBottomTabNavigator();
 
-// Screens for each tab (Dummy Components)
-const HomeScreen = () => <View />;
-const SiteScreen = () => <View />;
-const ProfileScreen = ()=> <View/>
-const SOscreen = ()=> <View/>
-const SettingsScreen = () => <View />;
-// ... other screens
 
 
 
@@ -70,8 +64,8 @@ const SObottomTab = () => {
     >
       {/* Other tabs here */}
       <Tab.Screen
-        name="Home"
-        component={SOhome}
+        name="SO Home"
+        component={SOhomeScreenNavigator}
         options={{
           tabBarIcon: ({ focused, color }) => (
             <View style={focused ? styles.container: null}>

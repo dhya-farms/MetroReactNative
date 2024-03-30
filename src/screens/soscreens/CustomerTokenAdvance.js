@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions} 
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, Image, ScrollView} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import { TextInput } from 'react-native-paper';
-import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../../constants/styles/customertokenadvancestyles';
 
@@ -56,6 +55,7 @@ const CustomerTokenAdvance = ({route, navigation}) => {
    const [referenceNumber, setReferenceNumber] = useState('');
    const [balanceAmount, setBalanceAmount] = useState('')
    const [currentView, setCurrentView] = useState('form');
+   const [errorMessage, setErrorMessage] = useState('')
 
    useEffect(() => {
     // Check if summaryData is provided when navigated to this screen
@@ -75,17 +75,44 @@ const CustomerTokenAdvance = ({route, navigation}) => {
     }
   }, [route.params]);
 
+  const validatePlots = () => {
+    // Check if any plot has an empty field
+    return plots.every(plot => 
+      plot.propertyName && plot.propertyType && plot.phaseNumber && 
+      plot.plotNumber && plot.sqft
+    );
+  };
+
+  const validatePaymentDetails = () => {
+    return totalAmount && amountPaid && paymentMethod && referenceNumber && balanceAmount;
+  };
+
    const addNewPlot = () => {
     setPlots([...plots, initialPlot()]);
   };
 
   const handleNextFromForm = () => {
-    setCurrentView('summary');
+    if (validatePlots()) {
+      // If validation passes, navigate to the next view
+      setCurrentView('summary');
+      setErrorMessage('')
+      // Make sure to reset or hide any error message state here
+    } else {
+      // If validation fails, set an error message state that you can display
+      // For example, if you have a state called `errorMessage`, set it like this:
+      setErrorMessage("Please fill all the fields for each plot.");
+    }
   };
 
   // Function to handle "Next" click from the summary view to the payment summary
   const handleNextFromSummary = () => {
-    setCurrentView('paymentSummary');
+    if (validatePaymentDetails()) {
+      setCurrentView('paymentSummary')
+      setErrorMessage('')
+    } else {
+      // Not all payment details are filled, set an error message state
+      setErrorMessage("Please fill all the payment details.");
+    }
   };
 
   const deletePlot = (plotId) => {
@@ -305,6 +332,8 @@ const CustomerTokenAdvance = ({route, navigation}) => {
       )}
 
       {currentView === 'summary' && (
+        <>
+        {errorMessage && <Text style={styles.errorMessage}>{errorMessage}</Text>} 
         <View style={[styles.cnbtnContainer]}>
         <TouchableOpacity style={[styles.cnButton, {backgroundColor: 'white', borderWidth: 1, borderColor: '#1D9BF0'}]} onPress={handleCancel}>
           <Text style={[styles.cnText, {color: '#1D9BF0'}]}>Cancel</Text>
@@ -313,6 +342,7 @@ const CustomerTokenAdvance = ({route, navigation}) => {
           <Text style={styles.cnText}>Next</Text>
         </TouchableOpacity>
       </View>
+      </>
       )}
 
       {currentView === 'paymentSummary' && (
@@ -343,6 +373,8 @@ const CustomerTokenAdvance = ({route, navigation}) => {
       </View>
       )}
        {currentView === 'form' && (
+        <>
+        {errorMessage && <Text style={styles.errorMessage}>{errorMessage}</Text>} 
         <View style={[styles.cnbtnContainer]}>
           <TouchableOpacity style={[styles.cnButton, {backgroundColor: 'white', borderWidth: 1, borderColor: '#1D9BF0'}]} onPress={handleCancel}>
             <Text style={[styles.cnText, {color: '#1D9BF0'}]}>Cancel</Text>
@@ -351,6 +383,7 @@ const CustomerTokenAdvance = ({route, navigation}) => {
             <Text style={styles.cnText}>Next</Text>
           </TouchableOpacity>
         </View>
+        </>
       )}
 
     </ScrollView>

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, Button, StatusBar} 
+import { View, Text, TouchableOpacity, Image, ScrollView, StatusBar} 
 from 'react-native';
 import { SafeAreaView } from 'react-native';
 import styles from '../../constants/styles/propertydetailsstyles';
@@ -43,97 +43,129 @@ const amenities = [
 
 
 const MyPropertiesDetails = ({navigation}) => {
-  const [detailsVisible, setDetailsVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('Details');
-  const [tokenDetailsVisible, setTokenDetailsVisible]= useState(false)
-  const [docDetailsVisible, setDocDetailsVisible]= useState(false)
-  const [paymentDetailsVisible, setPaymentDetailsVisible]= useState(false)
-  const [deliveryDetailsVisible, setDeliveryDetailsVisible]= useState(false)
-  const [pickupModalVisible, setPickupModalVisible] = useState(false);
-  const [detailsInputModalVisible, setDetailsInputModalVisible] = useState(false);
-  const [dropModalVisible, setDropModalVisible] = useState(false)
-  const [addressModalVisible, setAddressModalVisible] = useState(false)
-  const [addressConfirmModalVisible, setAddressConfirmModalVisible ] = useState(false)
-  const [confirmationModalVisible, setConfirmationModalVisible] = useState(false)
-  const [paymentModalVisible, setPaymentModalVisible] = useState(false)
   const [bookingCompleted, setBookingCompleted] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false)
   const [cameFromPickupNo, setCameFromPickupNo] = useState(false);
+  const [status, setStatus] = useState({
+    siteVisit: {
+      detailsVisible: false,
+    },
+    tokenAdvance: {
+      detailsVisible: false,
+    },
+    documentation: {
+      detailsVisible: false,
+    },
+    payment: {
+      detailsVisible: false,
+    },
+    ddDelivery:{
+      detailsVisible: false,
+    }
+  });
+  const [modalVisibility, setModalVisibility] = useState({
+    pickupModalVisible: false,
+    detailsInputModalVisible: false,
+    dropModalVisible: false,
+    addressModalVisible: false,
+    addressConfirmModalVisible: false,
+    confirmationModalVisible: false,
+    paymentModalVisible: false
+  });
+  
+
+  const toggleDetailsVisibility = (category) => {
+    setStatus((prevState) => ({
+      ...prevState,
+      [category]: {
+        ...prevState[category],
+        detailsVisible: !prevState[category].detailsVisible,
+      },
+    }));
+  };
+
+  const toggleModalVisibility = (modalName, isVisible) => {
+    setModalVisibility(prev => ({ ...prev, [modalName]: isVisible }));
+  };
+
+  const handleDetailsInputDone = (data) => {
+    const { pickupAddress, date, time, property } = data;
+    if (!pickupAddress || !date || !time || !property) {
+      alert("Please fill all the details.");
+      toggleModalVisibility('detailsInputModalVisible', true);
+    } else {
+      // Data is valid, close DetailsInputModal and open DropModal
+      toggleModalVisibility('detailsInputModalVisible', false);
+      toggleModalVisibility('dropModalVisible', true);
+    }
+  };
+
 
   const handleYesPress = () => {
-    setPickupModalVisible(false);
-    setDetailsInputModalVisible(true);
+    toggleModalVisibility('pickupModalVisible', false);
+    toggleModalVisibility('detailsInputModalVisible', true);
     setCameFromPickupNo(false);
   };
 
   const handleNoPress = ()=>{
-    setPickupModalVisible(false);
-    setDropModalVisible(true)
+    toggleModalVisibility('pickupModalVisible', false);
+    toggleModalVisibility('dropModalVisible', true);
     setCameFromPickupNo(true);
   }
 
   const dropNoPress = ()=>{
-    setAddressConfirmModalVisible(false);
-    setAddressModalVisible(true);
+    toggleModalVisibility('addressConfirmModalVisible', false);
+    toggleModalVisibility('addressModalVisible', true);
   }
   const dropYesPress = () => {
-    setDropModalVisible(false);
+    toggleModalVisibility('dropModalVisible', false);
     if (cameFromPickupNo) {
-      setAddressModalVisible(true);
+      toggleModalVisibility('addressModalVisible', true);
     } else {
-      setAddressConfirmModalVisible(true);
+      toggleModalVisibility('addressConfirmModalVisible', true)
     }
     setCameFromPickupNo(false); 
   };
+
   
   const confirmationPress = ()=>{
-    setDropModalVisible(false)
-    setConfirmationModalVisible(true)
+    toggleModalVisibility('dropModalVisible', false);
+    toggleModalVisibility('confirmationModalVisible', true);
   }
 
-  const addressConfirmationPress = () => {
-    setAddressModalVisible(false);
-    setConfirmationModalVisible(true);
+  const handleDropAddressDone = (data) => {
+    const { pickupAddress} = data;
+    if (!pickupAddress) {
+      toggleModalVisibility('addressModalVisible', true);
+    } else {
+      // Data is valid, close DetailsInputModal and open DropModal
+      toggleModalVisibility('addressModalVisible', false);
+    toggleModalVisibility('confirmationModalVisible', true);
+    }
   };
 
-  const pickupDonePress =()=>{
-    setDetailsInputModalVisible(false)
-    setDropModalVisible(true)
-  }
-
   const sameAddressPress = ()=>{
-    setAddressConfirmModalVisible(false)
-    setConfirmationModalVisible(true)
+    toggleModalVisibility('addressConfirmModalVisible', false);
+    toggleModalVisibility('confirmationModalVisible', true);
   }
 
   const handleConfirmPress = () => {
-    setConfirmationModalVisible(false);
+    toggleModalVisibility('confirmationModalVisible', false);
     setBookingCompleted(true); // Update the state to indicate booking is completed
   };
 
-  const paymentConfirmPress = ()=>{
-    setPaymentModalVisible(false)
-    setPaymentCompleted(true)
-  }
-
-  const toggleDetails = () => {
-    setDetailsVisible(!detailsVisible);
+  const handleDetailsPaymentDone = (data) => {
+    const { payAmount, desc, payType, refno } = data;
+    if (!payAmount || !desc || !payType || !refno) {
+      alert("Please fill all the details.");
+      toggleModalVisibility('paymentModalVisible', true);
+    } else {
+      // Data is valid, close DetailsInputModal and open DropModal
+      toggleModalVisibility('paymentModalVisible', false);
+      setPaymentCompleted(true)
+    }
   };
-
-  const tokendetails = ()=>{
-    setTokenDetailsVisible(!tokenDetailsVisible)
-  }
-  const docdetails = ()=>{
-    setDocDetailsVisible(!docDetailsVisible)
-  }
-
-  const paymentDetails = ()=>{
-    setPaymentDetailsVisible(!paymentDetailsVisible)
-  }
-
-  const deliveryDetails = ()=>{
-    setDeliveryDetailsVisible(!deliveryDetailsVisible)
-  }
 
   const InfoRow = ({ label, value }) => (
     <View style={styles.infoRow}>
@@ -220,42 +252,42 @@ const MyPropertiesDetails = ({navigation}) => {
           <Text style={styles.completedText}>Completed</Text>
         ) : (
           <>
-            <TouchableOpacity onPress={() => setPickupModalVisible(true)} style={styles.button}>
+            <TouchableOpacity onPress={() => toggleModalVisibility('pickupModalVisible', true)} style={styles.button}>
               <Text style={styles.buttonText}>BOOK</Text>
             </TouchableOpacity>
           </>
         )}
           <PickupModal
-            modalVisible={pickupModalVisible}
-            setModalVisible={setPickupModalVisible}
+            modalVisible={modalVisibility.pickupModalVisible}
+            setModalVisible={(isVisible) => toggleModalVisibility('pickupModalVisible', isVisible)}
             onYesPress={handleYesPress}
             onNoPress={handleNoPress} // Pass the handler to the modal
           />
           <DetailsInputModal
-            modalVisible={detailsInputModalVisible}
-            setModalVisible={setDetailsInputModalVisible}
-            pickupDonePress={pickupDonePress}
+            modalVisible={modalVisibility.detailsInputModalVisible}
+            setModalVisible={(isVisible) => toggleModalVisibility('detailsInputModalVisible', isVisible)}
+            onDone={handleDetailsInputDone}
           />
           <DropModal
-            modalVisible={dropModalVisible}
-            setModalVisible={setDropModalVisible}
+            modalVisible={modalVisibility.dropModalVisible}
+            setModalVisible={(isVisible) => toggleModalVisibility('dropModalVisible', isVisible)}
             dropYesPress={dropYesPress}
             dropNoPress={confirmationPress}
           />
           <AddressModal
-            modalVisible={addressModalVisible}
-            setModalVisible={setAddressModalVisible}
-            addressConfirmationPress={addressConfirmationPress}
+            modalVisible={modalVisibility.addressModalVisible}
+            setModalVisible={(isVisible) => toggleModalVisibility('addressModalVisible', isVisible)}
+            onDone={handleDropAddressDone}
           />
           <DropAddessConfimModal
-            modalVisible={addressConfirmModalVisible}
-            setModalVisible={setAddressConfirmModalVisible}
-            sameAddressPress={sameAddressPress}
-            dropNoPress={dropNoPress}
+             modalVisible={modalVisibility.addressConfirmModalVisible}
+             setModalVisible={(isVisible) => toggleModalVisibility('addressConfirmModalVisible', isVisible)}
+             sameAddressPress={sameAddressPress}
+             dropNoPress={dropNoPress}
           />
          <ConfirmationModal
-          modalVisible={confirmationModalVisible}
-          setModalVisible={setConfirmationModalVisible}
+          modalVisible={modalVisibility.confirmationModalVisible}
+          setModalVisible={(isVisible) => toggleModalVisibility('confirmationModalVisible', isVisible)}
           handleConfirmPress={handleConfirmPress}
          />
         </View>
@@ -263,7 +295,7 @@ const MyPropertiesDetails = ({navigation}) => {
         <Icon name="check" size={20} color="white" />
         </View>
        </View>
-        {detailsVisible && (
+        {status.siteVisit.detailsVisible && (
            <View style={{width: '100%' , marginLeft: 10,}}>
            <Text style={styles.details}>Details</Text>
            <InfoRow label="Site Visit Date" value="16-12-2022" />
@@ -271,16 +303,16 @@ const MyPropertiesDetails = ({navigation}) => {
            <InfoRow label="PickUp Location" value="Ganapathi Office" />
          </View>
         )}
-        <TouchableOpacity onPress={toggleDetails}>
+        <TouchableOpacity onPress={() => toggleDetailsVisibility('siteVisit')}>
           <Text style={styles.detailToggle}>
-            {detailsVisible ? 'Less Details' : 'More Details >>>'}
+            {status.siteVisit.detailsVisible ? 'Less Details' : 'More Details >>>'}
           </Text>
         </TouchableOpacity>
         <View style={styles.statusContainer}>
         <View style={[styles.statusItem, {borderColor: '#C4C4C4'} ,paymentCompleted ? styles.completedStatusItem : {}]}>
           <Text style={styles.siteText}>Token Advance</Text>
           {bookingCompleted && !paymentCompleted ? (
-          <TouchableOpacity onPress={() =>{setPaymentModalVisible(true)}} style={styles.button}>
+          <TouchableOpacity onPress={() => toggleModalVisibility('paymentModalVisible', true)}  style={styles.button}>
               <Text style={styles.buttonText}>Payment</Text>
           </TouchableOpacity>
         ) : null}
@@ -288,16 +320,16 @@ const MyPropertiesDetails = ({navigation}) => {
           <Text style={styles.completedText}>Completed</Text>
         ) : null}
         <PaymentModal
-            modalVisible={paymentModalVisible}
-            setModalVisible={setPaymentModalVisible}
-            paymentConfirmPress={paymentConfirmPress}
+            modalVisible={modalVisibility.paymentModalVisible}
+            setModalVisible={(isVisible) => toggleModalVisibility('paymentModalVisible', isVisible)}
+            onDone={handleDetailsPaymentDone}
         />
         </View>
-        <View style={[styles.checkicon, {backgroundColor: '#C4C4C4'}]}>
-        <Icon name="times" size={20} color="white" />
+        <View style={[styles.checkicon, {backgroundColor: '#C4C4C4'}, paymentCompleted ? styles.completedStatusCheck : {}]}>
+        <Icon name= {paymentCompleted ? "check" : 'times'} size={20} color="white" />
         </View>
         </View>
-        {tokenDetailsVisible && (
+        {status.tokenAdvance.detailsVisible && (
            <View style={{width: '100%' , marginLeft: 10,}}>
            <Text style={styles.details}>Details</Text>
            <InfoRow label="Site Visit Date" value="16-12-2022" />
@@ -305,9 +337,9 @@ const MyPropertiesDetails = ({navigation}) => {
            <InfoRow label="PickUp Location" value="Ganapathi Office" />
          </View>
         )}
-        <TouchableOpacity onPress={tokendetails}>
+        <TouchableOpacity onPress={() => toggleDetailsVisibility('tokenAdvance')}>
           <Text style={styles.detailToggle}>
-            {tokenDetailsVisible ? 'Less Details' : 'More Details >>>'}
+            {status.tokenAdvance.detailsVisible ? 'Less Details' : 'More Details >>>'}
           </Text>
         </TouchableOpacity> 
         <View style={styles.statusContainer}>
@@ -318,7 +350,7 @@ const MyPropertiesDetails = ({navigation}) => {
         <Icon name="times" size={20} color="white" />
         </View>
         </View>
-        {docDetailsVisible && (
+        {status.documentation.detailsVisible && (
           <View style={{width: '100%' , marginLeft: 10,}}>
           <Text style={styles.details}>Details</Text>
           <InfoRow label="Site Visit Date" value="16-12-2022" />
@@ -326,9 +358,9 @@ const MyPropertiesDetails = ({navigation}) => {
           <InfoRow label="PickUp Location" value="Ganapathi Office" />
         </View>
         )}
-        <TouchableOpacity onPress={docdetails}>
+        <TouchableOpacity onPress={() => toggleDetailsVisibility('documentation')}>
           <Text style={styles.detailToggle}>
-            {docDetailsVisible ? 'Less Details' : 'More Details >>>'}
+            {status.documentation.detailsVisible ? 'Less Details' : 'More Details >>>'}
           </Text>
         </TouchableOpacity>  
         <View style={styles.statusContainer}>
@@ -339,7 +371,7 @@ const MyPropertiesDetails = ({navigation}) => {
         <Icon name="times" size={20} color="white" />
         </View>
         </View>
-        {paymentDetailsVisible && (
+        {status.payment.detailsVisible && (
            <View style={{width: '100%' , marginLeft: 10,}}>
            <Text style={styles.details}>Details</Text>
            <InfoRow label="Site Visit Date" value="16-12-2022" />
@@ -347,9 +379,9 @@ const MyPropertiesDetails = ({navigation}) => {
            <InfoRow label="PickUp Location" value="Ganapathi Office" />
          </View>
         )}
-        <TouchableOpacity onPress={paymentDetails}>
+        <TouchableOpacity onPress={() => toggleDetailsVisibility('payment')}>
           <Text style={styles.detailToggle}>
-            {paymentDetailsVisible ? 'Less Details' : 'More Details >>>'}
+            {status.payment.detailsVisible ? 'Less Details' : 'More Details >>>'}
           </Text>
         </TouchableOpacity>  
         <View style={styles.statusContainer}>
@@ -360,7 +392,7 @@ const MyPropertiesDetails = ({navigation}) => {
         <Icon name="times" size={20} color="white" />
         </View>
         </View>
-        {deliveryDetailsVisible && (
+        {status.ddDelivery.detailsVisible && (
           <View style={{width: '100%' , marginLeft: 10,}}>
             <Text style={styles.details}>Details</Text>
             <InfoRow label="Site Visit Date" value="16-12-2022" />
@@ -368,9 +400,9 @@ const MyPropertiesDetails = ({navigation}) => {
             <InfoRow label="PickUp Location" value="Ganapathi Office" />
           </View>
         )}
-        <TouchableOpacity onPress={deliveryDetails}>
+        <TouchableOpacity onPress={() => toggleDetailsVisibility('ddDelivery')}>
           <Text style={styles.detailToggle}>
-            {deliveryDetailsVisible ? 'Less Details' : 'More Details >>>'}
+            {status.ddDelivery.detailsVisible ? 'Less Details' : 'More Details >>>'}
           </Text>
         </TouchableOpacity>  
       </View>

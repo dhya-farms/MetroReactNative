@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet} from 'react-native';
+import { View, ScrollView, StyleSheet, StatusBar} from 'react-native';
 import CardScrollView from '../../components/CarousalCardView';
 import ShowAllButton from '../../components/ShowAllButton';
 import HeaderContainer from '../../components/HeaderContainer';
@@ -87,13 +87,16 @@ const SOManager = ({navigation}) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <StatusBar/>
         <HeaderContainer title="SO Manager" 
             ImageLeft={require('../../../assets/images/back arrow icon.png')}
             ImageRight={require('../../../assets/images/belliconblue.png')}
             onPress={()=>{navigation.goBack()}}/>
-        <ShowAllButton text="Approval"/>
+        <ShowAllButton text="Approval" onPress={()=> navigation.navigate("SO Approvals")}/>
         <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-        <CardScrollView data={data} navigation={navigation}/>
+        <CardScrollView data={data} onCardPress={() => {
+           navigation.navigate("Client", { screen: "List Customer Details"});
+        }}/>
         </View>
         <ShowAllButton text="Reports"/>
         <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
@@ -103,7 +106,9 @@ const SOManager = ({navigation}) => {
         <ShowAllButton text="SO List" onPress={()=> navigation.navigate("SO", { 
          screen: "SO Officers List" })}/>
         <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-        <SOcards data={SOdata} navigation={navigation}/>
+        <SOcards data={SOdata} onCardPress={() => {
+           navigation.navigate("SO", { screen: "SO Officers Details"});
+        }}/>
         </View>
     </ScrollView>
   );

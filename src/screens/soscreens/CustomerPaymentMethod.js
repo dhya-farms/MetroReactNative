@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { View,  Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View,  Text, TouchableOpacity, ScrollView } from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import { TextInput } from 'react-native-paper';
-import { PRIMARY_COLOR, SECONDARY_COLOR } from '../../constants/constantstyles/colors';
-import SortHeader from '../../components/SortHeader';
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import CancelNextButton from '../../components/CancelNextButton';
 import styles from '../../constants/styles/customerpaymentmethodstyles';
