@@ -7,6 +7,7 @@ import AdminHome from './AdminHome';
 import AdminCustomerScreenNavigator from '../../navigations/AdminCustomerScreenNavigator';
 import SoscreenNavigator from '../../navigations/SOscreenNavigator';
 import AdminSettings from './AdminSettings';
+import AdminHomeScreenNavigator from '../../navigations/AdminhomescreenNavigator';
 
 const Tab = createBottomTabNavigator();
 
@@ -60,7 +61,7 @@ const AdminBottomTab = () => {
       {/* Other tabs here */}
       <Tab.Screen
         name="Home"
-        component={AdminHome}
+        component={AdminHomeScreenNavigator}
         options={{
           tabBarIcon: ({ focused, color }) => (
             <View style={focused ? styles.container: null}>

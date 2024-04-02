@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, TextInput, StatusBar} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
@@ -6,21 +6,16 @@ import FaqDropdown from '../../components/FaqDropdown';
 
 
 
-const handleCallPress = ()=>{
-
-}
-
-const handleChatPress = ()=>{
-    
-}
-
 const CustomerFaq = ({navigation}) => {
   const [query, setQuery] = useState('');
 
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <StatusBar/>
+      <StatusBar
+        backgroundColor="black" // Works on Android
+        barStyle="light-content" // Works on iOS and Android
+        />
       <HeaderContainer title="FAQ's" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}

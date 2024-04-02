@@ -9,6 +9,7 @@ import PropertyScreenNavigator from '../../navigations/PropertyScreenNavigator';
 import FavProperties from './FavProperties';
 import SettingsScreenNavigator from '../../navigations/SettingsScreenNavigator';
 import CustomerProfile from './CustomerProfile';
+import CustomerHomeScreenNavigator from '../../navigations/CustomerHomeScreenNavigator';
 // ... other screen imports
 
 const Tab = createBottomTabNavigator();
@@ -71,7 +72,7 @@ const screenOptions = ({ route }) => ({
 const CustomerBottomTab = () => {
   return (
     <Tab.Navigator screenOptions={screenOptions}>
-      <Tab.Screen name="Home" component={CustomerHome} />
+      <Tab.Screen name="Home" component={CustomerHomeScreenNavigator} />
       <Tab.Screen
         name="properties"
         component={PropertyScreenNavigator}

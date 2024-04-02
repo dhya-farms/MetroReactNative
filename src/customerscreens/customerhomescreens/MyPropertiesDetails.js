@@ -8,14 +8,9 @@ import HeaderContainer from '../../components/HeaderContainer';
 import SlidingCarousel from '../../components/SlidingCarousel';
 import DetailsTab from '../../components/DetailsTab';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import PickupModal from '../../modals/PickUpModal';
-import DetailsInputModal from '../../modals/DetailsInputModal';
-import DropModal from '../../modals/DropModal';
-import AddressModal from '../../modals/AddressModal';
-import DropAddessConfimModal from '../../modals/DropAddressConfirmModal';
-import ConfirmationModal from '../../modals/ConfirmationModal';
+import AllModals from '../../components/AllPropertyModals';
 import EnquireContainer from '../../components/EnquireContainer';
-import PaymentModal from '../../modals/PaymentModal';
+
 
 
 const amenities = [
@@ -30,13 +25,13 @@ const amenities = [
   ];
 
   const nearbyAreas = [
-    { id: '1', text: 'Dam' },
-    { id: '2', text: 'mall' },
-    { id: '3', text: 'Adhi yogi' },
-    { id: '4', text: 'Markets' },
-    { id: '5', text: 'Schools' },
-    { id: '6', text: 'Bus Stand' },
-    { id: '7', text: 'Walking Areas' },
+    { id: '1', icon: require('../../../assets/images/dam.png'), text: 'Dam' },
+    { id: '1', icon: require('../../../assets/images/mall.png'), text: 'mall' },
+    { id: '3', icon: require('../../../assets/images/yogi.png'), text: 'Adhi yogi' },
+    { id: '4', icon: require('../../../assets/images/market.png'),text: 'Markets' },
+    { id: '5', icon: require('../../../assets/images/school.png'), text: 'Schools' },
+    { id: '6', icon: require('../../../assets/images/busstand.png'),text: 'Bus Stand' },
+    { id: '7', icon: require('../../../assets/images/walkingarea.png'), text: 'Walking Areas' },
     // ... add other amenities as needed
   ];
 
@@ -45,7 +40,9 @@ const amenities = [
 const MyPropertiesDetails = ({navigation}) => {
   const [activeTab, setActiveTab] = useState('Details');
   const [bookingCompleted, setBookingCompleted] = useState(false);
-  const [paymentCompleted, setPaymentCompleted] = useState(false)
+  const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const [docUploadCompleted, setDocUploadCompleted] = useState(false)
+  const [fullPaymentCompleted, setFullPaymentCompleted] = useState(false)
   const [cameFromPickupNo, setCameFromPickupNo] = useState(false);
   const [status, setStatus] = useState({
     siteVisit: {
@@ -71,7 +68,9 @@ const MyPropertiesDetails = ({navigation}) => {
     addressModalVisible: false,
     addressConfirmModalVisible: false,
     confirmationModalVisible: false,
-    paymentModalVisible: false
+    paymentModalVisible: false,
+    docverifyModalVisible: false,
+    completePaymentModalVisible: false
   });
   
 
@@ -167,6 +166,23 @@ const MyPropertiesDetails = ({navigation}) => {
     }
   };
 
+  const handleDetailsFullPaymentDone = (data) => {
+    const { payAmount, desc, payType, refno } = data;
+    if (!payAmount || !desc || !payType || !refno) {
+      alert("Please fill all the details.");
+      toggleModalVisibility('completePaymentModalVisible', true);
+    } else {
+      // Data is valid, close DetailsInputModal and open DropModal
+      toggleModalVisibility('completePaymentModalVisible', false);
+      setFullPaymentCompleted(true)
+    }
+  };
+
+  const handleDocVeifyDone = () => {
+      toggleModalVisibility('docverifyModalVisible', false);
+      setDocUploadCompleted(true)
+  };
+
   const InfoRow = ({ label, value }) => (
     <View style={styles.infoRow}>
       <Text style={[styles.contextText, styles.labelText]}>{label}</Text>
@@ -233,8 +249,9 @@ const MyPropertiesDetails = ({navigation}) => {
       <View style={styles.NearbyContainer}>
         {nearbyAreas.map((nearby, index) => (
           <View key={index} style={styles.nearby}>
-            <Text style={styles.nbtext}>{nearby.text}</Text>
-          </View>
+          <Image source={nearby.icon} style={styles.icon} />
+          <Text style={styles.text}>{nearby.text}</Text>
+        </View>
         ))}
       </View>
     </View>
@@ -257,39 +274,22 @@ const MyPropertiesDetails = ({navigation}) => {
             </TouchableOpacity>
           </>
         )}
-          <PickupModal
-            modalVisible={modalVisibility.pickupModalVisible}
-            setModalVisible={(isVisible) => toggleModalVisibility('pickupModalVisible', isVisible)}
-            onYesPress={handleYesPress}
-            onNoPress={handleNoPress} // Pass the handler to the modal
-          />
-          <DetailsInputModal
-            modalVisible={modalVisibility.detailsInputModalVisible}
-            setModalVisible={(isVisible) => toggleModalVisibility('detailsInputModalVisible', isVisible)}
-            onDone={handleDetailsInputDone}
-          />
-          <DropModal
-            modalVisible={modalVisibility.dropModalVisible}
-            setModalVisible={(isVisible) => toggleModalVisibility('dropModalVisible', isVisible)}
-            dropYesPress={dropYesPress}
-            dropNoPress={confirmationPress}
-          />
-          <AddressModal
-            modalVisible={modalVisibility.addressModalVisible}
-            setModalVisible={(isVisible) => toggleModalVisibility('addressModalVisible', isVisible)}
-            onDone={handleDropAddressDone}
-          />
-          <DropAddessConfimModal
-             modalVisible={modalVisibility.addressConfirmModalVisible}
-             setModalVisible={(isVisible) => toggleModalVisibility('addressConfirmModalVisible', isVisible)}
-             sameAddressPress={sameAddressPress}
-             dropNoPress={dropNoPress}
-          />
-         <ConfirmationModal
-          modalVisible={modalVisibility.confirmationModalVisible}
-          setModalVisible={(isVisible) => toggleModalVisibility('confirmationModalVisible', isVisible)}
-          handleConfirmPress={handleConfirmPress}
-         />
+         <AllModals
+          modalVisibility={modalVisibility}
+          toggleModalVisibility={toggleModalVisibility}
+          handleYesPress={handleYesPress}
+          handleNoPress={handleNoPress} 
+          handleDetailsInputDone={handleDetailsInputDone}
+          dropYesPress={dropYesPress} 
+          confirmationPress={confirmationPress} 
+          handleDropAddressDone={handleDropAddressDone} 
+          sameAddressPress={sameAddressPress} 
+          dropNoPress={dropNoPress} 
+          handleConfirmPress={handleConfirmPress} 
+          handleDetailsPaymentDone={handleDetailsPaymentDone} 
+          handleDocVeifyDone={handleDocVeifyDone} 
+          handleDetailsFullPaymentDone={handleDetailsFullPaymentDone}   // ... pass all other necessary handlers ...
+      />
         </View>
        <View style={[styles.checkicon, bookingCompleted ? styles.completedStatusCheck : {}]}>
         <Icon name="check" size={20} color="white" />
@@ -319,11 +319,6 @@ const MyPropertiesDetails = ({navigation}) => {
         {paymentCompleted ? (
           <Text style={styles.completedText}>Completed</Text>
         ) : null}
-        <PaymentModal
-            modalVisible={modalVisibility.paymentModalVisible}
-            setModalVisible={(isVisible) => toggleModalVisibility('paymentModalVisible', isVisible)}
-            onDone={handleDetailsPaymentDone}
-        />
         </View>
         <View style={[styles.checkicon, {backgroundColor: '#C4C4C4'}, paymentCompleted ? styles.completedStatusCheck : {}]}>
         <Icon name= {paymentCompleted ? "check" : 'times'} size={20} color="white" />
@@ -343,11 +338,19 @@ const MyPropertiesDetails = ({navigation}) => {
           </Text>
         </TouchableOpacity> 
         <View style={styles.statusContainer}>
-        <View style={[styles.statusItem, {borderColor: '#C4C4C4'}]}>
+          <View style={[styles.statusItem, { borderColor: '#C4C4C4'} , docUploadCompleted ? styles.completedStatusItem : {}]}>
           <Text style={styles.siteText}>Documentation</Text>
+          {bookingCompleted && paymentCompleted && !docUploadCompleted ? (
+          <TouchableOpacity onPress={() => toggleModalVisibility('docverifyModalVisible', true)}  style={styles.button}>
+              <Text style={styles.buttonText}>Upload</Text>
+          </TouchableOpacity>
+        ) : null}
+        {docUploadCompleted ? (
+          <Text style={[styles.completedText]}>Completed</Text>
+        ) : null}
         </View>
-        <View style={[styles.checkicon, {backgroundColor: '#C4C4C4'}]}>
-        <Icon name="times" size={20} color="white" />
+        <View style={[styles.checkicon, {backgroundColor: '#C4C4C4'}, docUploadCompleted ? styles.completedStatusCheck : {}]}>
+        <Icon name= {docUploadCompleted ? "check" : 'times'} size={20} color="white" />
         </View>
         </View>
         {status.documentation.detailsVisible && (
@@ -364,11 +367,19 @@ const MyPropertiesDetails = ({navigation}) => {
           </Text>
         </TouchableOpacity>  
         <View style={styles.statusContainer}>
-        <View style={[styles.statusItem, {borderColor: '#C4C4C4'}]}>
+        <View style={[styles.statusItem, { borderColor: '#C4C4C4'} , fullPaymentCompleted ? styles.completedStatusItem : {}]}>
           <Text style={styles.siteText}>Payment</Text>
+          {bookingCompleted && paymentCompleted && docUploadCompleted && !fullPaymentCompleted ? (
+          <TouchableOpacity onPress={() => toggleModalVisibility('completePaymentModalVisible', true)}  style={styles.button}>
+              <Text style={styles.buttonText}>Pay</Text>
+          </TouchableOpacity>
+            ) : null}
+            {fullPaymentCompleted ? (
+              <Text style={[styles.completedText]}>Completed</Text>
+            ) : null}
         </View>
-        <View style={[styles.checkicon, {backgroundColor: '#C4C4C4'}]}>
-        <Icon name="times" size={20} color="white" />
+        <View style={[styles.checkicon, {backgroundColor: '#C4C4C4'}, fullPaymentCompleted ? styles.completedStatusCheck : {}]}>
+        <Icon name= {fullPaymentCompleted ? "check" : 'times'} size={20} color="white" />
         </View>
         </View>
         {status.payment.detailsVisible && (
@@ -387,6 +398,11 @@ const MyPropertiesDetails = ({navigation}) => {
         <View style={styles.statusContainer}>
         <View style={[styles.statusItem, {borderColor: '#C4C4C4'}]}>
           <Text style={styles.siteText}>Document Delivery</Text>
+          {bookingCompleted && paymentCompleted && docUploadCompleted && fullPaymentCompleted ? (
+          <TouchableOpacity onPress={() => {}}  style={[styles.button, {width: 55,height: 24, justifyContent: 'center', alignItems: 'center', padding: 0, } ]}>
+              <Text style={styles.buttonText}>View</Text>
+          </TouchableOpacity>
+            ) : null}
         </View>
         <View style={[styles.checkicon, {backgroundColor: '#C4C4C4'}]}>
         <Icon name="times" size={20} color="white" />

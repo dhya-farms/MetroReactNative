@@ -8,6 +8,7 @@ import SortHeader from '../../components/SortHeader';
 import ReportCard from '../../components/ReportCards';
 import ShowAllButton from '../../components/ShowAllButton';
 import BarChart from '../../components/BarChart';
+import styles from '../../constants/styles/projectreportstyles';
 
 
 
@@ -85,57 +86,5 @@ const ProjectReport = ({navigation}) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white'
-  },
-  contentContainer: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingBottom: 50,
-  },
-  dorContainer:{
-    width: 234,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#1D9BF0',
-    
-    borderRadius: 4,
-    marginVertical: 10,
-  },
-  dorText:{
-    fontFamily: 'Poppins',
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#FFFFFF'
-  },
-  barContainer:{
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  prContainer:{
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  dorContainer:{
-    width: 234,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#1D9BF0',
-    borderRadius: 4,
-    marginVertical: 15,
-  },
-  dorText:{
-    fontFamily: 'Poppins',
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#FFFFFF'
-  }
-});
 
 export default ProjectReport

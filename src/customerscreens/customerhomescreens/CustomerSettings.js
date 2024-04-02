@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, StatusBar} 
+import { View, Text, TouchableOpacity, ScrollView, StatusBar} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import LogOutModal from '../../modals/LogoutModal';
 import LogOutConfirmModal from '../../modals/LogOutConfirmModel';
 import styles from '../../constants/styles/customersettingsstyles';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const CustomerSettings = ({navigation}) => {
@@ -35,16 +35,23 @@ const CustomerSettings = ({navigation}) => {
   };
 
   // This will be called when "Yes" is pressed on the logout modal
-  const handleLogout = () => {
-    handleShowConfirmModal("Logged Out Successfully");
-    setModalVisible(false); 
-    navigation.navigate("MBlogin");
+  const handleLogout = async () => {
+    handleShowConfirmModal("Logged Out Sucessfully");
+    await AsyncStorage.removeItem('userToken'); // Remove the token from storage
+    setModalVisible(false); // Close the modal
+  
+    // Reset the navigation stack and navigate to the Onboarding screen
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Onboarding", params: { screen: "Home" } }],
+    });
   };
     
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     handleShowConfirmModal("Your Account Has Been Deleted");
-    setModalVisible(false); // Close the delete account modal
-    navigation.navigate("MBlogin");
+    await AsyncStorage.removeItem('userToken'); // Remove the token from storage
+    setModalVisible(false); // Close the modal
+    navigation.navigate('Onboarding'); // Navigate to the login screen
   };
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>

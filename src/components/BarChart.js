@@ -1,5 +1,4 @@
 import React from 'react';
-import { View, Dimensions } from 'react-native';
 import { Svg, Rect, Text, Line, G } from 'react-native-svg';
 
 const BarChart = ({ data, barWidth, barColor }) => {

@@ -1,7 +1,7 @@
 
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import * as Font from 'expo-font';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { NavigationContainer} from '@react-navigation/native';
 import { createNativeStackNavigator} from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -11,29 +11,81 @@ import LoginScreenNavigator from './src/navigations/LoginScreenNavigator';
 import CustomerBottomTab from './src/customerscreens/customerhomescreens/CustomerBottomTab';
 import AdminBottomTab from './src/screens/adminscreens/AdminBottomTab';
 import { PaperProvider } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 const Stack = createNativeStackNavigator();
 
 
 export default function App() {
+  const [isReady, setIsReady] = useState(false);
+  const [initialNavigationState, setInitialNavigationState] = useState({
+    routeName: "Onboarding",
+    params: {},
+  });
 
   useEffect(() => {
     async function prepareApp() {
       try {
+        // Pre-load fonts or any other assets here
         await Font.loadAsync({
           'Poppins': require('./assets/fonts/Poppins.ttf'),
           'HelveticaNeue': require('./assets/fonts/Helvetica.ttf'),
           'RobotoCondensed': require('./assets/fonts/RobotoCondensed.ttf'),
         });
 
+        // Retrieve token, user ID, and role
+        const [token, userId, role] = await Promise.all([
+          AsyncStorage.getItem('userToken'),
+          AsyncStorage.getItem('userId'),
+          AsyncStorage.getItem('role'),
+        ]);
+
+        console.log(`Retrieved values - Token: ${token}, UserId: ${userId}, Role: ${role}`);
+
+        // Determine the initial route and parameters based on role
+        let routeName = "Onboarding"; // Default to Onboarding
+        let params = {}; // Initialize params object
+
+        if (token && userId) {
+          const roleNumber = parseInt(role, 10);
+          switch (roleNumber) {
+            case 1: // Admin
+              routeName = "AdminBottomTab";
+              params = { screen: 'AdminHome', params: { token, userId } };
+              break;
+            case 3: // SO
+              routeName = "SoBottomTab";
+              params = { screen: 'SOHome', params: { token, userId } };
+              break;
+            case 4: // Customer
+              routeName = "CustomerBottomTab";
+              params = { screen: 'CustomerHome', params: { token, userId } };
+              break;
+            default:
+              // Handle any default or error cases
+              routeName = "CustomerBottomTab";
+              params = { screen: 'CustomerHome', params: { token, userId } };
+          }
+        }
+
+        // Update state with determined route and params
+        setInitialNavigationState({ routeName, params });
+        
       } catch (e) {
-        console.warn(e);
+        console.warn("Initialization error:", e);
+      } finally {
+        setIsReady(true);
       }
     }
-    
+
     prepareApp();
-  }, []); 
+  }, []);
+
+  if (!isReady) {
+    return null; // or a custom loading indicator
+  }
 
   return (
      <GestureHandlerRootView style={{ flex: 1 }}>
@@ -45,7 +97,7 @@ export default function App() {
                 gestureEnabled: true,
                 gestureDirection: 'vertical',
               }}
-              initialRouteName="Onboarding" // Default initial route
+              initialRouteName={initialNavigationState.routeName} // Default initial route
             >
             <Stack.Screen name='Onboarding' component={HomeScreenNavigator}/>
             <Stack.Screen name='LoginScreens' component={LoginScreenNavigator}/>

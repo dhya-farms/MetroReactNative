@@ -62,6 +62,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingBottom: 50,
+    backgroundColor: 'white',
   },
   helpContainer:{
     width: '90%',

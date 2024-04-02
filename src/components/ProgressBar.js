@@ -13,7 +13,7 @@ const ProgressBar = ({ progress }) => {
 
   const styles = StyleSheet.create({
     container: {
-      width: '80%',
+      width: '90%',
       padding: 10,
       borderRadius: 10,
       borderWidth: 1,
@@ -36,7 +36,7 @@ const ProgressBar = ({ progress }) => {
         fontWeight: '600',
         color: '#424242', 
         fontSize: 14,// Black color for the progress text
-        marginVertical: 10,
+        marginVertical: 5,
         zIndex: 1, // Ensure the text is above the colored overlay
     },
     progressText: {
@@ -44,7 +44,7 @@ const ProgressBar = ({ progress }) => {
       fontWeight: '400',
       color: '#424242', 
       fontSize: 10,// Black color for the progress text
-      marginVertical: 10,
+      marginVertical: 5,
       zIndex: 1, // Ensure the text is above the colored overlay
     },
 });

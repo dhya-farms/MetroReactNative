@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: '#FFFFFF', // Set to white or any other color you need
         borderRadius: 10,
-        width: '80%', // Set the width of the input container
+        width: '90%', // Set the width of the input container
         marginBottom: 8, // Add space between input fields
         paddingHorizontal: 12, // Padding on the sides of the input container
         shadowColor: "#000",

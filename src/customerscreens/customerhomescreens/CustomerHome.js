@@ -7,21 +7,8 @@ import styles from '../../constants/styles/customerhomestyles';
 import AdvisorCard from '../../components/AdvisorCard';
 import ShowAllButton from '../../components/ShowAllButton';
 import Card from '../../components/Card';
+import { fetchPropertyTypes } from '../../apifunctions/propertyTypesApi';
 
-const categories = [
-  { key: '1', name: 'Filter' }, 
-  { key: '2', name: 'DTCP plots' },
-  { key: '3', name: 'Farmlands' },
-  { key: '4', name: 'Dhya' },
-  { key: '5', name: 'Innovations' },
-  { key: '6', name: 'Farmlands' },
-  { key: '7', name: 'Farmlands' },
-  { key: '8', name: 'Farmlands' },
-  { key: '9', name: 'Farmlands' },
-  { key: '10', name: 'Farmlands' },
-  { key: '11', name: 'Farmlands' },
-  { key: '12', name: 'Farmlands' },
-];
 
 const images = [
   {
@@ -32,6 +19,12 @@ const images = [
   },
   {
     source: require('../../../assets/images/Sarav2.png'), // Path to the local image
+    text: 'SWEET LIVING',
+    description: '200 plots available, starts from 750sqft',
+    address: '34, Keeranatham Road, Saravanampatti',
+  },
+  {
+    source: require('../../../assets/images/building.png'), // Path to the local image
     text: 'SWEET LIVING',
     description: '200 plots available, starts from 750sqft',
     address: '34, Keeranatham Road, Saravanampatti',
@@ -72,11 +65,24 @@ const { width } = Dimensions.get('window');
 
 
 
-const CustomerHome = ({navigation}) => {
+const CustomerHome = ({route, navigation}) => {
   const [selectedCategoryKey, setSelectedCategoryKey] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [categories, setCategories] = useState([]);
 
   const flatListRef = useRef();
+
+  useEffect(() => {
+    const initializeCategories = async () => {
+
+      const paramsToken = route.params?.token;
+
+      const fetchedCategories = await fetchPropertyTypes(paramsToken);
+      setCategories(fetchedCategories);
+    };
+
+    initializeCategories();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {

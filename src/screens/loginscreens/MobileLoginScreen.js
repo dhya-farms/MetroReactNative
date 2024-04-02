@@ -24,6 +24,8 @@ const MobileLoginScreen = ({navigation}) => {
         if (!phoneNumberPattern.test(phoneNumber)) {
           // Set error message if phone number is invalid
           setErrorMessage('Please enter a valid phone number.');
+          // Hide the error message after 2.5 seconds
+          setTimeout(() => setErrorMessage(''), 2500);
           return; // Stop the function execution
         }
     
@@ -36,17 +38,22 @@ const MobileLoginScreen = ({navigation}) => {
           }
         });
     
-        setOtpMessage('Otp has been Generated');
+        setOtpMessage('OTP has been generated');
         // Clear the error message when OTP is successfully generated
         setErrorMessage('');
+        // Hide the OTP message after 2.5 seconds
+        setTimeout(() => setOtpMessage(''), 2500);
         setTimeout(() => navigation.navigate('OTscreen', { phoneNumber }), 3000);
       } catch (error) {
         console.log(error);
         // Set an error message and clear the OTP message in case of API call failure
-        setErrorMessage(`${error}`);
+        setErrorMessage(`An error occurred: ${error}`);
         setOtpMessage('');
+        // Hide the error message after 2.5 seconds
+        setTimeout(() => setErrorMessage(''), 2500);
       }
     };
+    
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -182,6 +189,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5, // Elevation for Android
+    marginVertical: 10,
   },
   input: {
     flex: 1, // Take up all available space after the icon
@@ -240,6 +248,16 @@ const styles = StyleSheet.create({
     color: '#B7B7B7',
     fontSize: 16,
   },
+  otpMessage:{
+    fontFamily: 'Poppins',
+    fontWeight: '400',
+    color: '#5cb85c',
+  },
+  errorMessage:{
+    fontFamily: 'Poppins',
+    fontWeight: '400',
+    color: '#ff0000',
+  }
 });
 
 export default MobileLoginScreen;

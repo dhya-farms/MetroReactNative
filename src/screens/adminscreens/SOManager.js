@@ -91,7 +91,7 @@ const SOManager = ({navigation}) => {
         <HeaderContainer title="SO Manager" 
             ImageLeft={require('../../../assets/images/back arrow icon.png')}
             ImageRight={require('../../../assets/images/belliconblue.png')}
-            onPress={()=>{navigation.goBack()}}/>
+            onPress={()=>{navigation.navigate("Admin home")}}/>
         <ShowAllButton text="Approval" onPress={()=> navigation.navigate("SO Approvals")}/>
         <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
         <CardScrollView data={data} onCardPress={() => {

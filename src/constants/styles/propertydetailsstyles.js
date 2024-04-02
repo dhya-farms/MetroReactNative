@@ -120,14 +120,9 @@ const styles = StyleSheet.create({
       justifyContent: 'space-between',
     },
     nearby: {
-      backgroundColor: '#D9D9D9',
-      paddingVertical: 15,
-      paddingHorizontal: 10,
-      justifyContent: 'center',
-      marginHorizontal: 10,
-      marginVertical: 5,
       alignItems: 'center',
-      borderRadius: 5
+      marginBottom: 20,
+      width: '27%',
     },
     
     nbtext: {

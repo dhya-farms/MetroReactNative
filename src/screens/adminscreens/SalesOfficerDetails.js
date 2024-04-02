@@ -40,6 +40,30 @@ const SalesOfficerDetails = ({navigation}) => {
     const [metroPoints, setMetroPoints] = useState('');
     const [customerHandles, setCustomerHandles] = useState('');
 
+    const [inputValues, setInputValues] = useState({
+      joinedDate: '',
+      mailId: '',
+      address: '',
+      metroPoints: '',
+      customerHandles: '',
+    });
+
+    const handleInputChange = (name, value) => {
+      setInputValues(prevState => ({
+        ...prevState,
+        [name]: value,
+      }));
+    };
+
+    const inputFields = [
+      { name: 'joinedDate', label: 'Joined Date', iconName: 'calendar-alt',  keyboardType: 'numeric' },
+      { name: 'mailId', label: 'Email Id', iconName: 'at', keyboardType: 'email-address' },
+      { name: 'address', label: 'Address' ,iconName: 'address-card',},
+      { name: 'metroPoints', label: 'Metro Points', iconName: 'star', },
+      { name: 'customerHandles', label: 'Occupation', iconName: "headset" },
+    ];
+  
+
     
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -47,7 +71,7 @@ const SalesOfficerDetails = ({navigation}) => {
       <HeaderContainer title="Sales Officer Details" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
-      onPress={()=>{navigation.goBack()}}/>
+      onPress={()=>{navigation.navigate("So Manager")}}/>
       <View style={styles.imageContainer}>
        <Image source={require('../../../assets/images/gsoperson.jpg')} style={styles.personImage} />
       </View>
@@ -66,37 +90,16 @@ const SalesOfficerDetails = ({navigation}) => {
         <Image source={require("../../../assets/images/mpicon.png")}/>
         </View>
         </View>
-            <FloatingLabelInput
-                label="Joined Date"
-                value={joinedDate}
-                onChangeText={setJoinedDate}
-                iconName= "calendar-alt"
-            />
-            <FloatingLabelInput
-                label="Email Id"
-                value={mailId}
-                onChangeText={setMailId}
-                iconName= "at"
-
-            />
-            <FloatingLabelInput
-                label="Address"
-                value={address}
-                onChangeText={setAddress}
-                iconName= "address-card"
-            />
-            <FloatingLabelInput
-                label="Metro Points"
-                value={metroPoints}
-                onChangeText={setMetroPoints}
-                iconName= "star"
-            />
-            <FloatingLabelInput
-                label="Customer Handles"
-                value={customerHandles}
-                onChangeText={setCustomerHandles}
-                iconName= "headset"
-            />
+        {inputFields.map((field) => (
+          <FloatingLabelInput
+            key={field.name}
+            label={field.label}
+            value={inputValues[field.name]}
+            onChangeText={(value) => handleInputChange(field.name, value)}
+            iconName={field.iconName}
+            keyboardType={field.keyboardType}
+          />
+        ))} 
         <View style={styles.acContainer}>
             <TouchableOpacity style={styles.button} onPress={()=> navigation.navigate("SO Approvals")}>
                 <Text style={styles.btnText}>Approvals</Text>

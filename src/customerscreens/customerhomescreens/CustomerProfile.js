@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, StatusBar} 
+import { View, Text, Image, ScrollView, StatusBar} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import { TextInput } from 'react-native-paper';
@@ -16,20 +16,39 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
         style={styles.input}
         mode="outlined"
         outlineColor="#1D9BF0" // Here you set the border color
-        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent' } }}
+        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent', text: 'black' } }}
         {...props}
       />
     );
   };
 
 const CustomerProfile = ({navigation}) => {
-    const [emailId, setEmailId] = useState('');
-    const [mobileNo, setMobileNo] = useState('');
-    const [address, setAddress] = useState('');
-    const [aop, setAop] = useState('');
-    const [occupation, setOccupation] = useState('')
-    const [budget, setBudget] = useState('')
-    const [type, setType] = useState('')
+  const [inputValues, setInputValues] = useState({
+    emailId: '',
+    mobileNo: '',
+    address: '',
+    aop: '',
+    occupation: '',
+    budget: '',
+    type: '',
+  });
+
+  const handleInputChange = (name, value) => {
+    setInputValues(prevState => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const inputFields = [
+    { name: 'emailId', label: 'Email Id', keyboardType: 'email-address' },
+    { name: 'mobileNo', label: 'Mobile', keyboardType: 'numeric' },
+    { name: 'address', label: 'Address' },
+    { name: 'aop', label: 'Area Of Purpose' },
+    { name: 'occupation', label: 'Occupation' },
+    { name: 'budget', label: 'Budget' },
+    { name: 'type', label: 'Type' },
+  ];
 
   
   return (
@@ -44,43 +63,15 @@ const CustomerProfile = ({navigation}) => {
       </View>
       <Text style={styles.cnText}>Hari Kowshik</Text>
       <View style={styles.textInputContainer}>
-      <FloatingLabelInput
-            label="Email Id"
-            value={emailId}
-            onChangeText={setEmailId}
-            keyboardType="email-address"
-          />
+      {inputFields.map((field) => (
           <FloatingLabelInput
-            label="Mobile"
-            value={mobileNo}
-            onChangeText={setMobileNo}
-            keyboardType="numeric"
+            key={field.name}
+            label={field.label}
+            value={inputValues[field.name]}
+            onChangeText={(value) => handleInputChange(field.name, value)}
+            keyboardType={field.keyboardType}
           />
-          <FloatingLabelInput
-            label="Address"
-            value={address}
-            onChangeText={setAddress}
-          />
-          <FloatingLabelInput
-            label="Area Of Purpose"
-            value={aop}
-            onChangeText={setAop}
-          />
-          <FloatingLabelInput
-            label="Occupation"
-            value={occupation}
-            onChangeText={setOccupation}
-          />
-          <FloatingLabelInput
-            label="Budget"
-            value={budget}
-            onChangeText={setBudget}
-          />
-          <FloatingLabelInput
-            label="Type"
-            value={type}
-            onChangeText={setType}
-          />
+        ))} 
       </View>
       <SubmitSaveButton onPress={()=>{}} text1="Save" text2="Submit Queries"/>
     </ScrollView>

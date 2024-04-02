@@ -12,11 +12,12 @@ const ButtonComponent = ({ onPress, text }) => {
 const styles = StyleSheet.create({
   button: {
     backgroundColor: PRIMARY_COLOR,
-    paddingVertical: 17,
-    paddingHorizontal: 35,
+    width: 320,
+    height: 55,
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 10,
     margin: 20,
-    width: '85%',
     alignSelf: 'center', // Centers the button within its container
   },
   text: {

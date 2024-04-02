@@ -1,8 +1,5 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import CustomerSettings from '../customerscreens/customerhomescreens/CustomerSettings';
-import CustomerSupport from '../customerscreens/customerhomescreens/CustomerSupport';
-import CustomerFaq from '../customerscreens/customerhomescreens/CustomerFaq';
 import SalesOfficerList from '../screens/adminscreens/SalesOfficer';
 import SOApprovals from '../screens/adminscreens/SOapprovals';
 import SalesOfficerDetails from '../screens/adminscreens/SalesOfficerDetails';

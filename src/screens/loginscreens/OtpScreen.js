@@ -2,9 +2,11 @@ import React, { useRef, useState, useEffect } from 'react';
 import { View, TextInput, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import ButtonComponent from '../../components/ButtonComponent';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
+const VERIFY_URL = 'https://splashchemicals.in/metro/api/otp/verify/'
 const RESEND_URL = 'https://splashchemicals.in/metro/api/otp/resend/'
 
 const OtpScreen = ({ route, navigation }) => {
@@ -78,6 +80,7 @@ const OtpScreen = ({ route, navigation }) => {
     }
   };
 
+
   const handleResendOtp = async()=>{
     setTimeLeft(90); // Or whatever your starting time is
     setIsResendButtonEnabled(false);
@@ -91,12 +94,109 @@ const OtpScreen = ({ route, navigation }) => {
       });
       console.log('Verification success:', response.data);
       setResetSucessMessage('New Otp has been sent to your Phone')
+      setTimeout(() => setResetSucessMessage(''), 2500);
     } catch (error) {
       console.error('Verification error:', error.response ? error.response.data : error.message); 
-// Improved error logging // Log the sent OTP for debugging
-      // Consider showing an error message to the user here
     }
   }
+  const verifyLogin = async () => {
+    const enteredOtp = otp.join('');
+    console.log(`Verifying OTP: ${enteredOtp}`);
+  
+    try {
+      const response = await axios.post(VERIFY_URL, {
+        otp: enteredOtp,
+        mobile_no: phoneNumber
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      console.log('Verification success:', response.data);
+  
+      // Store the token and user data
+      await AsyncStorage.setItem('userToken', response.data.token);
+      await AsyncStorage.setItem('userId', response.data.user.id.toString());
+      await AsyncStorage.setItem('role', response.data.user.role)
+  
+      // Determine navigation based on user role
+      let navigateToTab;
+      switch (response.data.user.role) {
+        case 1:
+          navigateToTab = {
+            name: 'AdminBottomTab',
+            params: {
+              screen: 'Home', // Assuming 'Home' is the tab containing CustomerHomeScreenNavigator
+              params: {
+                screen: 'Admin home', // Assuming 'Customer Home' is the route name within CustomerHomeScreenNavigator
+                params: {
+                  token: response.data.token,
+                  userId: response.data.user.id.toString(),
+                }
+              }
+            }
+          };
+          break;
+        case 3:
+          navigateToTab = {
+            name: 'SoBottomTab',
+            params: {
+              screen: 'SO Home', // Assuming 'Home' is the tab containing CustomerHomeScreenNavigator
+              params: {
+                screen: 'SO home', // Assuming 'Customer Home' is the route name within CustomerHomeScreenNavigator
+                params: {
+                  token: response.data.token,
+                  userId: response.data.user.id.toString(),
+                }
+              }
+            }
+          };
+          break;
+        case 4:
+          navigateToTab = {
+            name: 'CustomerBottomTab',
+            params: {
+              screen: 'Home', // Assuming 'Home' is the tab containing CustomerHomeScreenNavigator
+              params: {
+                screen: 'Customer Home', // Assuming 'Customer Home' is the route name within CustomerHomeScreenNavigator
+                params: {
+                  token: response.data.token,
+                  userId: response.data.user.id.toString(),
+                }
+              }
+            }
+          };
+          break;
+        default:
+          // Define a default navigation if the role doesn't match known values
+          navigateToTab = {
+            name: 'CustomerBottomTab',
+            params: {
+              screen: 'Home', // Assuming 'Home' is the tab containing CustomerHomeScreenNavigator
+              params: {
+                screen: 'Customer Home', // Assuming 'Customer Home' is the route name within CustomerHomeScreenNavigator
+                params: {
+                  token: response.data.token,
+                  userId: response.data.user.id.toString(),
+                }
+              }
+            }
+          }; // Adjust as needed
+          break;
+      }
+  
+      // Reset the navigation stack to the determined tab and screen
+      navigation.reset({
+        index: 0,
+        routes: [navigateToTab],
+      });
+    } catch (otpError) {
+      console.error('Verification error:', otpError.response ? otpError.response.data : otpError.message);
+      console.log('Sent OTP:', enteredOtp);
+      // Handle error, show message to user
+    }
+  };
+  
   
   
 
@@ -132,7 +232,7 @@ const OtpScreen = ({ route, navigation }) => {
      <View style={styles.changeNumContiner}>
         <Text style={styles.cnText}>{phoneNumber} Change number?</Text>
      </View>
-     <ButtonComponent onPress={handleGetLogin} text="Login" />
+     <ButtonComponent onPress={verifyLogin} text="Login" />
     </View>
   )
 }
@@ -198,6 +298,11 @@ const styles = StyleSheet.create({
       fontSize: 14,
       color: '#A4B6C6',
       textAlign: 'center',
+    },
+    errorMessage:{
+      fontFamily: 'Poppins',
+      fontWeight: '400',
+      color: '#5cb85c',
     }
   })
 
