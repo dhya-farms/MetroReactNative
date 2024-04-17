@@ -116,8 +116,9 @@ const OtpScreen = ({ route, navigation }) => {
   
       // Store the token and user data
       await AsyncStorage.setItem('userToken', response.data.token);
-      await AsyncStorage.setItem('userId', response.data.user.id.toString());
-      await AsyncStorage.setItem('role', response.data.user.role)
+      await AsyncStorage.setItem('userId', response.data.customer.id.toString());
+      await AsyncStorage.setItem('role', response.data.user.role.toString());
+      await AsyncStorage.setItem('createdBy', response.data.customer.created_by.toString());
   
       // Determine navigation based on user role
       let navigateToTab;
@@ -131,7 +132,7 @@ const OtpScreen = ({ route, navigation }) => {
                 screen: 'Admin home', // Assuming 'Customer Home' is the route name within CustomerHomeScreenNavigator
                 params: {
                   token: response.data.token,
-                  userId: response.data.user.id.toString(),
+                  userId: response.data.customer.id.toString(),
                 }
               }
             }
@@ -146,7 +147,7 @@ const OtpScreen = ({ route, navigation }) => {
                 screen: 'SO home', // Assuming 'Customer Home' is the route name within CustomerHomeScreenNavigator
                 params: {
                   token: response.data.token,
-                  userId: response.data.user.id.toString(),
+                  userId: response.data.customer.id.toString(),
                 }
               }
             }
@@ -161,7 +162,8 @@ const OtpScreen = ({ route, navigation }) => {
                 screen: 'Customer Home', // Assuming 'Customer Home' is the route name within CustomerHomeScreenNavigator
                 params: {
                   token: response.data.token,
-                  userId: response.data.user.id.toString(),
+                  userId: response.data.customer.id.toString(),
+                  soId: response.data.customer.created_by.toString()
                 }
               }
             }
@@ -177,7 +179,7 @@ const OtpScreen = ({ route, navigation }) => {
                 screen: 'Customer Home', // Assuming 'Customer Home' is the route name within CustomerHomeScreenNavigator
                 params: {
                   token: response.data.token,
-                  userId: response.data.user.id.toString(),
+                  userId: response.data.customer.id.toString(),
                 }
               }
             }

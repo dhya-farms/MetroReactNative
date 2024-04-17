@@ -1,9 +1,20 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet , Linking} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 
-const AdvisorCard = () => {
+const AdvisorCard = ({ advisor }) => {
+
+
+  const handleCall = () => {
+    Linking.openURL(`tel:${advisor.mobile_no}`);
+  };
+
+  const handleWhatsApp = () => {
+    // Construct a message or use a default one
+    let message = "Hello, I need some information.";
+    Linking.openURL(`https://wa.me/${advisor.mobile_no}?text=${encodeURIComponent(message)}`);
+  };
     return (
       <View style={styles.card}>
         <Text style={styles.title}>Your Advisor</Text>
@@ -11,10 +22,10 @@ const AdvisorCard = () => {
         <View style={styles.advisorContainer}>
           <View style={styles.detailsWithImage}>
             <View style={styles.details}>
-              <Text style={styles.name}>Yashwanth</Text>
+            <Text style={styles.name}>{advisor.name}</Text>
               <View style={styles.statusContainer}>
-                <Text style={styles.status}>Status: Available</Text>
-                <MaterialIcons name="check-circle" size={14} color="#34C759" />
+              <Text style={styles.status}>Status: {advisor.is_active ? 'Available' : 'Offline'}</Text>
+              <MaterialIcons name={advisor.is_active ? "check-circle" : "cancel"} size={14} color={advisor.is_active ? "#34C759" : "#FF3B30"} />
               </View>
               <Text style={styles.points}>Metro Points: 8</Text>
             </View>
@@ -27,10 +38,10 @@ const AdvisorCard = () => {
           <View style={styles.separator} />
   
           <View style={styles.buttonsContainer}>
-            <TouchableOpacity style={[styles.button, styles.callButton]}>
+            <TouchableOpacity style={[styles.button, styles.callButton]} onPress={handleCall}>
               <Text style={styles.buttonText}>Call</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, styles.whatsappButton]}>
+            <TouchableOpacity style={[styles.button, styles.whatsappButton]} onPress={handleWhatsApp}>
               <Text style={styles.buttonText}>Whatsapp</Text>
             </TouchableOpacity>
           </View>

@@ -3,37 +3,16 @@ import { View, ScrollView, StyleSheet, StatusBar} from 'react-native';
 import SortHeader from '../../components/SortHeader';
 import HeaderContainer from '../../components/HeaderContainer';
 import CustomerCard from '../../components/CustomerCard';
-
-
-const CustomerData = [
-    {
-        id: '1',
-        name: 'Suraj',
-        number: '+91-9486077810',
-        mailId: 'suraj@gmail.com', 
-        personimage: require('../../../assets/images/person.png'),
-    },
-    {
-        id: '2',
-        name: 'Ravi',
-        number: '+91-9486077810',
-        mailId: 'ravi@gmail.com', 
-        personimage: require('../../../assets/images/person.png'),
-    },
-    {
-        id: '3',
-        name: 'Darshan',
-        number: '+91-9486077810',
-        mailId: 'darshan@gmail.com', 
-        personimage: require('../../../assets/images/person.png'),
-    }
-]
+import { useCustomers } from '../../contexts/useCustomerdata';
 
 
 
 
-const AdminCustomerList = ({navigation}) => {
+const AdminCustomerList = ({route, navigation}) => {
 
+  const globalCustomers = useCustomers();
+  const routeCustomers = route.params?.allCustomers;
+  const customerData = routeCustomers || globalCustomers;
   
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} >
@@ -46,7 +25,7 @@ const AdminCustomerList = ({navigation}) => {
       <SortHeader title="Customer List"  />
       </View>
       <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-        <CustomerCard customerData={CustomerData} isHorizontal={false}  onCardPress={() => {
+        <CustomerCard customerData={customerData} isHorizontal={false}  onCardPress={() => {
             navigation.navigate("Client", { screen: "List Customer Details"});
         }}/>
       </View>

@@ -1,54 +1,75 @@
-import React from 'react';
-import { ScrollView, StyleSheet, StatusBar} from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, StatusBar, View, Text, ActivityIndicator} from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import Carousel from '../../components/Carousel';
+import { useFocusEffect } from '@react-navigation/native';
+import { fetchMyFavourites } from '../../apifunctions/fetchMyFavouritesApi';
+
+const FavProperties = ({ route, navigation }) => {
+  const [favourites, setFavourites] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadFavourites = async (paramsToken) => {
+    setLoading(true);
+    try {
+      const favouritesResponse = await fetchMyFavourites(paramsToken);
+      setFavourites(favouritesResponse);
+      console.log('Favourites fetched:', favouritesResponse);
+    } catch (error) {
+      console.error('Failed to fetch favourites:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      const paramsToken = route.params?.token;
+      loadFavourites(paramsToken);
+      return () => {};
+    }, [route.params?.token])
+  );
+
+  const handleFavoriteStatusChange = (propertyId, isFavorite) => {
+    if (!isFavorite) {
+      setFavourites(current => current.filter(item => item.id !== propertyId));
+    }
+  };
 
 
-const dataArray = [
-  {
-    id: '1',
-    title: 'Sri Shivashakti Residency',
-    description: '200 plots available, starts from 750sqft',
-    location: '34, Keeranatham Road, Saravanampatti',
-    image1: require('../../../assets/images/building.png'),
-    image2: require('../../../assets/images/Sarav.png'),
-    image3: require('../../../assets/images/Sarav2.png'),
-    rating: '4.3'
-  },
-  {
-    id: '2',
-    title: 'Lotus Apartments',
-    description: '150 apartments ready to move in',
-    location: '22, Ganapathy Road, Coimbatore',
-    image1: require('../../../assets/images/building.png'),
-    image2: require('../../../assets/images/Sarav.png'),
-    image3: require('../../../assets/images/Sarav2.png'),
-    rating: '4.6'
-  },
-  {
-    id: '3',
-    title: 'Greenfield Villas',
-    description: 'Eco-friendly community villas',
-    location: '58, Peelamedu, Coimbatore',
-    image1: require('../../../assets/images/building.png'),
-    rating: '4.8'
-  },
-  // ... add more objects as needed for each property
-];
+  const handleGeneralPropertyPress = (propertyId) => {
+    navigation.navigate("Show Properties", { params: { propertyId } });
+  };
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
-
-
-
-const FavProperties = ({navigation}) => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-    <StatusBar/>
-    <HeaderContainer title="Favourites" 
-      ImageLeft={require('../../../assets/images/back arrow icon.png')}
-      ImageRight={require('../../../assets/images/belliconblue.png')}
-      onPress={()=>{navigation.goBack()}}/>
-    <Carousel data={dataArray} />
+      <HeaderContainer title="Favourites"
+        ImageLeft={require('../../../assets/images/back arrow icon.png')}
+        ImageRight={require('../../../assets/images/belliconblue.png')}
+        onPress={() => navigation.goBack()} />
+      
+      {favourites.length > 0 ? (
+        <Carousel
+          data={favourites}
+          onCardPress={handleGeneralPropertyPress}
+          isHeartVisible={true}
+          paramsToken={route.params?.token}
+          keyExtractor={(item, index) => `property-${item.id}-${index}`}
+          onFavoriteStatusChange={handleFavoriteStatusChange}
+        />
+      ) : (
+        <View style={styles.noFavouritesContainer}>
+          <Text style={styles.noFavouritesText}>No Properties are chosen as Favourites</Text>
+        </View>
+      )}
     </ScrollView>
   );
 };
@@ -63,6 +84,22 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     paddingBottom: 50,
     backgroundColor: 'white'
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noFavouritesContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  noFavouritesText: {
+    fontSize: 14,
+    color: '#757575',
+    fontFamily: 'Poppins'
   },
 });
 

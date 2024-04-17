@@ -44,18 +44,19 @@ const AddCustomerScreen = ({navigation}) => {
     const [message, setMessage] = useState('')
 
 
+
     const handleContinuePress = (customerDetails) => {
         setCustomerName(customerDetails.name);
         setCustomerMobile(customerDetails.mobileNumber);
         setEmail(customerDetails.email);
         setOccupation(customerDetails.occupation)
-        const areaOfPurpose = mapInputToEnum(customerDetails.aop, AreaOfPurpose);
-        const propertyTypes = mapInputToEnum(customerDetails.type, PropertyType);
-
+        const areaOfPurpose = mapInputToEnum(customerDetails.aop.join(','), AreaOfPurpose);
+        const propertyTypes = mapInputToEnum(customerDetails.type.join(','), PropertyType);
         setPreferences({
           area_of_purpose: areaOfPurpose,
           property_types: propertyTypes,
         });
+
         setShowContactForm(false); // Hide contact form and show addImgContainer
     };
     const selectImage = async () => {
@@ -132,7 +133,7 @@ const AddCustomerScreen = ({navigation}) => {
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}/>
      {showContactForm && <SortHeader title="Contact Form"  isSortVisible={false} />}
-     {showContactForm && ( <View style={styles.cfContainer}>
+     {showContactForm && ( <View style={[styles.cfContainer]}>
         <ContactForm onContinuePress={handleContinuePress}/>
      </View>  
      )}

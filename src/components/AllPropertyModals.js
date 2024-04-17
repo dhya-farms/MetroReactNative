@@ -10,7 +10,8 @@ import ConfirmationModal from '../modals/ConfirmationModal';
 import PaymentModal from '../modals/PaymentModal';
 
 
-const AllModals = ({ modalVisibility, toggleModalVisibility, handleYesPress, handleNoPress, handleDetailsInputDone, dropYesPress, confirmationPress, handleDropAddressDone, sameAddressPress, dropNoPress, handleConfirmPress, handleDetailsPaymentDone, handleDocVeifyDone, handleDetailsFullPaymentDone }) => {
+const AllModals = ({ modalVisibility, toggleModalVisibility, handleYesPress, handleNoPress, handleDetailsInputDone, dropYesPress, confirmationPress, handleDropAddressDone, sameAddressPress, 
+  dropNoPress, handleConfirmPress, handleDetailsPaymentDone, handleDocVeifyDone, handleDetailsFullPaymentDone }) => {
   return (
     <>
        <PickupModal

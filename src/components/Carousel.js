@@ -1,20 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, StyleSheet, FlatList, Dimensions, TouchableOpacity, ScrollView} from 'react-native';
+import { View, Text, Image, StyleSheet, FlatList, Dimensions, TouchableOpacity, ScrollView, Alert} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { toggleFavorite } from '../apifunctions/toggleFavouritesApi';
 
 
 const { width: screenWidth } = Dimensions.get('window');
 const cardWidth = 320;
 
-const Carousel = ({ data, onSortPress, isHeartVisible = true }) => {
+const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFavoriteStatusChange }) => {
   
 
   const PropertyCard = ({ item }) => {
     const [liked, setLiked] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const imageScrollRef = useRef();
-    const images = [item.image1, item.image2, item.image3].filter(Boolean);
+
+    const images = item.images.map(img => ({ uri: img.image }));
 
     useEffect(() => {
       if (images.length <= 1) return;
@@ -31,7 +33,24 @@ const Carousel = ({ data, onSortPress, isHeartVisible = true }) => {
       return () => clearInterval(interval);
     }, [images.length]);
 
-    const onLikePress = () => setLiked(!liked);
+    useEffect(() => {
+      const loadLikedStatus = async () => {
+        const likedStatus = await AsyncStorage.getItem(`liked_${item.id}`);
+        setLiked(likedStatus ? JSON.parse(likedStatus) : false);
+      };
+
+      loadLikedStatus();
+    }, [item.id]);
+
+    const handleLikePress = () => {
+      const newLikedStatus = !liked;
+      toggleFavorite(item.id, newLikedStatus, paramsToken, (id, status) => {
+        setLiked(status);
+        if (onFavoriteStatusChange) {
+          onFavoriteStatusChange(id, status);
+        }
+      });
+    };
 
     const renderPagination = () => {
       if (images.length <= 1) return null; // Don't render pagination for a single image
@@ -50,7 +69,7 @@ const Carousel = ({ data, onSortPress, isHeartVisible = true }) => {
 
     return (
       <View style={styles.card}>
-        <TouchableOpacity onPress={onSortPress}>
+        <TouchableOpacity onPress={() => onCardPress(item.id)}>
           <ScrollView
             horizontal
             pagingEnabled
@@ -63,28 +82,27 @@ const Carousel = ({ data, onSortPress, isHeartVisible = true }) => {
             }}
           > 
            {images.map((imgSrc, index) => (
-            // Each image is wrapped in a View with the correct width.
             <View key={index} style={{ width: cardWidth, height: 196 }}>
               <Image source={imgSrc} style={styles.image} />
             </View>
           ))}
           </ScrollView>
         </TouchableOpacity>
-        <View style={styles.lrContainer}>
-          {isHeartVisible && (
-            <TouchableOpacity onPress={onLikePress}>
-              <MaterialIcons name={liked ? 'favorite' : 'favorite-border'} size={24} color={liked ? 'red' : 'white'} />
-            </TouchableOpacity>
-          )}
-          <View style={styles.ratingContainer}>
-            <MaterialIcons name="star" size={20} color="gold" />
-            <Text style={styles.rating}>{item.rating}</Text>
+        <View style={isHeartVisible ? styles.lrContainer : styles.lrContainerWithoutHeart}>
+            {isHeartVisible && (
+              <TouchableOpacity onPress={handleLikePress}>
+                <MaterialIcons name={liked ? 'favorite' : 'favorite-border'} size={24} color={liked ? 'red' : 'black'} />
+              </TouchableOpacity>
+            )}
+            <View style={styles.ratingContainer}>
+              <MaterialIcons name="star" size={20} color="gold" />
+              <Text style={styles.rating}>4.3</Text>
+            </View>
           </View>
-        </View>
         {renderPagination()}
         <View style={styles.cardContent}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.description}>{item.description}</Text>
+          <Text style={styles.title}>{item.name}</Text>
+          <Text style={styles.description}>{item.displayText}</Text>
           <View style={styles.locationContainer}>
             <MaterialIcons name="place" size={20} color="#757575" />
             <Text style={styles.location}>{item.location}</Text>
@@ -99,7 +117,7 @@ const Carousel = ({ data, onSortPress, isHeartVisible = true }) => {
       <FlatList
         data={data}
         renderItem={({ item }) => (
-          <PropertyCard item={item} onSortPress={onSortPress} isHeartVisible={isHeartVisible} />
+          <PropertyCard item={item} onCardPress={onCardPress} isHeartVisible={isHeartVisible} />
         )}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
@@ -145,6 +163,12 @@ const styles = StyleSheet.create({
     left: 5,
     right: 5,
     justifyContent: 'space-between'
+  },
+  lrContainerWithoutHeart: {
+    flexDirection: 'row',
+    position: 'absolute',
+    top: 10,
+    right: 5, // Keeps the rating container on the right
   },
   cardContent: {
     width: '100%',

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, FlatList, Dimensions, StatusBar} 
+import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, FlatList, Dimensions, StatusBar, ActivityIndicator} 
 from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ProgressBar from '../../components/ProgressBar';
@@ -8,115 +8,63 @@ import AdvisorCard from '../../components/AdvisorCard';
 import ShowAllButton from '../../components/ShowAllButton';
 import Card from '../../components/Card';
 import { fetchPropertyTypes } from '../../apifunctions/propertyTypesApi';
+import ImageScrollView from '../../components/ImageScrollView';
+import { fetchCustomerProperties } from '../../apifunctions/fetchCustomerPropertiesApi';
+import { fetchProperties } from '../../apifunctions/fetchPropertiesApi';
+import { fetchSoDetails } from '../../apifunctions/fetchSoDetailsApi';
 
 
-const images = [
-  {
-    source: require('../../../assets/images/Sarav.png'), // Path to the local image
-    text: 'SWEET LIVING',
-    description: '200 plots available, starts from 750sqft',
-    address: '34, Keeranatham Road, Saravanampatti',
-  },
-  {
-    source: require('../../../assets/images/Sarav2.png'), // Path to the local image
-    text: 'SWEET LIVING',
-    description: '200 plots available, starts from 750sqft',
-    address: '34, Keeranatham Road, Saravanampatti',
-  },
-  {
-    source: require('../../../assets/images/building.png'), // Path to the local image
-    text: 'SWEET LIVING',
-    description: '200 plots available, starts from 750sqft',
-    address: '34, Keeranatham Road, Saravanampatti',
-  },
-  // ... Add more images and text here
-];
-  const cards = [
-    {
-      name: 'Orange City',
-      image1: require('../../../assets/images/Sarav.png'),
-      image2: require('../../../assets/images/Sarav2.png'),
-      image3: require('../../../assets/images/building.png'), // replace with your local image
-      rating: '4.3',
-      description: '200 plots available, starts from 750sqft',
-      address: '34, Keeranatham Road, Saravanampatti',
-    },
-    {
-      name: 'Pink City',
-      image1: require('../../../assets/images/Sarav2.png'),
-      image2: require('../../../assets/images/Sarav.png'),
-      image3: require('../../../assets/images/building.png'), // replace with your local image
-      rating: '4.3',
-      description: '200 plots available, starts from 750sqft',
-      address: '34, Keeranatham Road, Saravanampatti',
-    },
-    {
-      name: 'Dhya City',
-      image1: require('../../../assets/images/building.png'), // replace with your local image
-      rating: '4.3',
-      description: '200 plots available, starts from 750sqft',
-      address: '34, Keeranatham Road, Saravanampatti',
-    },
-    // Add more card data here
-  ];
 
-
-const { width } = Dimensions.get('window'); 
-
-
+  
 
 const CustomerHome = ({route, navigation}) => {
+  const token = route.params?.token
   const [selectedCategoryKey, setSelectedCategoryKey] = useState(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [categories, setCategories] = useState([]);
-
+  const [customerProperties, setCustomerProperties] = useState([])
+  const [properties, setProperties] = useState([]);
+  const [advisor, setAdvisor] = useState({});
+  const [loadingProperties, setLoadingProperties] = useState(true);
+  const [loadingCustomerProperties, setLoadingCustomerProperties] = useState(true);
+  const [loadingAdvisor, setLoadingAdvisor] = useState(true); 
   const flatListRef = useRef();
 
+
   useEffect(() => {
-    const initializeCategories = async () => {
-
+    const initializeScreen = async () => {
       const paramsToken = route.params?.token;
+      const paramsUserId = route.params?.userId;
+      const paramsAdvisorId = route.params?.soId;
 
-      const fetchedCategories = await fetchPropertyTypes(paramsToken);
-      setCategories(fetchedCategories);
+      try {
+        // Fetch categories synchronously as example (though you might not need a loading state for this)
+        const fetchedCategories = await fetchPropertyTypes(paramsToken);
+        setCategories(fetchedCategories);
+
+        // Fetch properties
+        const propertiesResponse = await fetchCustomerProperties(paramsToken, paramsUserId);
+        setCustomerProperties(propertiesResponse);
+        setLoadingCustomerProperties(false); // Data fetched for customer properties
+
+        const fetchedProperties = await fetchProperties(paramsToken);
+        setProperties(fetchedProperties);
+        setLoadingProperties(false); // Data fetched for general properties
+
+        // Fetch advisor details
+        const advisorDetails = await fetchSoDetails(paramsAdvisorId, paramsToken);
+        setAdvisor(advisorDetails);
+        setLoadingAdvisor(false); // Advisor data fetched
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+        setLoadingProperties(false);
+        setLoadingCustomerProperties(false);
+        setLoadingAdvisor(false);
+      }
     };
 
-    initializeCategories();
-  }, []);
+    initializeScreen();
+  }, [route.params?.token, route.params?.userId]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex(prevIndex => {
-        const nextIndex = prevIndex === images.length - 1 ? 0 : prevIndex + 1;
-        // Scroll to the next index using the FlatList ref
-        if (flatListRef.current) {
-          flatListRef.current.scrollToIndex({ animated: true, index: nextIndex });
-        }
-        return nextIndex;
-      });
-    }, 3000); // Change image every 5 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const renderPagination = () => {
-    return (
-      <View style={styles.mainPaginationContainer}>
-        {images.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.paginationDot,
-              currentIndex === index ? styles.paginationDotActive : styles.paginationDotInactive,
-            ]}
-          />
-        ))}
-      </View>
-    );
-  };
-
-
- 
 
   const renderItem = ({ item }) => {
     const isSelected = item.key === selectedCategoryKey;
@@ -138,27 +86,16 @@ const CustomerHome = ({route, navigation}) => {
     );
   };
 
-  const renderImageItem = ({ item }) => (
-    <View style={styles.bannerContainer}>
-      <Image source={item.source} style={styles.bannerImage} />
-      <View style={styles.bannerTextContainer}>
-        <Text style={styles.bannerText}>{item.text}</Text>
-        <Text style={[styles.bannerText, { fontWeight: '500', fontSize: 10 }]}>
-          {item.description}
-        </Text>
-        <Text style={[styles.bannerText, { fontWeight: '500', fontSize: 7 }]}>
-          {item.address}
-        </Text>
-      </View>
-    </View>
-  );
+  if (properties.length > 0) {
+    console.log("Rendering properties:", customerProperties);
+  }
+
+  const filteredProperties = properties.filter(property => 
+    !customerProperties.some(customerProperty => customerProperty.id === property.id));
+
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-       <StatusBar
-        backgroundColor="black" // Works on Android
-        barStyle="light-content" // Works on iOS and Android
-        />
        <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Home</Text>
         <TouchableOpacity style={styles.filterButton}>
@@ -189,62 +126,97 @@ const CustomerHome = ({route, navigation}) => {
       />
       </View>
       <View style={{width: '100%', alignItems: 'center', justifyContent: 'center'}}>
-      <FlatList
-          ref={flatListRef}
-          data={images}
-          renderItem={renderImageItem}
-          keyExtractor={(_, index) => index.toString()}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          scrollEnabled={true} 
-          onMomentumScrollEnd={(event) => {
-            // Calculate the current page after scrolling ends
-            const currentPage = Math.floor(event.nativeEvent.contentOffset.x / width);
-            setCurrentIndex(currentPage);
-          }}
-          getItemLayout={(data, index) => ({
-            length: 320, // Use fixed width of 320 as per your requirement
-            offset: 320 * index,
-            index,
-          })}
-          style={{width: 320,}}
-        />
-        {renderPagination()}
+
+      {loadingProperties ? (
+        <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />
+      ) : filteredProperties.length ? (
+        <ImageScrollView properties={filteredProperties} navigation={navigation} />
+      ) : (
+      <View style={styles.npContainer}>
+          <Text style={styles.nopText}>No New Projects for now</Text>
+      </View>
+      )}
       </View>
       <ShowAllButton text="Updates"  onPress={() => {}}/>
       <ProgressBar progress={0.2} />
-      <ShowAllButton text="properties"  onPress={() => {
-            navigation.navigate("properties", { screen: "Customer Properties", params: { selected: "properties" }});
+      <ShowAllButton text="My properties"  onPress={() => {
+            navigation.navigate("properties", { screen: "Customer Properties", 
+            params: { customerProperties: customerProperties, source: "myProperties", token: token}});
           }}/>
+
       <ScrollView
       style={{width: '100%'}}
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.contentContainer}
     >
-      {cards.map((card, index) => (
-        <Card key={index} card={card} onPress={() => {
-          navigation.navigate("properties", { screen: "Property Details"});
-       }}/>
-      ))}
+     {loadingCustomerProperties ? (
+        <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />
+      ) : customerProperties.length ? (
+        customerProperties.map((property, index) => {
+          const imageUrls = property.images.map(img => img.image);
+          return (
+            <Card
+              key={property.id}
+              property={property}
+              imageUrls={imageUrls}
+              onPress={() => {
+                navigation.navigate("properties", {
+                  screen: "Property Details",
+                  params: { propertyId: property.id },
+                });
+              }}
+            />
+          );
+        })
+      ) : (
+      <View style={styles.npContainer}>
+        <Text style={styles.nopText}>No New Properties Chosen By Customer</Text>
+      </View>
+      )}
     </ScrollView>
     <ShowAllButton text="New Projects"  onPress={() => {
-            navigation.navigate("properties", { screen: "Customer Properties", params: { selected: "newProjects" }});
+            navigation.navigate("properties", { screen: "Customer Properties", 
+            params: { properties: filteredProperties, source: "properties",  token: token}});
           }}/>
-    <ScrollView
+        <ScrollView
       style={{width: '100%'}}
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.contentContainer}
     >
-      {cards.map((card, index) => (
-        <Card key={index} card={card}  onPress={() => {
-          navigation.navigate("properties", { screen: "Show Properties"});
-       }} />
-      ))}
+    {loadingProperties ? (
+       <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />
+      ) : filteredProperties.length ? (
+     filteredProperties.map((property, index) => {
+    // Extract image URLs from the property's images array
+    const imageUrls = property.images.map(img => img.image);
+    return (
+      <Card
+        key={property.id}
+        property={property}
+        imageUrls={imageUrls} // Pass the extracted URLs here
+        onPress={() => {
+          navigation.navigate("properties", {
+            screen: "Show Properties",
+            params: { propertyId: property.id },
+          });
+        }}
+        paramsToken={route.params?.token}
+      />
+    );
+  })
+    ) : (
+      <View style={styles.npContainer}>
+          <Text style={styles.nopText}>No New Projects for now</Text>
+      </View>
+    )}
     </ScrollView>
-    <AdvisorCard/>
+    {loadingAdvisor ? (
+        <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />
+      ) : (
+        <AdvisorCard advisor={advisor} />
+      )}
     </ScrollView>
   );
 };

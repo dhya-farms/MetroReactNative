@@ -19,20 +19,24 @@ const Card = ({ name, number, mail, personimage }) => {
      <Text style={styles.progressTitle}>Progress State:</Text>
      <View style={styles.progressContainer}>
         <View style={styles.iconContainer}>
-          <Icon name="check-circle" size={34} color="#80FF00" style={{marginBottom: 6}}/>
+          <Icon name="check-circle" size={30} color="#80FF00" style={{marginBottom: 6}}/>
           <Text style={styles.progressLabel}>Site Visit</Text>
         </View>
         <View style={styles.iconContainer}>
-          <Icon name="times-circle" size={34} color="#C4C4C4" style={{marginBottom: 6}} />
+          <Icon name="times-circle" size={30} color="#C4C4C4" style={{marginBottom: 6}} />
           <Text style={styles.progressLabel}>Token Adv</Text>
         </View>
         <View style={styles.iconContainer}>
-          <Icon name="times-circle" size={34} color="#C4C4C4" style={{marginBottom: 6}} />
-          <Text style={styles.progressLabel}>Allotment</Text>
+          <Icon name="times-circle" size={30} color="#C4C4C4" style={{marginBottom: 6}} />
+          <Text style={styles.progressLabel}>Documents</Text>
         </View>
         <View style={styles.iconContainer}>
-          <Icon name="times-circle" size={34} color="#C4C4C4" style={{marginBottom: 6}} />
-          <Text style={styles.progressLabel}>Documents</Text>
+          <Icon name="times-circle" size={30} color="#C4C4C4" style={{marginBottom: 6}} />
+          <Text style={styles.progressLabel}>Payment</Text>
+        </View>
+        <View style={styles.iconContainer}>
+          <Icon name="times-circle" size={30} color="#C4C4C4" style={{marginBottom: 6}} />
+          <Text style={styles.progressLabel}>Delivery</Text>
         </View>
       </View>
       <View style={styles.smIconsContainer}>
@@ -82,9 +86,9 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         borderWidth: 1,
         borderColor: '#C4C4C4',
-        padding: 20,
+        padding: 15,
         marginHorizontal: 20,
-        width: 320,
+        width: 330,
         shadowColor: '#000', // Shadow color
         shadowOffset: {
             width: 0,
@@ -121,10 +125,8 @@ const styles = StyleSheet.create({
     },
     progressContainer: {
         width: '100%',
-        padding: 15,
-        marginTop: 10,
         alignItems: 'center',
-        justifyContent: 'space-around',
+        justifyContent: 'space-evenly',
         flexDirection: 'row',
         shadowColor: '#000', // Shadow color
         shadowOffset: {
@@ -137,6 +139,8 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#C4C4C4',
         borderRadius: 6,
+        padding: 10,
+        marginVertical: 10,
     },
     progressTitle:{
         fontFamily: 'Poppins',
@@ -150,6 +154,7 @@ const styles = StyleSheet.create({
     },
     iconContainer:{
         alignItems: 'center',
+        margin: 5, 
   
     },
     smIconsContainer:{

@@ -1,28 +1,42 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, StatusBar} 
-from 'react-native';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, TouchableOpacity, Image, ScrollView, StatusBar, ActivityIndicator} from 'react-native';
 import SlidingCarousel from '../../components/SlidingCarousel';
 import { SafeAreaView } from 'react-native';
 import LayoutHeader from '../../components/LayoutHeader';
 import { TabBar } from '../../components/TabComponent';
 import EnquireContainer from '../../components/EnquireContainer';
 import HeaderContainer from '../../components/HeaderContainer';
+import LayoutImageModal from '../../modals/LayoutImageModal';
+import styles from '../../constants/styles/showpropertiesstyles';
+import axios from 'axios';
 
 
 
+const amenityIcons = {
+  'play ground': require('../../../assets/images/playground.png'),
+  'swimming pool': require('../../../assets/images/pool.png'),
+  'market': require('../../../assets/images/market.png'),
+  'kids park': require('../../../assets/images/kidspark.png'),
+  'bus stand': require('../../../assets/images/busstand.png'),
+  'walking area': require('../../../assets/images/walkingarea.png'),
+  'school': require('../../../assets/images/school.png'),
+  'gym': require('../../../assets/images/gym.png'),
+  'private beach': require('../../../assets/images/sunbed.png'),
+  'community pool': require('../../../assets/images/pool.png'),
+  
+};
 
+const defaultIcon = require('../../../assets/images/amenites.png');
 
-const amenities = [
-  { icon: require('../../../assets/images/playground.png'), text: 'Playground' },
-  { icon: require('../../../assets/images/pool.png'), text: 'Pool' },
-  { icon: require('../../../assets/images/market.png'), text: 'Market' },
-  { icon: require('../../../assets/images/kidspark.png'), text: 'Kids Park' },
-  { icon: require('../../../assets/images/busstand.png'), text: 'Bus Stand' },
-  { icon: require('../../../assets/images/walkingarea.png'), text: 'Walking Area' },
-  { icon: require('../../../assets/images/school.png'), text: 'School' },
-  // ... add other amenities as needed
-];
+const getAmenityIcon = (amenityName) => {
+  const lowerCaseAmenityName = amenityName.toLowerCase();
+  return Object.keys(amenityIcons).reduce((icon, key) => {
+    if (key === lowerCaseAmenityName) {
+      return amenityIcons[key];
+    }
+    return icon;
+  }, defaultIcon);
+};
 
 
 
@@ -40,13 +54,81 @@ const galleryImages = [
 
 
 
-const ShowProperties = ({navigation}) => {
-  const fullText = `Lorem ipsum dolor sit amet consectetur. Malesuada urna egestas ultricies facilisi. Purus ut est faucibus habitasse. Sodales et justo pellentesque orci facilisis quam nulla. Lorem ipsum dolor sit amet consectetur. Malesuada urna egestas ultricies facilisi. Purus ut est faucibus habitasse. Sodales et justo pellentesque orci facilisis quam nulla. Lorem ipsum dolor sit amet consectetur. Malesuada urna egestas ultricies facilisi. Purus ut est faucibus habitasse. Sodales et justo pellentesque orci facilisis quam nulla. Lorem ipsum dolor sit amet consectetur. Malesuada urna egestas ultricies facilisi. Purus ut est faucibus habitasse. Sodales et justo pellentesque orci facilisis quam nulla.`;
+const ShowProperties = ({ route, navigation }) => {
+  const { propertyId } = route.params?.params || {};
+  const [propertyDetails, setPropertyDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [textShown, setTextShown] = useState(false);
+  const [imageModalVisible, setImageModalVisible] = useState(false)
+  const [error, setError] = useState('');
   const scrollViewRef = useRef();
   const desRef = useRef();
   const amRef = useRef();
   const gmRef = useRef();
+
+  useEffect(() => {
+    const effectivePropertyId = propertyId || route.params?.propertyId;
+    console.log("Effective Property ID for use:", effectivePropertyId);
+
+    const fetchPropertyDetails = async () => {
+      if (!effectivePropertyId) {
+        console.log("No Property ID provided");
+        setError("No property ID provided");
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const response = await axios.get(`https://splashchemicals.in/metro/api/properties/${effectivePropertyId}/`);
+        console.log("Fetch success:", response.data);
+        setPropertyDetails(response.data);
+      } catch (error) {
+        console.error("Fetch error:", error);
+        setError(error.response ? error.response.data.message : error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPropertyDetails();
+  }, [propertyId, route.params]);
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+  }
+
+  if (error) {
+    return <Text>Error: {error}</Text>;
+  }
+
+  if (!propertyDetails) {
+    return <Text>No property details available.</Text>;
+  }
+
+  // Define a function to get plot type text
+  const getPlotTypeText = (propertyType) => {
+    switch(propertyType) {
+      case 1:
+        return 'DTCP PLOTS';
+      case 2:
+        return 'Farmlands';
+      case 3:
+        return 'Flat';
+      case 4:
+        return 'Villa';
+      default:
+        return 'Unknown Plot Type';
+    }
+  };
+
+  // Use null checks to avoid accessing properties of null
+  const propertyType = propertyDetails.property_type ? propertyDetails.property_type.id : 0;
+  const isPlotOrFarmland = propertyType === 1 || propertyType === 2;
+  const numberOfUnitsLabel = isPlotOrFarmland ? 'No of Plots:' : (propertyType === 3 ? 'No of Homes:' : 'No of Villas:');
+  const numberOfUnits = propertyDetails.details ? (isPlotOrFarmland ? propertyDetails.details.plots_available : (propertyType === 3 ? propertyDetails.details.homes_available : propertyDetails.details.villas_available)) : 'N/A';
+  
+
   
   const toggleTextShown = () => {
     setTextShown(!textShown);
@@ -60,6 +142,10 @@ const ShowProperties = ({navigation}) => {
     return text;
   };
 
+  const ImageToggle = ()=>{
+    setImageModalVisible(!imageModalVisible)
+  }
+
   const scrollToSection = (sectionRef) => {
     sectionRef.current.measureLayout(
       scrollViewRef.current,
@@ -69,6 +155,21 @@ const ShowProperties = ({navigation}) => {
       () => {} // Error callback method
     );
   };
+
+  const calculatePricePerSqFt = () => {
+    if (propertyDetails && propertyDetails.price && propertyDetails.details.sq_ft_from) {
+      const price = parseFloat(propertyDetails.price);
+      const sqFtFrom = parseFloat(propertyDetails.details.sq_ft_from);
+      return (price / sqFtFrom).toFixed(2); // Keeping two decimal places for the result.
+    }
+    return "N/A"; // Return "N/A" if the data is not available to perform the calculation.
+  };
+
+  if (!propertyDetails) {
+    return <><Text>Property details not found.</Text> {console.log(propertyId)}</>;
+  }
+
+  const amenitiesArray = propertyDetails.details.amenities.map(item => item.trim()).filter(Boolean);
   
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -83,10 +184,11 @@ const ShowProperties = ({navigation}) => {
       <SlidingCarousel/>
     </SafeAreaView>
     <View style={styles.cityConatiner}>
-      <Text style={styles.cityText}>Dawn City</Text>
-      <Text style={styles.cityAmount}>₹ 2200/sqft</Text>
+      <Text style={styles.cityText}>{propertyDetails.name}</Text>
+      <Text style={styles.cityAmount}>₹ {calculatePricePerSqFt()}/sqft</Text>
     </View>
-    <LayoutHeader/>
+    <LayoutHeader onPress={ImageToggle} gmapUrl={propertyDetails.gmap_url} />
+    <LayoutImageModal modalVisible={imageModalVisible} setModalVisible={setImageModalVisible}/>
     <View style={styles.separator} />
     <TabBar onTabSelect={(tab) => {
           if (tab === 'Overview') scrollToSection(desRef);
@@ -96,44 +198,43 @@ const ShowProperties = ({navigation}) => {
     <View ref={desRef} style={styles.desContainer}>
       <Text style={styles.desHeader}>Description:</Text>
       <Text style={styles.desText}>
-      {textShown ? fullText : truncateText(fullText, 40)}
+      
+      {textShown ? propertyDetails.description : truncateText(propertyDetails.description, 40)}
       </Text>
     <TouchableOpacity onPress={toggleTextShown}>
     <Text style={styles.smText}>{textShown ? 'Show Less -' : 'Show More +'}</Text>
     </TouchableOpacity>
-    <View style={styles.LocationImageContainer}>
-      <View style={styles.LocationImage}></View>
-    </View>
+ 
     <View style={styles.plotContainer}>
-      <Text style={styles.plotHeader}>Plots information:</Text>
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoLabel}>Plot Type</Text>
-        <Text style={styles.infoContent}>Farm Land</Text>
+        <Text style={styles.plotHeader}>Plot Information:</Text>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>Property Type:</Text>
+          <Text style={styles.infoContent}>{getPlotTypeText(propertyType)}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>Property ID:</Text>
+          <Text style={styles.infoContent}>{propertyDetails.id}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>{numberOfUnitsLabel}</Text>
+          <Text style={styles.infoContent}>{numberOfUnits}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>Sq.ft:</Text>
+          <Text style={styles.infoContent}>{propertyDetails.details ? `from ${propertyDetails.details.sq_ft_from} sq.ft` : 'N/A'}</Text>
+        </View>
       </View>
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoLabel}>Property Id:</Text>
-        <Text style={styles.infoContent}>1234FL</Text>
-      </View>
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoLabel}>No of Plots:</Text>
-        <Text style={styles.infoContent}>100 plots</Text>
-      </View>
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoLabel}>Sq.ft:</Text>
-        <Text style={styles.infoContent}>from 200sq.ft</Text>
-      </View>
-    </View>
     </View>
     <View ref={amRef} style={styles.amContainer}>
-      <Text style={styles.amHeader}>Amenities:</Text>
-      <View style={styles.amenitiesContainer}>
-        {amenities.map((amenity, index) => (
-          <View key={index} style={styles.amenity}>
-            <Image source={amenity.icon} style={styles.icon} />
-            <Text style={styles.text}>{amenity.text}</Text>
-          </View>
-        ))}
+  <Text style={styles.amHeader}>Amenities:</Text>
+  <View style={styles.amenitiesContainer}>
+    {amenitiesArray.map((amenity, index) => (
+      <View key={index} style={styles.amenity}>
+        <Image source={getAmenityIcon(amenity)} style={styles.icon} />
+        <Text style={styles.text}>{amenity}</Text>
       </View>
+    ))}
+     </View>
     </View>
     <View ref={gmRef} style={styles.gmContainer}>
       <Text style={styles.gmHeader}>Gallery:</Text>
@@ -151,208 +252,5 @@ const ShowProperties = ({navigation}) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  contentContainer: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingBottom: 50,
-    backgroundColor: 'white'
-  },
-  headerContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    paddingTop: 20, // Adjust padding as needed
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  headerTitle: {
-    fontFamily: 'Poppins',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  filterButton: {
-    // Define if you need specific styles for your button
-  },
-  bellIcon: {
-    width: 34, // Adjust size as needed
-    height: 34, // Adjust size as needed
-  },
-  filterText: {
-    color: '#ffffff',
-  },
-  slidingContainer:{
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cityConatiner:{
-    marginVertical: 20,
-    marginLeft: 40,
-    width: '90%',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start'
-  },
-  cityText:{
-    fontFamily: 'Poppins',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  cityAmount:{
-    fontFamily: 'Poppins',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  separator: {
-    height: 2,
-    backgroundColor: '#ADADAD',
-    width: '90%',
-    marginVertical: 16,
-  },
-  desContainer:{
-    width: '90%',
-    alignItems: 'flex-start',
-    marginLeft: 10,
-  },
-  desHeader:{
-    fontFamily: 'Poppins',
-    fontWeight: '500',
-    fontSize: 14,
-    marginBottom: 10,
-  },
-  desText:{
-    fontFamily: 'Poppins',
-    fontWeight: '400',
-    fontSize: 12,
-    marginVertical: 10,
-    marginHorizontal: 10,
-  },
-  smText:{
-    fontFamily: 'Poppins',
-    fontWeight: '500',
-    color: '#1D9BF0',
-    fontSize: 12,
-    marginVertical: 5
-  },
-  LocationImageContainer:{
-    width: '95%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginVertical: 20
-  },
-  LocationImage:{
-    width: 320,
-    height: 128,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#D9D9D9',
-    borderRadius: 15
-  },
-  plotContainer: {
-    width: '90%',
-     // Assuming a white background
-  },
-  plotHeader: {
-    fontFamily: 'Poppins',
-    fontWeight: '500',
-    color: '#424242',
-    fontSize: 14,
-    marginBottom: 10,
-  },
-  infoContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-    marginHorizontal: 10,
-    alignItems: 'flex-start', // Align items to the start of the cross axis
-  },
-  infoLabel: {
-    fontFamily: 'Poppins',
-    fontWeight: '600',
-    color: '#424242',
-    fontSize: 12,
-    minWidth: 100, // Set a minimum width for labels
-    textAlign: 'left',
-  },
-  infoContent: {
-    fontFamily: 'Poppins',
-    fontWeight: '400',
-    color: '#424242',
-    fontSize: 12,
-    textAlign: 'left',
-    width: '100%'
-  },
-  amContainer:{
-    width: '90%',
-    marginVertical: 20,
-  },
-  amHeader:{
-    fontFamily: 'Poppins',
-    fontWeight: '500',
-    fontSize: 14,
-    color: '#424242',
-    marginVertical: 20,
-  },
-  amenitiesContainer:{
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  amenity: {
-    alignItems: 'center',
-    marginBottom: 20,
-    width: '27%', // Set this to control the number of items per row
-  },
-  icon: {
-    width: 35,
-    height: 35,
-    // Include other styling for your icons
-  },
-  text: {
-    fontFamily: 'Poppins',
-    fontWeight: '400',
-    fontSize: 10,
-  },
-  gmContainer:{
-    width: '90%',
-  },
-  gmHeader: {
-    fontFamily: 'Poppins',
-    fontWeight: '400',
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  galleryContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  imageWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 25,
-    width: '30%', 
-  },
-  image: {
-    width: 83,
-    height: 83,
-    resizeMode: 'cover',
-    borderRadius: 15
-  },
-});
 
 export default ShowProperties;

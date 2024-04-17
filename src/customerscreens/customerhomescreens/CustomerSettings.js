@@ -37,7 +37,9 @@ const CustomerSettings = ({navigation}) => {
   // This will be called when "Yes" is pressed on the logout modal
   const handleLogout = async () => {
     handleShowConfirmModal("Logged Out Sucessfully");
-    await AsyncStorage.removeItem('userToken'); // Remove the token from storage
+    await AsyncStorage.removeItem('userToken');
+    await AsyncStorage.removeItem('userId');
+    await AsyncStorage.removeItem('role'); // Remove the token from storage
     setModalVisible(false); // Close the modal
   
     // Reset the navigation stack and navigate to the Onboarding screen
@@ -49,9 +51,16 @@ const CustomerSettings = ({navigation}) => {
     
   const handleDeleteAccount = async () => {
     handleShowConfirmModal("Your Account Has Been Deleted");
-    await AsyncStorage.removeItem('userToken'); // Remove the token from storage
+    await AsyncStorage.removeItem('userToken');
+    await AsyncStorage.removeItem('userId');
+    await AsyncStorage.removeItem('role'); // Remove the token from storage
     setModalVisible(false); // Close the modal
-    navigation.navigate('Onboarding'); // Navigate to the login screen
+  
+    // Reset the navigation stack and navigate to the Onboarding screen
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Onboarding", params: { screen: "Home" } }],
+    });
   };
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>

@@ -1,18 +1,31 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Linking } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-const LayoutHeader = () => {
+const LayoutHeader = ({onPress, gmapUrl}) => {
+
+  const openGoogleMaps = () => {
+    const url = gmapUrl;
+    Linking.canOpenURL(url)
+      .then((supported) => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          console.log("Don't know how to open this URL: " + url);
+        }
+      })
+      .catch((err) => console.error('An error occurred', err));
+  };
   return (
 
     <View style={styles.layoutContainer}>
-        <TouchableOpacity style={styles.layoutBtn} onPress={{}}>
+        <TouchableOpacity style={styles.layoutBtn} onPress={onPress}>
           <Text style={styles.layoutBtnText}>View Layout</Text>
         </TouchableOpacity>
-        <View style={styles.locationContainer}>
+        <TouchableOpacity style={styles.locationContainer} onPress={openGoogleMaps}>
             <MaterialIcons name="location-on" size={17} color="#707070" />
             <Text style={styles.locationText}>View Location</Text>
-        </View>
+        </TouchableOpacity>
     </View>
   );
 };

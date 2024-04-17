@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, TouchableOpacity, ScrollView, Image, Text, Dimensions, StyleSheet } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { toggleFavorite } from '../apifunctions/toggleFavouritesApi';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 // If `styles` are defined within this component, keep them here,
 // or move to a separate file if they are shared across components.
@@ -10,74 +13,54 @@ const { width: screenWidth } = Dimensions.get('window');
 const cardWidth = 320;
 
 
-const Card = ({ card, onPress }) => {
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const imageScrollRef = useRef();
-    const images = [card.image1, card.image2, card.image3].filter(Boolean);
+const Card = ({ property={}, imageUrls = [], onPress, paramsToken }) => {
+    const [liked, setLiked] = useState(false);
+
+    const imageSource = imageUrls.length > 0 ? { uri: imageUrls[0] } : require('../../assets/images/Sarav.png');
+    
 
     useEffect(() => {
-      if (images.length <= 1) return; // If only one image, do nothing
-  
-      const interval = setInterval(() => {
-        setCurrentImageIndex(prevIndex => {
-          const nextIndex = prevIndex === images.length - 1 ? 0 : prevIndex + 1;
-          if (imageScrollRef.current) {
-            imageScrollRef.current.scrollTo({ x: cardWidth * nextIndex, animated: true });
-          }
-          return nextIndex;
-        });
-      }, 3000);
-  
-      return () => clearInterval(interval);
-    }, [images.length]);
+      const loadLikedStatus = async () => {
+          const likedStatus = await AsyncStorage.getItem(`liked_${property.id}`);
+          setLiked(likedStatus ? JSON.parse(likedStatus) : false);
+          console.log(imageUrls)
+      };
 
-    const renderPagination = () => {
-      if (images.length <= 1) return null; // Don't render pagination for a single image
+      loadLikedStatus();
+  }, [property.id]);
+
   
-      return (
-        <View style={styles.paginationContainer}>
-          {images.map((_, index) => (
-            <View key={index} style={[
-              styles.paginationDot,
-              currentImageIndex === index ? styles.paginationDotActive : styles.paginationDotInactive,
-            ]} />
-          ))}
-        </View>
-      );
-    };
+  
+
+    const handleFavoritePress = () => {
+      const newLikedStatus = !liked;
+      toggleFavorite(property.id, newLikedStatus, paramsToken, (id, status) => {
+          setLiked(status);
+          // Optional: Call any additional side effects or state updates
+      });
+  };
 
     return (
       <TouchableOpacity style={styles.card} onPress={onPress}>
-        <TouchableOpacity onPress={onPress}>
-          <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            ref={imageScrollRef}
-            style={styles.scrollViewContainer}
-            onMomentumScrollEnd={(e) => {
-              const pageIndex = Math.round(e.nativeEvent.contentOffset.x / cardWidth);
-              setCurrentImageIndex(pageIndex);
-            }}
-          > 
-           {images.map((imgSrc, index) => (
-            // Each image is wrapped in a View with the correct width.
-            <View key={index} style={{ width: cardWidth, height: 196 }}>
-              <Image source={imgSrc} style={styles.image} />
-            </View>
-          ))}
-          </ScrollView>
-        </TouchableOpacity>
-        {renderPagination()}
+        <View style={styles.imageContainer}>
+          <View  style={{ width: cardWidth, height: 196 }}>
+          <Image source={imageSource} style={styles.image} />
+        </View>
+          {liked && (
+            <TouchableOpacity style={styles.favoriteButton} onPress={handleFavoritePress}>
+              <MaterialIcons name="favorite" size={24} color="red" />
+            </TouchableOpacity>
+          )}
+        </View>
         <View style={styles.cardContent}>
           <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
-          <Text style={styles.cardTitle}>{card.name}</Text>
-          <Text style={styles.rating}>{card.rating}</Text>
+          <Text style={styles.cardTitle}>{property.name}</Text>
+          <Text style={styles.rating}>4.3</Text>
           </View>
-          <Text style={styles.cardDescription}>{card.description}</Text>
+          <Text style={styles.cardDescription}>{property.displayText}</Text>
           <View style={{flexDirection: 'row',alignItems: 'center',}}>
             <MaterialIcons name="location-on" size={16} color="#424242" />
-            <Text style={styles.cardAddress}>{card.address}</Text>
+            <Text style={styles.cardAddress}>{property.location}</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -85,12 +68,15 @@ const Card = ({ card, onPress }) => {
 };
 
 const styles = StyleSheet.create({
-    image: {
-      width: '100%',
-      height: '100%', // Adjust the height as necessary
-      borderRadius: 10,
-      resizeMode: 'cover'
-    },
+  imageContainer: {
+    position: 'relative',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+    resizeMode: 'cover',
+  },
     mainPaginationContainer: {
       flexDirection: 'row',
       justifyContent: 'center',
@@ -121,6 +107,12 @@ const styles = StyleSheet.create({
       shadowRadius: 10,
       elevation: 5, // for Android
     },
+    favoriteButton: {
+      position: 'absolute',
+      top: 10,
+      left: 10,
+      // Add additional styling if needed, like padding or a background color
+  },
     cardImage: {
       width: '100%',
       height: 186, // Adjust the height as necessary

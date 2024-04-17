@@ -34,11 +34,6 @@ const FloatingLabelInput = ({ label, value, onChangeText, iconName, ...props }) 
 
 
 const SalesOfficerDetails = ({navigation}) => {
-    const [joinedDate, setJoinedDate] = useState('');
-    const [mailId, setMailId] = useState('');
-    const [address, setAddress] = useState('');
-    const [metroPoints, setMetroPoints] = useState('');
-    const [customerHandles, setCustomerHandles] = useState('');
 
     const [inputValues, setInputValues] = useState({
       joinedDate: '',

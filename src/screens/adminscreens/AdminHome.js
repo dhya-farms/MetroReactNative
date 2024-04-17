@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, ScrollView, StyleSheet, TouchableOpacity, Text, Image, StatusBar} 
+import React, { useEffect, useState } from 'react';
+import { View, ScrollView, TouchableOpacity, Text, Image, StatusBar} 
 from 'react-native';
 import ShowAllButton from '../../components/ShowAllButton';
 import SOcards from '../../components/SOcard';
@@ -7,6 +7,8 @@ import OfficeUpdateView from '../../components/OfficeUpdateView';
 import CustomerCard from '../../components/CustomerCard';
 import SiteDetailsCard from '../../components/SiteDetailsCard';
 import styles from '../../constants/styles/adminhomestyles';
+import { fetchCustomers } from '../../apifunctions/fetchCustomerApi';
+import { useProperties } from '../../contexts/usePropertiesContext';
 
 
 const cardData = [
@@ -106,7 +108,22 @@ const SOdata  = [
 ]
 
 
-const AdminHome = ({navigation}) => {
+const AdminHome = ({route, navigation}) => {
+  const { properties } = useProperties();
+  const [customers, setCustomers] = useState([]);
+
+  useEffect(() => {
+    const paramsToken = route.params?.token;
+    fetchCustomers(paramsToken).then(customers => {
+        if (customers.error) {
+            // Handle the error state in your component (e.g., show a message)
+            console.error(customers.error);
+        } else {
+            // Update state with fetched customers
+            setCustomers(customers);
+        }
+    });
+}, []);
   
 
   return (
@@ -127,18 +144,19 @@ const AdminHome = ({navigation}) => {
       </View>
       <View style={styles.separator} />
       <ShowAllButton text="Customers" onPress={()=> navigation.navigate("Client", { 
-      screen: "Customer List" 
+      screen: "Customer List" ,
+      params: { allCustomers: customers }
     })}/>
       <View style={{width: '100%'}}>
-        <CustomerCard customerData={CustomerData} onCardPress={() => {
-            navigation.navigate("Client", { screen: "List Customer Details"});
-        }}/>
+          <CustomerCard customerData={customers.slice(0, 3)} onCardPress={() => {
+              navigation.navigate("Client", { screen: "List Customer Details"});
+          }}/>
       </View>
       <ShowAllButton text="Site Details" onPress={()=> navigation.navigate("Sites", { 
       screen: "Admin Properties" 
     })}/>
       <View style={{width: '100%'}}>
-        <SiteDetailsCard siteData={siteData} onCardPress={() => {
+        <SiteDetailsCard siteData={properties} onCardPress={() => {
            navigation.navigate("Sites", { screen: "Admin Properties Details"});
         }}/>
       </View>

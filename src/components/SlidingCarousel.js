@@ -92,6 +92,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     marginTop: 20,
+    marginBottom: 20,
   },
   imageContainer: {
     width: 525, // Fixed width as requested

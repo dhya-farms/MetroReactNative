@@ -25,13 +25,20 @@ const styles = StyleSheet.create({
     borderRadius: 62
   },
   textInputContainer:{
-    width: '90%'
+    marginTop: 20,
+    width: '90%',
+    zIndex: 1000
+  },
+  customTextinputContainer:{
+    width: '100%',
+    zIndex: 5000
+    
   },
   input: {
     width: '100%',
     height: 50, // Set the height
     backgroundColor: 'white', // Set the background color
-    marginBottom: 10, // Add a bottom margin
+    marginBottom: 10, 
   },
   cnText:{
     fontFamily: 'Poppins',
@@ -39,7 +46,32 @@ const styles = StyleSheet.create({
     fontSize: 20,
     margin: 10,
     color: '#424242'
-  }
+  },
+  saveBtn:{
+    marginVertical: 20,
+    width: 135,
+    height: 38,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+    backgroundColor: '#1D9BF0',
+    alignSelf: 'center'
+  },
+  saveText:{
+    fontFamily: 'Poppins',
+    fontWeight: '500',
+    fontSize: 12,
+    color: '#FFFFFF'
+  },
+  saveMessage: {
+    color: 'green', // or 'red' based on the type of message
+    fontFamily: 'Poppins',
+    fontWeight: '500',
+    fontSize: 12,
+    paddingVertical: 8,
+    alignSelf: 'center' // add some padding
+    // ... any other styling you want for this message
+  },
   
 });
 

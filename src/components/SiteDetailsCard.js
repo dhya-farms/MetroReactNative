@@ -2,25 +2,30 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const SdCard = ({ sitename, price, bgimage, onPress }) => {
-    const formattedSiteName = sitename.replace('240 BHK', '\n240 BHK');
-    const formattedPrice = price.replace('@', '\n@');
+const SdCard = ({ sitename, plotsAvailable, pricePerSqFt, bgimage, onPress }) => {
+  // Formatting changes here based on the properties
+  const formattedSiteName = `${sitename}\n${plotsAvailable} BHK`;
+  const formattedPrice = `Starts @ \n₹${pricePerSqFt}/sqft`;
+
   return (
     <TouchableOpacity onPress={onPress} style={styles.cardContainer}>
       <Image source={bgimage} style={styles.cardImage} />
       <View style={styles.bottomTextContainer}>
-        <View style={styles.sitenameContainer}>
         <Text style={styles.siteName}>{formattedSiteName}</Text>
-        </View>
-        <View style={styles.sitePriceContainer}>
         <Text style={styles.siteprice}>{formattedPrice}</Text>
-        </View>
       </View>
     </TouchableOpacity>
   );
 };
 
+
+
 const SiteDetailsCard = ({siteData, onCardPress})=>{
+  const calculatePricePerSqFt = (price, sqFtFrom) => {
+    if (!price || !sqFtFrom) return "N/A";
+    return (parseFloat(price) / parseFloat(sqFtFrom)).toFixed(2);
+  };
+
     return (
         <FlatList
           data={siteData}
@@ -28,13 +33,14 @@ const SiteDetailsCard = ({siteData, onCardPress})=>{
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
             <SdCard
-              sitename={item.sitename}
-              price={item.price}
-              bgimage={item.bgimage}
-              onPress={() => onCardPress()}
-            />
+                sitename={item.name}
+                plotsAvailable={item.plots_available}
+                pricePerSqFt={calculatePricePerSqFt(item.price, item.sq_ft_from)}
+                bgimage={item.source} // Ensure you have a way to determine the bgimage based on the property data
+                onPress={() => onCardPress()}
+           />
           )}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item.id.toString()}
           style={styles.flatList}
         />
       );

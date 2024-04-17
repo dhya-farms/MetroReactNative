@@ -132,7 +132,6 @@ const styles = StyleSheet.create({
       fontFamily: 'Poppins',
       fontWeight: '700',
       fontSize: 14,
-      marginBottom: 4,
       color: '#fff',
      },
      categoryButtonSelected: {
@@ -150,8 +149,6 @@ const styles = StyleSheet.create({
         // Add additional styling if necessary
       },
       image: {
-        width: '100%',
-        height: '100%', // Adjust the height as necessary
         borderRadius: 10,
         resizeMode: 'cover'
       },
@@ -192,6 +189,24 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#1D9BF0'
       },
+      loadingIndicator:{
+        width: '100%', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        marginVertical: 20,
+      },
+      npContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+      },
+      nopText: {
+        fontSize: 14,
+        color: '#757575',
+        fontFamily: 'Poppins'
+      },
+      
     
   });
 

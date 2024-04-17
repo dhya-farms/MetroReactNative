@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     amenitiesContainer:{
       flexDirection: 'row',
       flexWrap: 'wrap',
-      justifyContent: 'space-between',
+      justifyContent: 'space-around',
     },
     amenity: {
       alignItems: 'center',
@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
       fontFamily: 'Poppins',
       fontWeight: '400',
       fontSize: 10,
+      textAlign: 'center'
     },
     nbContainer:{
       width: '90%',
@@ -117,7 +118,8 @@ const styles = StyleSheet.create({
     NearbyContainer:{
       flexDirection: 'row',
       flexWrap: 'wrap',
-      justifyContent: 'space-between',
+      justifyContent: 'space-around',
+      alignItems: 'center'
     },
     nearby: {
       alignItems: 'center',

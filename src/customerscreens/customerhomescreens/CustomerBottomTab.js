@@ -69,7 +69,7 @@ const screenOptions = ({ route }) => ({
   tabBarShowLabel: false,
 });
 
-const CustomerBottomTab = () => {
+const CustomerBottomTab = ({}) => {
   return (
     <Tab.Navigator screenOptions={screenOptions}>
       <Tab.Screen name="Home" component={CustomerHomeScreenNavigator} />
@@ -77,13 +77,11 @@ const CustomerBottomTab = () => {
         name="properties"
         component={PropertyScreenNavigator}
         listeners={({ navigation }) => ({
-          tabPress: e => {
+          tabPress: (e) => {
             // Prevent default action
             e.preventDefault();
-
-            // Navigate to the desired screen with params
-            navigation.navigate("properties", { screen: "Customer Properties", params: { showBoth: true}});
-
+            // Navigate to the specific screen you want within this tab
+            navigation.navigate('properties', { screen: 'Customer Properties' });
           },
         })}
       />

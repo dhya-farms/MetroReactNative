@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { TextInput } from 'react-native-paper';
+import CustomDropdownInput from './CustomInput';
 
 const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
     return (
@@ -10,7 +11,7 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
         onChangeText={onChangeText}
         style={styles.input}
         mode="outlined"
-        outlineColor="#424242" // Here you set the border color
+        outlineColor="#1D9BF0" // Here you set the border color
         theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent' } }}
         {...props}
       />
@@ -18,20 +19,24 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
   };
 
 const ContactForm = ({onContinuePress}) => {
-  // State for input fields
   const [name, setName] = useState('')
   const [mobileNumber, setMobileNumber] = useState('');
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
-  const [aop, setAop] = useState('');
   const [occupation, setOccupation]= useState('')
+  const [aop, setAop] = useState([]);
+  const [type, setType] = useState([]);
   const [budget, setBudget] = useState('');
-  const [type, setType] = useState('')
   const [error, setError] = useState(false);
+  const aopOptions = ['Residential', 'Commercial'];
+  const typeOptions = ['DTCP_PLOTS', 'Farmlands', 'Flat', 'Villa'];
 
   const handleSubmit = () => {
-    if (!name || !mobileNumber || !email || !address || !aop || !occupation || !budget || !type) {
-        setError(true); // Set error to true if any field is empty
+    if (!name || !mobileNumber || !email || !address || !aop.length || !occupation || !budget || !type.length) {
+         setError(true); 
+         setTimeout(() => {
+          setError(false); // Reset error state after 2 seconds
+       }, 2000);// Set error to true if any field is empty
     } else {
         setError(false); // Reset error state
         const customerDetails = {
@@ -39,10 +44,11 @@ const ContactForm = ({onContinuePress}) => {
             mobileNumber, 
             email, 
             address, 
-            aop, 
             occupation, 
             budget, 
-            type
+            aop,
+            type,
+
         };
         onContinuePress(customerDetails); // Proceed with filled data
     }
@@ -50,7 +56,7 @@ const ContactForm = ({onContinuePress}) => {
 
 
   return (
-      <View style={styles.container}>
+      <View style={[styles.container]}>
           <FloatingLabelInput
             label="Name"
             value={name}
@@ -74,11 +80,6 @@ const ContactForm = ({onContinuePress}) => {
             onChangeText={setAddress}
           />
           <FloatingLabelInput
-            label="Area Of Purpose"
-            value={aop}
-            onChangeText={setAop}
-          />
-          <FloatingLabelInput
             label="Occupation"
             value={occupation}
             onChangeText={setOccupation}
@@ -89,11 +90,22 @@ const ContactForm = ({onContinuePress}) => {
             onChangeText={setBudget}
             keyboardType="numeric"
           />
-          <FloatingLabelInput
-            label="Type"
-            value={type}
-            onChangeText={setType}
-          />
+          <View style={[styles.customTextinputContainer, {zIndex: 7000, width: '80%'}]}>
+          <CustomDropdownInput
+              label="Type"
+              selectedValues={type}
+              setSelectedValues={setType}
+              options={typeOptions}
+            />
+          </View>
+          <View style={[styles.customTextinputContainer, {width: '80%', zIndex: 6000}]}>
+          <CustomDropdownInput
+              label="Area Of Purpose"
+              selectedValues={aop}
+              setSelectedValues={setAop}
+              options={aopOptions}
+            />
+        </View>
         {error && (
         <Text style={{ color: 'red', textAlign: 'center', paddingBottom: 10 }}>
           Please fill all the details before continuing.
@@ -136,6 +148,7 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingHorizontal: 28,
     elevation: 2,
+    marginVertical: 20,
   },
   doneButtonText: {
     color: "white",
