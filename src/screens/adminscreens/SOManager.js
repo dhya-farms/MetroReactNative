@@ -6,6 +6,7 @@ import HeaderContainer from '../../components/HeaderContainer';
 import ReportsScrollView from '../../components/ReportCard';
 import SOcards from '../../components/SOcard';
 import { SECONDARY_COLOR } from '../../constants/constantstyles/colors';
+import { useSoUsers } from '../../contexts/useSoData';
 
 
 
@@ -85,13 +86,16 @@ const data = [
 
 const SOManager = ({navigation}) => {
 
+  const soUsers = useSoUsers();
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.mainContainer}>
         <StatusBar/>
         <HeaderContainer title="SO Manager" 
             ImageLeft={require('../../../assets/images/back arrow icon.png')}
             ImageRight={require('../../../assets/images/belliconblue.png')}
             onPress={()=>{navigation.navigate("Admin home")}}/>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <ShowAllButton text="Approval" onPress={()=> navigation.navigate("SO Approvals")}/>
         <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
         <CardScrollView data={data} onCardPress={() => {
@@ -103,21 +107,31 @@ const SOManager = ({navigation}) => {
         <ReportsScrollView reportData={reportData} navigation={navigation} />
         </View>
         <View style={styles.separator} />
-        <ShowAllButton text="SO List" onPress={()=> navigation.navigate("SO", { 
-         screen: "SO Officers List" })}/>
+        <ShowAllButton text="SO List" onPress={()=> 
+         navigation.navigate("SO", { 
+          screen: "SO Officers List" ,
+          params: { soUsers: soUsers, backScreen: 'SOManager' }
+        })}/>
         <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-        <SOcards data={SOdata} onCardPress={() => {
-           navigation.navigate("SO", { screen: "SO Officers Details"});
+        <SOcards data={soUsers}  onCardPress={(SoId) => {
+           navigation.navigate("SO", {
+            screen: "SO Officers Details",
+            params: { SoId: SoId, backScreen: 'SOManager' },
+          });
         }}/>
         </View>
     </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,  // Use flex to take up the whole screen
+    backgroundColor: 'white'
+  },
   container: {
-    width: '100%',
-    backgroundColor: 'white',
+    width: '100%',  // Ensures the ScrollView takes the full width
   },
   contentContainer: {
     flexGrow: 1,

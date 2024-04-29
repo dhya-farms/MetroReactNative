@@ -1,15 +1,18 @@
 import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,  // Use flex to take up the whole screen
+    backgroundColor: 'white'
+  },
   container: {
-    flex: 1,
+    width: '100%',  // Ensures the ScrollView takes the full width
   },
   contentContainer: {
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingBottom: 50,
-    backgroundColor: 'white'
   },
   filterText: {
     color: '#ffffff',
@@ -39,6 +42,7 @@ const styles = StyleSheet.create({
     height: 50, // Set the height
     backgroundColor: 'white', // Set the background color
     marginBottom: 10, 
+
   },
   cnText:{
     fontFamily: 'Poppins',
@@ -47,8 +51,14 @@ const styles = StyleSheet.create({
     margin: 10,
     color: '#424242'
   },
+  cancelSaveContainer:{
+    width: '100%',
+    alignItems: 'center', 
+    justifyContent: 'space-between',
+    flexDirection: 'row'
+  },
   saveBtn:{
-    marginVertical: 20,
+    marginVertical: 10,
     width: 135,
     height: 38,
     justifyContent: 'center',
@@ -71,6 +81,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     alignSelf: 'center' // add some padding
     // ... any other styling you want for this message
+  },
+  loadingIndicator:{
+    width: '100%', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginVertical: 20,
   },
   
 });

@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, StatusBar, View, Text, ActivityIndicator} from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { StyleSheet, StatusBar, View, Text, ActivityIndicator} from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import Carousel from '../../components/Carousel';
 import { useFocusEffect } from '@react-navigation/native';
 import { fetchMyFavourites } from '../../apifunctions/fetchMyFavouritesApi';
+import { ScrollView } from 'react-native-virtualized-view';
 
 const FavProperties = ({ route, navigation }) => {
   const [favourites, setFavourites] = useState([]);
@@ -38,7 +39,9 @@ const FavProperties = ({ route, navigation }) => {
 
 
   const handleGeneralPropertyPress = (propertyId) => {
-    navigation.navigate("Show Properties", { params: { propertyId } });
+    navigation.navigate("properties", { screen: "Show Properties", 
+    params: { propertyId: propertyId,
+      backScreen: "Favorites"}});
   };
 
   if (loading) {
@@ -50,12 +53,13 @@ const FavProperties = ({ route, navigation }) => {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.mainContainer}>
+      <StatusBar/>
       <HeaderContainer title="Favourites"
         ImageLeft={require('../../../assets/images/back arrow icon.png')}
         ImageRight={require('../../../assets/images/belliconblue.png')}
         onPress={() => navigation.goBack()} />
-      
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {favourites.length > 0 ? (
         <Carousel
           data={favourites}
@@ -71,19 +75,23 @@ const FavProperties = ({ route, navigation }) => {
         </View>
       )}
     </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,  // Use flex to take up the whole screen
+    backgroundColor: 'white'
+  },
   container: {
-    flex: 1,
+    width: '100%',  // Ensures the ScrollView takes the full width
   },
   contentContainer: {
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingBottom: 50,
-    backgroundColor: 'white'
   },
   loadingContainer: {
     flex: 1,

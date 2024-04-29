@@ -14,35 +14,44 @@ const ImageScrollView = ({ properties, navigation }) => {
     const flatListRef = useRef();
 
     useEffect(() => {
-        const interval = setInterval(() => {
-          setCurrentIndex(prevIndex => {
-            const nextIndex = prevIndex === properties.length - 1 ? 0 : prevIndex + 1;
-            // Scroll to the next index using the FlatList ref
-            if (flatListRef.current) {
-              flatListRef.current.scrollToIndex({ animated: true, index: nextIndex });
-            }
-            return nextIndex;
-          });
-        }, 3000); // Change item every 3 seconds, adjust timing as needed
-      
-        return () => clearInterval(interval);
-      }, [properties.length]);
+      if (properties.length <= 1) {
+          return; // Do not start the interval if there's only one or no property
+      }
 
-      const renderPagination = () => {
-        return (
-          <View style={styles.mainPaginationContainer}>
-            {properties.map((_, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.paginationDot,
-                  currentIndex === index ? styles.paginationDotActive : styles.paginationDotInactive,
-                ]}
-              />
-            ))}
-          </View>
-        );
-      };
+      const interval = setInterval(() => {
+        setCurrentIndex(prevIndex => {
+          const nextIndex = prevIndex === properties.length - 1 ? 0 : prevIndex + 1;
+          // Scroll to the next index using the FlatList ref
+          if (flatListRef.current) {
+            flatListRef.current.scrollToIndex({ animated: true, index: nextIndex });
+          }
+          return nextIndex;
+        });
+      }, 3000); // Change item every 3 seconds, adjust timing as needed
+    
+      return () => clearInterval(interval);
+  }, [properties.length]);
+
+  const renderPagination = () => {
+    if (properties.length <= 1) {
+        return null; // Do not render pagination if there's only one property
+    }
+
+    return (
+      <View style={styles.mainPaginationContainer}>
+        {properties.map((_, index) => (
+          <View
+            key={index}
+            style={[
+              styles.paginationDot,
+              currentIndex === index ? styles.paginationDotActive : styles.paginationDotInactive,
+            ]}
+          />
+        ))}
+      </View>
+    );
+  };
+
 
       const renderImageItem = ({ item }) => {
 
@@ -52,19 +61,19 @@ const ImageScrollView = ({ properties, navigation }) => {
           <TouchableOpacity
             onPress={() => navigation.navigate("properties", {
               screen: "Show Properties",
-              params: { propertyId: item.id },
+              params: { propertyId: item.id , backScreen: "Home"},
             })}
             style={styles.bannerContainer}
           >
             <Image source={imageSrc} style={styles.bannerImage} />
             <View style={styles.bannerTextContainer}>
               <Text style={styles.bannerText}>{item.name}</Text>
-              <Text style={[styles.bannerText, { fontWeight: '500', fontSize: 10 }]}>
+              <Text style={[styles.bannerText, { fontWeight: '500', fontSize: 10, marginBottom: 5 }]}>
                 {item.displayText}
               </Text>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Icon name="location-on" size={14} color="#FFFFFF" />
-                <Text style={[styles.bannerText, { fontWeight: '500', fontSize: 10 }]}>{item.location}</Text>
+                <Icon name="location-on" size={12} color="#FFFFFF" />
+                <Text style={[styles.bannerText, { fontWeight: '500', fontSize: 8 }]}>{item.location}</Text>
               </View>
             </View>
           </TouchableOpacity>
@@ -82,7 +91,7 @@ const ImageScrollView = ({ properties, navigation }) => {
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            scrollEnabled={true} 
+            scrollEnabled={properties.length > 1} 
             onMomentumScrollEnd={(event) => {
               // Calculate the current page after scrolling ends
               const currentPage = Math.floor(event.nativeEvent.contentOffset.x / width);

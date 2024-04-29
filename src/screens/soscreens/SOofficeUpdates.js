@@ -1,11 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, StatusBar} 
+import { View, ScrollView, StyleSheet, StatusBar} 
 from 'react-native';
 import SortHeader from '../../components/SortHeader';
-import Carousel from '../../components/Carousel';
 import HeaderContainer from '../../components/HeaderContainer';
-import CustomerCard from '../../components/CustomerCard';
-import SOcards from '../../components/SOcard';
 import OfficeUpdateView from '../../components/OfficeUpdateView';
 
 
@@ -30,6 +27,7 @@ const cardData = [
     },
   ]
 
+  
 
 
 
@@ -40,6 +38,7 @@ const cardData = [
 
   
     return (
+      
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <StatusBar/>
         <HeaderContainer title="Office Updates" 

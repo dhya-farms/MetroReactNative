@@ -1,73 +1,63 @@
 import React from 'react';
-import { ScrollView, StyleSheet,  StatusBar} 
+import { ScrollView, StyleSheet,  StatusBar, View, Text} 
 from 'react-native';
 import SortHeader from '../../components/SortHeader';
 import Carousel from '../../components/Carousel';
 import HeaderContainer from '../../components/HeaderContainer';
-
-
-const dataArray = [
-  {
-    id: '1',
-    title: 'Sri Shivashakti Residency',
-    description: '200 plots available, starts from 750sqft',
-    location: '34, Keeranatham Road, Saravanampatti',
-    image1: require('../../../assets/images/building.png'),
-    image2: require('../../../assets/images/Sarav.png'),
-    image3: require('../../../assets/images/Sarav2.png'),
-    rating: '4.3'
-  },
-  {
-    id: '2',
-    title: 'Lotus Apartments',
-    description: '150 apartments ready to move in',
-    location: '22, Ganapathy Road, Coimbatore',
-    image1: require('../../../assets/images/building.png'),
-    image2: require('../../../assets/images/Sarav.png'),
-    image3: require('../../../assets/images/Sarav2.png'),
-    rating: '4.6'
-  },
-  {
-    id: '3',
-    title: 'Greenfield Villas',
-    description: 'Eco-friendly community villas',
-    location: '58, Peelamedu, Coimbatore',
-    image1: require('../../../assets/images/building.png'),
-    rating: '4.8'
-  },
-  // ... add more objects as needed for each property
-];
+import { useAdminProperties } from '../../contexts/useAdminProperties';
 
 
 
 
+const AdminProperties = ({route, navigation}) => {
+  const { adminProperties } = useAdminProperties();
+  const routeProperties = route.params?.properties;
+  console.log('route',routeProperties)
+  const propertiesData = routeProperties || adminProperties
 
-const AdminProperties = ({navigation}) => {
-
-  const handleSortPress = () => {
-    navigation.navigate("Admin Properties Details")
-  
-  };  
+  const handleGeneralPropertyPress = (propertyId) => {
+    navigation.navigate("Admin Properties Details", {params: {
+      propertyId: propertyId,
+      backScreen: "Properties"  // Indicating that the navigation originated from the Properties screen
+    }});
+  };
 
   
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.mainContainer}>
       <StatusBar/>
       <HeaderContainer title="Properties" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
-      onPress={()=>{navigation.goBack()}}/>
+      onPress={()=>{ navigation.navigate("Home", {
+        screen: "Admin Home",
+      })}}/>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
      <SortHeader title="Properties"  isSortVisible={false} />
-     <Carousel data={dataArray}  onSortPress={handleSortPress} isHeartVisible= {false} />
-     <Carousel data={dataArray}  onSortPress={handleSortPress} isHeartVisible= {false}/>
+     {propertiesData.length > 0 ? (
+        <Carousel
+          data={propertiesData}
+          onCardPress={handleGeneralPropertyPress}
+          isHeartVisible={false}
+          keyExtractor={(item) => `property-${item.id}`}
+        />
+      ) : (
+      <View style={styles.npContainer}>
+        <Text style={styles.nopText}>Loading Data...</Text>
+      </View>
+      )}
     </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  mainContainer: {
+    flex: 1,  // Use flex to take up the whole screen
     backgroundColor: 'white'
+  },
+  container: {
+    width: '100%',  // Ensures the ScrollView takes the full width
   },
   contentContainer: {
     flexGrow: 1,
@@ -77,7 +67,18 @@ const styles = StyleSheet.create({
   },
   filterText: {
     color: '#ffffff',
-  }
+  },
+  npContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  nopText: {
+    fontSize: 14,
+    color: '#757575',
+    fontFamily: 'Poppins'
+  },
   
 });
 

@@ -2,9 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-
-// Import your screen components
-import CustomerHome from './CustomerHome';
 import PropertyScreenNavigator from '../../navigations/PropertyScreenNavigator';
 import FavProperties from './FavProperties';
 import SettingsScreenNavigator from '../../navigations/SettingsScreenNavigator';
@@ -74,16 +71,7 @@ const CustomerBottomTab = ({}) => {
     <Tab.Navigator screenOptions={screenOptions}>
       <Tab.Screen name="Home" component={CustomerHomeScreenNavigator} />
       <Tab.Screen
-        name="properties"
-        component={PropertyScreenNavigator}
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            // Prevent default action
-            e.preventDefault();
-            // Navigate to the specific screen you want within this tab
-            navigation.navigate('properties', { screen: 'Customer Properties' });
-          },
-        })}
+        name="properties" component={PropertyScreenNavigator}
       />
       <Tab.Screen name="Favorites" component={FavProperties} />
       <Tab.Screen name="Profile" component={CustomerProfile} />

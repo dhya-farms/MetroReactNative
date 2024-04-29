@@ -2,9 +2,12 @@ import { StyleSheet } from "react-native";
 import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,  // Use flex to take up the whole screen
+    backgroundColor: 'white'
+    },
     container: {
-      width: '100%',
-      backgroundColor: 'white'
+      width: '100%',  // Ensures the ScrollView takes the full width
     },
     contentContainer: {
       flexGrow: 1,
@@ -13,12 +16,13 @@ const styles = StyleSheet.create({
       paddingBottom: 50,
     },
     headerContainer: {
+      zIndex: 6000,
       width: '100%',
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       paddingHorizontal: 20,
-      paddingVertical: 15, // Adjust padding as needed
+      paddingVertical: 15,
       backgroundColor: '#fff',
       shadowColor: '#000',
       shadowOffset: {
@@ -76,6 +80,12 @@ const styles = StyleSheet.create({
       alignSelf: 'center',
       width: '90%',
       marginVertical: 16,
+    },
+    loaderContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'white'
     },
 });
 

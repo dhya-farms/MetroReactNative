@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StatusBar} 
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Image, ScrollView, StatusBar, ActivityIndicator, Linking} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';;
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import ApproveButton from '../../components/ApproveButton';
 import styles from '../../constants/styles/admincustomerdetailsstyles';
 import RemarkModal from '../../modals/RemarksModal';
-
+import axios from 'axios';
 
 
 
@@ -20,7 +20,12 @@ const InfoRow = ({ label, value }) => (
 
 
 
-const AdminCustomerDetails = ({navigation}) => {
+const AdminCustomerDetails = ({route, navigation}) => {
+  const { customerId } = route.params?.params || {};
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [backscreen, setBackScreen] = useState('')
+  const [customerDetails, setCustomerDetails] = useState(null);
   const [ismodalVisible, setisModalVisible] = useState(false);
   const [status, setStatus] = useState({
     siteVisit: {
@@ -46,6 +51,57 @@ const AdminCustomerDetails = ({navigation}) => {
 
     // Add more categories here if needed
   });
+
+  useEffect(() => {
+    const effectiveCustomerId = customerId || route.params?.customerId;
+
+    const fetchCustomerDetails = async () => {
+      if (!effectiveCustomerId) {
+        console.log("No customer ID provided");
+        setError("No customer ID provided");
+        setLoading(false);
+        return;
+      }
+    const nestedBackScreen = route.params?.params?.backScreen;
+    const directBackScreen = route.params?.backScreen;
+    const effectiveBackScreen = nestedBackScreen || directBackScreen;
+    console.log("Effective Back Screen for use:", effectiveBackScreen);
+  
+      if (effectiveBackScreen) {
+        console.log("Navigated from:", effectiveBackScreen);
+        setBackScreen(effectiveBackScreen)
+      } else {
+        console.log("No Back Screen provided in route params.");
+      }
+
+
+      setLoading(true);
+      try {
+        const response = await axios.get(`https://splashchemicals.in/metro/api/crm-leads/${effectiveCustomerId}/`);
+        console.log("Fetch success:", response.data);
+        setCustomerDetails(response.data);
+      } catch (error) {
+        console.error("Fetch error:", error);
+        setError(error.response ? error.response.data.message : error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomerDetails();
+  }, [customerId, route.params]);
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+  }
+
+  if (error) {
+    return <Text>Error: {error}</Text>;
+  }
+
+  if (!customerDetails) {
+    return <Text>No customer details available.</Text>;
+  }
 
   const toggleDetailsVisibility = (category) => {
     setStatus((prevState) => ({
@@ -96,32 +152,70 @@ const AdminCustomerDetails = ({navigation}) => {
       },
     }));
   };
+
+  const handleWhatsAppPress = () => {
+    let whatsappUrl = `https://wa.me/${customerDetails.customer.mobile_no}`;
+    console.log(whatsappUrl)
+    Linking.openURL(whatsappUrl).catch(err => console.error('An error occurred', err));
+  };
+
+  const handleCallPress = () => {
+    const callLink = `tel:${customerDetails.customer.mobile_no}`;
+    Linking.openURL(callLink);
+  };
+
+  const handleMailPress = () => {
+    let emailUrl = `mailto:${customerDetails.customer.email}`;
+    Linking.openURL(emailUrl).catch(err => console.error('An error occurred', err));
+  };
+
+  const handleBack = () => {
+    if (backscreen==="Home") {
+      navigation.navigate("Home", {
+        screen: "Admin Home",
+      });
+    
+    } else if(backscreen==="CustomerList"){
+      navigation.navigate("Client", {
+        screen: "Customer List",
+      });
+    } else {
+      navigation.goBack();
+    }
+  };
   
 
   
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.mainContainer}>
       <StatusBar/>
       <HeaderContainer title="Customers Details" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
-      onPress={()=>{navigation.goBack()}}/>
+      onPress={handleBack}/>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.customerInfoContainar}>
         <View style={styles.imgContainer}>
             <Image source={require('../../../assets/images/person.png')} style={styles.personImage}/>
         </View>
         <View style={styles.cusTextContainer}>
-            <Text style={styles.nameText}>Suraj</Text>
-            <Text style={styles.numText}>+91-7904432770</Text>
+            <Text style={styles.nameText}>{customerDetails.customer.name}</Text>
+            <Text style={styles.numText}>{customerDetails.customer.mobile_no}</Text>
         </View>
         <View style={styles.deleteContainer}>
           <Icon name="trash-alt" size={9.92} color="#858585" style={styles.icon} />
         </View>
       </View>
       <View style={styles.smIconsContainer}>
-        <Image source={require("../../../assets/images/wpicon.png")}/>
-        <Image source={require("../../../assets/images/clicon.png")}/>
-        <Image source={require("../../../assets/images/mpicon.png")}/>
+      <TouchableOpacity onPress={handleWhatsAppPress}>
+          <Image source={require("../../../assets/images/wpicon.png")} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleCallPress}>
+          <Image source={require("../../../assets/images/clicon.png")} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleMailPress}>
+          <Image source={require("../../../assets/images/mpicon.png")} />
+        </TouchableOpacity>
       </View>
       <View style={styles.separator} />
       <View style={styles.progressContainer}>
@@ -289,6 +383,7 @@ const AdminCustomerDetails = ({navigation}) => {
       </View>
       </View>
     </ScrollView>
+    </View>
   );
 };
 

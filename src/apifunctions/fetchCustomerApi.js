@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Base URL and endpoint configuration
 const BASE_URL = 'https://splashchemicals.in/metro';
-const CUSTOMERS_ENDPOINT = `${BASE_URL}/api/customers/`;
+const CUSTOMERS_ENDPOINT = `${BASE_URL}/api/crm-leads/`;
 
 // Prepare the authorization headers
 const getAuthHeaders = token => ({
@@ -28,16 +28,17 @@ export const fetchCustomers = async (paramsToken) => {
         const headers = getAuthHeaders(token);
         const response = await axios.get(CUSTOMERS_ENDPOINT, { headers });
         
-        return response.data.results.map((customer, index) => {
-            // Generate a unique key for each customer
-            const key = customer.user?.id?.toString() || `${customer.email}-${index}`;
-            
+        return response.data.results.map((entry) => {
+            const customer = entry.customer;
+            const property = entry.property;
             return {
-                id: key,
+                uniqueId: entry.id, // Use results.id as the unique id
+                customerId: customer.id,
                 name: customer.name,
                 number: customer.mobile_no,
                 mailId: customer.email,
-                personimage: require('../../assets/images/person.png'), // Adjust the path as necessary
+                personimage: require('../../assets/images/person.png'),
+                property: property.name, // Include property name
             };
         });
     } catch (error) {

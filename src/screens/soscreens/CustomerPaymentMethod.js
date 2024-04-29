@@ -22,7 +22,7 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
         style={styles.input}
         mode="outlined"
         outlineColor="#000000" // Here you set the border color
-        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent' } }}
+        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent', onSurface: 'black' } }}
         {...props}
       />
       </View>
@@ -183,11 +183,12 @@ const CustomerPaymentMethod = ({route, navigation}) => {
    
     
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.mainContainer}>
       <HeaderContainer title="Payment Method" 
-      ImageLeft={require('../../../assets/images/back arrow icon.png')}
-      ImageRight={require('../../../assets/images/belliconblue.png')}
-      onPress={()=>{navigation.goBack()}}/>
+        ImageLeft={require('../../../assets/images/back arrow icon.png')}
+        ImageRight={require('../../../assets/images/belliconblue.png')}
+        onPress={()=>{navigation.goBack()}}/>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {!showInputFields && paymentProcessed  ? (
       <View style={styles.paymentEntriesContainer}>
         {paymentEntries.map((entry, index) => (
@@ -316,6 +317,7 @@ const CustomerPaymentMethod = ({route, navigation}) => {
        )}
     
     </ScrollView>
+    </View>
     
   );
 };

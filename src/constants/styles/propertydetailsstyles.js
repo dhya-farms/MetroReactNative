@@ -1,15 +1,18 @@
 import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
+    mainContainer: {
+      flex: 1,  // Use flex to take up the whole screen
+      backgroundColor: 'white'
+    },
     container: {
-      flex: 1,
+      width: '100%',  // Ensures the ScrollView takes the full width
     },
     contentContainer: {
       flexGrow: 1,
       alignItems: 'center',
       justifyContent: 'flex-start',
       paddingBottom: 50,
-      backgroundColor: 'white'
     },
     slidingContainer:{
       width: '100%',
@@ -119,7 +122,6 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'space-around',
-      alignItems: 'center'
     },
     nearby: {
       alignItems: 'center',
@@ -131,7 +133,8 @@ const styles = StyleSheet.create({
       fontFamily: 'Poppins',
       fontWeight: '500',
       fontSize: 10,
-      color: '#424242'
+      color: '#424242',
+      textAlign: 'center'
     },
     progressContainer:{
       width: '95%',

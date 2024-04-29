@@ -16,6 +16,10 @@ const OtpScreen = ({ route, navigation }) => {
   const [isResendButtonEnabled, setIsResendButtonEnabled] = useState(false);
   const [resetSucessMessage, setResetSucessMessage] = useState('')
 
+  const changeNumberPress = ()=>{
+    navigation.goBack()
+  }
+
   const { phoneNumber } = route.params;
 
   useEffect(() => {
@@ -55,32 +59,6 @@ const OtpScreen = ({ route, navigation }) => {
     }
   };
 
-  const handleGetLogin = () => {
-    const enteredOtp = otp.join("");
-    const defaultOtp = "111111";
-  
-    if (enteredOtp === defaultOtp) {
-      switch (phoneNumber) {
-        case "7695941098":
-          navigation.navigate("CustomerBottomTab");
-          break;
-        case "8778714616":
-          navigation.navigate("AdminBottomTab");
-          break;
-        case "9788981574":
-          navigation.navigate("SoBottomTab");
-          break;
-        default:
-          // Handle invalid phone number or OTP
-          alert("Invalid phone number or OTP.");
-      }
-    } else {
-      // Handle incorrect OTP
-      alert("Incorrect OTP entered.");
-    }
-  };
-
-
   const handleResendOtp = async()=>{
     setTimeLeft(90); // Or whatever your starting time is
     setIsResendButtonEnabled(false);
@@ -116,14 +94,17 @@ const OtpScreen = ({ route, navigation }) => {
   
       // Store the token and user data
       await AsyncStorage.setItem('userToken', response.data.token);
-      await AsyncStorage.setItem('userId', response.data.customer.id.toString());
+      const userId = response.data.customer ? response.data.customer.id.toString() : response.data.user.id.toString();
+      await AsyncStorage.setItem('userId', userId);
       await AsyncStorage.setItem('role', response.data.user.role.toString());
-      await AsyncStorage.setItem('createdBy', response.data.customer.created_by.toString());
+      if (response.data.customer && response.data.customer.created_by) {
+        await AsyncStorage.setItem('createdBy', response.data.customer.created_by.toString());
+      }       
   
       // Determine navigation based on user role
       let navigateToTab;
       switch (response.data.user.role) {
-        case 1:
+        case 2:
           navigateToTab = {
             name: 'AdminBottomTab',
             params: {
@@ -132,7 +113,7 @@ const OtpScreen = ({ route, navigation }) => {
                 screen: 'Admin home', // Assuming 'Customer Home' is the route name within CustomerHomeScreenNavigator
                 params: {
                   token: response.data.token,
-                  userId: response.data.customer.id.toString(),
+                  userId: response.data.customer ? response.data.customer.id.toString() : response.data.user.id.toString()
                 }
               }
             }
@@ -147,7 +128,7 @@ const OtpScreen = ({ route, navigation }) => {
                 screen: 'SO home', // Assuming 'Customer Home' is the route name within CustomerHomeScreenNavigator
                 params: {
                   token: response.data.token,
-                  userId: response.data.customer.id.toString(),
+                  userId: response.data.customer ? response.data.customer.id.toString() : response.data.user.id.toString()
                 }
               }
             }
@@ -163,7 +144,7 @@ const OtpScreen = ({ route, navigation }) => {
                 params: {
                   token: response.data.token,
                   userId: response.data.customer.id.toString(),
-                  soId: response.data.customer.created_by.toString()
+                  soId: response.data.customer?.created_by?.toString()
                 }
               }
             }
@@ -231,9 +212,9 @@ const OtpScreen = ({ route, navigation }) => {
       <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
      </View>
      {resetSucessMessage ? <Text style={styles.errorMessage}>{resetSucessMessage}</Text> : null}
-     <View style={styles.changeNumContiner}>
+     <TouchableOpacity style={styles.changeNumContiner} onPress={changeNumberPress}>
         <Text style={styles.cnText}>{phoneNumber} Change number?</Text>
-     </View>
+     </TouchableOpacity>
      <ButtonComponent onPress={verifyLogin} text="Login" />
     </View>
   )

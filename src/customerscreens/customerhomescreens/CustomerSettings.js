@@ -39,7 +39,8 @@ const CustomerSettings = ({navigation}) => {
     handleShowConfirmModal("Logged Out Sucessfully");
     await AsyncStorage.removeItem('userToken');
     await AsyncStorage.removeItem('userId');
-    await AsyncStorage.removeItem('role'); // Remove the token from storage
+    await AsyncStorage.removeItem('role'); 
+    await AsyncStorage.removeItem('createdBy');// Remove the token from storage
     setModalVisible(false); // Close the modal
   
     // Reset the navigation stack and navigate to the Onboarding screen
@@ -53,7 +54,8 @@ const CustomerSettings = ({navigation}) => {
     handleShowConfirmModal("Your Account Has Been Deleted");
     await AsyncStorage.removeItem('userToken');
     await AsyncStorage.removeItem('userId');
-    await AsyncStorage.removeItem('role'); // Remove the token from storage
+    await AsyncStorage.removeItem('role');
+    await AsyncStorage.removeItem('createdBy') // Remove the token from storage
     setModalVisible(false); // Close the modal
   
     // Reset the navigation stack and navigate to the Onboarding screen

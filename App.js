@@ -66,7 +66,7 @@ export default function App() {
         if (token && userId) {
           const roleNumber = parseInt(role, 10);
           switch (roleNumber) {
-            case 1: // Admin
+            case 2: // Admin
               routeName = "AdminBottomTab";
               params = { screen: 'Admin home', params: { token, userId } };
               break;

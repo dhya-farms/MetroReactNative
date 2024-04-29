@@ -102,12 +102,13 @@ const ProjectReportBookings = ({navigation}) => {
 
   
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.mainContainer}>
       <StatusBar/>
       <HeaderContainer title="Project Report" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}/>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={{width: '90%' , marginVertical: 10,}}>
         <TabSelector selectedTab={selectedTab} setSelectedTab={setSelectedTab}/>
       </View>
@@ -181,13 +182,17 @@ const ProjectReportBookings = ({navigation}) => {
       </View>
        )}
     </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  mainContainer: {
+    flex: 1,  // Use flex to take up the whole screen
     backgroundColor: 'white'
+  },
+  container: {
+    width: '100%',  // Ensures the ScrollView takes the full width
   },
   contentContainer: {
     flexGrow: 1,

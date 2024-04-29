@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView} 
+import React, { useCallback, useState,useEffect, } from 'react';
+import { View, Text, TouchableOpacity, Image, ScrollView, ActivityIndicator, Linking} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -14,9 +14,44 @@ import { SECONDARY_COLOR } from '../../constants/constantstyles/colors';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../../constants/styles/socustomerdetailsstyles';
+import axios from 'axios';
+import { postSiteVisit } from '../../apifunctions/postSiteVisitApi';
 
 
 const SoCustomerDetails = ({route ,navigation}) => {
+
+  const { customerId } = route.params?.params || {};
+  const [pickupModalVisible, setPickupModalVisible] = useState(false);
+  const [isPickup, setIsPickup] = useState(false);
+  const [isDrop, setIsDrop] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [detailsInputModalVisible, setDetailsInputModalVisible] = useState(false);
+  const [dropModalVisible, setDropModalVisible] = useState(false)
+  const [addressModalVisible, setAddressModalVisible] = useState(false)
+  const [addressConfirmModalVisible, setAddressConfirmModalVisible ] = useState(false)
+  const [confirmationModalVisible, setConfirmationModalVisible] = useState(false)
+  const [paymentModalVisible, setPaymentModalVisible] = useState(false)
+  const [bookingCompleted, setBookingCompleted] = useState(false);
+  const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const [cameFromPickupNo, setCameFromPickupNo] = useState(false);
+  const [verificationComplete, setVerificationComplete] = useState(false)
+  const [completePayment, setCompletePayment] = useState(false)
+  const [paymentEntries, setPaymentEntries] = useState([])
+  const [crmId, setCrmId] = useState(null)
+  const [pickupAddress, setPickupAddress] = useState('')
+  const [dropAddress, setDropAddress] = useState('')
+  const [pickupTime, setPickupTime] = useState('')
+  const [pickupDate, setPickupDate] = useState('')
+  const [selectedDocuments, setSelectedDocuments] = useState([]);
+  const [deliveryCompleted, setDeliveryCompleted] = useState(false)
+  const [paymentDetails, setPaymentDetails] = useState({
+    date: '',
+    amountPaid: '',
+    paymentMethod: '',
+    referenceNumber: ''
+  });
+  const [customerDetails, setCustomerDetails] = useState(null);
 
 
   useFocusEffect(
@@ -71,37 +106,84 @@ const SoCustomerDetails = ({route ,navigation}) => {
 
     }, [route.params, paymentCompleted, verificationComplete]) // Removed the state dependencies to prevent re-triggering from their updates
   );
- 
-  const [pickupModalVisible, setPickupModalVisible] = useState(false);
-  const [detailsInputModalVisible, setDetailsInputModalVisible] = useState(false);
-  const [dropModalVisible, setDropModalVisible] = useState(false)
-  const [addressModalVisible, setAddressModalVisible] = useState(false)
-  const [addressConfirmModalVisible, setAddressConfirmModalVisible ] = useState(false)
-  const [confirmationModalVisible, setConfirmationModalVisible] = useState(false)
-  const [paymentModalVisible, setPaymentModalVisible] = useState(false)
-  const [bookingCompleted, setBookingCompleted] = useState(false);
-  const [paymentCompleted, setPaymentCompleted] = useState(false);
-  const [cameFromPickupNo, setCameFromPickupNo] = useState(false);
-  const [verificationComplete, setVerificationComplete] = useState(false)
-  const [completePayment, setCompletePayment] = useState(false)
-  const [paymentEntries, setPaymentEntries] = useState([])
-  const [selectedDocuments, setSelectedDocuments] = useState([]);
-  const [deliveryCompleted, setDeliveryCompleted] = useState(false)
-  const [paymentDetails, setPaymentDetails] = useState({
-    date: '',
-    amountPaid: '',
-    paymentMethod: '',
-    referenceNumber: ''
-  });
   const paymentInfoExists = paymentDetails.date || paymentDetails.amountPaid || paymentDetails.paymentMethod || paymentDetails.referenceNumber;
 
+  useEffect(() => {
+    const fetchSiteVisits = async () => {
+        const crmId = customerId || route.params?.customerId;
+        const token = await AsyncStorage.getItem('userToken');
+        setCrmId(crmId);
+
+        if (!crmId) {
+            console.log("No CRM ID provided");
+            setBookingCompleted(false);
+            return;
+        }
+
+        try {
+            const response = await axios.get(`https://splashchemicals.in/metro/api/site-visits/?crm_lead_id=${crmId}`, {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Token ${token}`,
+                }
+            });
+
+            if (response.data.count > 0) {
+                setBookingCompleted(true);
+                console.log(`Booking for customer ID ${crmId} has been completed.`);
+            } else {
+                setBookingCompleted(false);
+                console.log(`No bookings found for customer ID ${crmId}.`);
+            }
+        } catch (error) {
+            console.error("Failed to fetch site visits:", error);
+            setBookingCompleted(false);
+        }
+    };
+
+    fetchSiteVisits();
+}, [customerId, route.params]);
+
+
+  useEffect(() => {
+    const effectiveCustomerId = customerId || route.params?.customerId;
+    setCrmId(effectiveCustomerId)
+    const fetchCustomerDetails = async () => {
+      if (!effectiveCustomerId) {
+        console.log("No customer ID provided");
+        setError("No customer ID provided");
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const response = await axios.get(`https://splashchemicals.in/metro/api/crm-leads/${effectiveCustomerId}/`);
+        console.log("Fetch success:", response.data);
+        setCustomerDetails(response.data);
+      } catch (error) {
+        console.error("Fetch error:", error);
+        setError(error.response ? error.response.data.message : error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomerDetails();
+  }, [customerId, route.params]);
+  
+
+
+
   const handleYesPress = () => {
+    setIsPickup(true);
     setPickupModalVisible(false);
     setDetailsInputModalVisible(true);
     setCameFromPickupNo(false);
   };
 
   const handleNoPress = ()=>{
+    setIsPickup(false);
     setPickupModalVisible(false);
     setDropModalVisible(true)
     setCameFromPickupNo(true);
@@ -112,6 +194,7 @@ const SoCustomerDetails = ({route ,navigation}) => {
     setAddressModalVisible(true);
   }
   const dropYesPress = () => {
+    setIsDrop(true)
     setDropModalVisible(false);
     if (cameFromPickupNo) {
       setAddressModalVisible(true);
@@ -122,30 +205,71 @@ const SoCustomerDetails = ({route ,navigation}) => {
   };
   
   const confirmationPress = ()=>{
+    setIsDrop(false)
     setDropModalVisible(false)
     setConfirmationModalVisible(true)
   }
 
-  const addressConfirmationPress = () => {
+  const handleDropAddressConfirm = (data) => {
+    // Assuming you have a state setter like this in your parent component
+    setDropAddress(data.dropAddress);
     setAddressModalVisible(false);
-    setConfirmationModalVisible(true);
+    setConfirmationModalVisible(true); // Move to confirmation after setting address
   };
 
-  const pickupDonePress =()=>{
-    setDetailsInputModalVisible(false)
-    setDropModalVisible(true)
-  }
+  const pickupDonePress = (details) => {
+    setPickupAddress(details.pickupAddress); // Store the address
+    setPickupDate(details.date); // Store the full ISO string of date and time
+    // Since the full date-time ISO string is stored, you might not need to store time separately.
+    // But if you do need it separately for other parts of your app:
+    const timeFromDetails = new Date(details.date);
+    setPickupTime(`${timeFromDetails.getHours().toString().padStart(2, '0')}:${timeFromDetails.getMinutes().toString().padStart(2, '0')}`);
+
+    setDetailsInputModalVisible(false);
+    setDropModalVisible(true);
+  };
 
   const sameAddressPress = ()=>{
+    setDropAddress(pickupAddress);
     setAddressConfirmModalVisible(false)
     setConfirmationModalVisible(true)
   }
 
-  const handleConfirmPress = () => {
+  const handleConfirmPress = async () => {
     setConfirmationModalVisible(false);
-    setBookingCompleted(true); // Update the state to indicate booking is completed
-  };
+    try {
+        const payload = {
+            crm_lead_id: crmId,
+            is_pickup: isPickup,
+            is_drop: isDrop,
+            // include other necessary details
+        };
 
+        if (isPickup) {
+            payload.pickup_address = pickupAddress;
+            payload.pickup_date = pickupDate; // Directly use the ISO string from pickupDate
+        }
+
+        if (isDrop) {
+            payload.drop_address = dropAddress;
+        }
+
+        // Sending the request to the server
+        const response = await postSiteVisit(payload);
+        console.log('Booking successful:', response);
+
+        // Save booking state and ID with customer specific key
+        await AsyncStorage.setItem(`bookingCompleted_${crmId}`, 'true');
+        await AsyncStorage.setItem(`bookingId_${crmId}`, response.id.toString());
+
+        setBookingCompleted(true);
+        alert('Site visit booked successfully!');
+    } catch (error) {
+        console.error('Failed to book site visit:', error);
+        alert('Failed to book site visit. Please try again.');
+        setBookingCompleted(false);
+    }
+  };
   const paymentConfirmPress = ()=>{
     setPaymentModalVisible(false)
     setPaymentCompleted(true)
@@ -184,30 +308,63 @@ const SoCustomerDetails = ({route ,navigation}) => {
       params: {  existingPaymentEntries: paymentEntries, } // Optional: pass existing count if needed
     });
   };
-  
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+  }
+
+  if (error) {
+    return <Text>Error: {error}</Text>;
+  }
+
+  if (!customerDetails) {
+    return <Text>No customer details available.</Text>;
+  }
+
+  const handleWhatsAppPress = () => {
+    let whatsappUrl = `https://wa.me/${customerDetails.customer.mobile_no}`;
+    Linking.openURL(whatsappUrl).catch(err => console.error('An error occurred', err));
+  };
+
+  const handleCallPress = () => {
+    const callLink = `tel:${customerDetails.customer.mobile_no}`;
+    Linking.openURL(callLink);
+  };
+
+  const handleMailPress = () => {
+    let emailUrl = `mailto:${customerDetails.customer.email}`;
+    Linking.openURL(emailUrl).catch(err => console.error('An error occurred', err));
+  };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-    <HeaderContainer title="Customer Details" 
+    <View style={styles.mainContainer}>
+      <HeaderContainer title="Customer Details" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}/>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
      <View style={styles.customerInfoContainar}>
         <View style={styles.imgContainer}>
             <Image source={require('../../../assets/images/person.png')} style={styles.personImage}/>
         </View>
         <View style={styles.cusTextContainer}>
-            <Text style={styles.nameText}>Suraj</Text>
-            <Text style={styles.numText}>+91-7904432770</Text>
+            <Text style={styles.nameText}>{customerDetails.customer.name}</Text>
+            <Text style={styles.numText}>{customerDetails.customer.mobile_no}</Text>
         </View>
         <View style={styles.deleteContainer}>
           <Icon name="trash" size={9.92} color="#858585" style={styles.icon} />
         </View>
       </View>
       <View style={styles.smIconsContainer}>
+        <TouchableOpacity onPress={handleWhatsAppPress}>
         <Image source={require("../../../assets/images/wpicon.png")}/>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleCallPress}>
         <Image source={require("../../../assets/images/clicon.png")}/>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleMailPress}>
         <Image source={require("../../../assets/images/mpicon.png")}/>
+        </TouchableOpacity>
       </View>
     <View style={styles.separator} />
 
@@ -236,7 +393,8 @@ const SoCustomerDetails = ({route ,navigation}) => {
           <DetailsInputModal
             modalVisible={detailsInputModalVisible}
             setModalVisible={setDetailsInputModalVisible}
-            pickupDonePress={pickupDonePress}
+            onDone={pickupDonePress}
+            propertyName={customerDetails.property.name}
           />
           <DropModal
             modalVisible={dropModalVisible}
@@ -247,7 +405,7 @@ const SoCustomerDetails = ({route ,navigation}) => {
           <AddressModal
             modalVisible={addressModalVisible}
             setModalVisible={setAddressModalVisible}
-            addressConfirmationPress={addressConfirmationPress}
+            onDone={handleDropAddressConfirm}
           />
           <DropAddessConfimModal
             modalVisible={addressConfirmModalVisible}
@@ -410,6 +568,7 @@ const SoCustomerDetails = ({route ,navigation}) => {
 
       </View>
     </ScrollView>
+    </View>
   );
 };
 

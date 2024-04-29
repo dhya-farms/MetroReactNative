@@ -1,8 +1,23 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Linking } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const Card = ({ name, number, mail, personimage }) => {
+const Card = ({ name, number, mail, personimage, propertyName }) => {
+
+  const handleWhatsAppPress = () => {
+    let whatsappUrl = `https://wa.me/${number}`;
+    Linking.openURL(whatsappUrl).catch(err => console.error('An error occurred', err));
+  };
+
+  const handleCallPress = () => {
+    const callLink = `tel:${number}`;
+    Linking.openURL(callLink);
+  };
+
+  const handleMailPress = () => {
+    let emailUrl = `mailto:${mail}`;
+    Linking.openURL(emailUrl).catch(err => console.error('An error occurred', err));
+  };
   return (
     <View style={styles.cardContainer}>
      <View style={styles.textWithImageContainer}>
@@ -14,6 +29,10 @@ const Card = ({ name, number, mail, personimage }) => {
         <View style={styles.imageContainer}>
         <Image source={personimage} style={styles.personImage} />
         </View>
+     </View>
+     <View style={styles.prContainer}>
+      <Text style={styles.prHeader}>Property Name: </Text>
+      <Text style={styles.prText}>{propertyName}</Text>
      </View>
      <View style={styles.separator} />
      <Text style={styles.progressTitle}>Progress State:</Text>
@@ -40,9 +59,15 @@ const Card = ({ name, number, mail, personimage }) => {
         </View>
       </View>
       <View style={styles.smIconsContainer}>
-        <Image source={require("../../assets/images/wpicon.png")}/>
-        <Image source={require("../../assets/images/clicon.png")}/>
-        <Image source={require("../../assets/images/mpicon.png")}/>
+      <TouchableOpacity onPress={handleWhatsAppPress}>
+          <Image source={require("../../assets/images/wpicon.png")} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleCallPress}>
+          <Image source={require("../../assets/images/clicon.png")} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleMailPress}>
+          <Image source={require("../../assets/images/mpicon.png")} />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -60,16 +85,17 @@ const CustomerCard = ({customerData, isHorizontal = true, onCardPress})=>{
           horizontal={isHorizontal}
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => onCardPress()}>
+            <TouchableOpacity onPress={() => onCardPress(item.uniqueId)}>
             <Card
               name={item.name}
               number={item.number}
               mail={item.mailId}
               personimage={item.personimage}
+              propertyName={item.property}
             />
             </TouchableOpacity>
           )}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item.uniqueId}
           ItemSeparatorComponent={isHorizontal ? null : ItemSeparator}
           style={styles.flatList}
         />
@@ -170,8 +196,23 @@ const styles = StyleSheet.create({
       alignSelf: 'center',
       width: '90%',
       marginVertical: 16,
-
     },
+    prContainer:{
+      width: '90%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 10,
+    },
+    prHeader:{
+      fontFamily: 'Poppins',
+      fontWeight: '400',
+      fontSize: 14,
+    },
+    prText:{
+      fontFamily: 'Poppins',
+      fontWeight: '600',
+      fontSize: 16,
+    }
  });
 
 export default CustomerCard

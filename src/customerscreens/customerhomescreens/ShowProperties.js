@@ -9,34 +9,7 @@ import HeaderContainer from '../../components/HeaderContainer';
 import LayoutImageModal from '../../modals/LayoutImageModal';
 import styles from '../../constants/styles/showpropertiesstyles';
 import axios from 'axios';
-
-
-
-const amenityIcons = {
-  'play ground': require('../../../assets/images/playground.png'),
-  'swimming pool': require('../../../assets/images/pool.png'),
-  'market': require('../../../assets/images/market.png'),
-  'kids park': require('../../../assets/images/kidspark.png'),
-  'bus stand': require('../../../assets/images/busstand.png'),
-  'walking area': require('../../../assets/images/walkingarea.png'),
-  'school': require('../../../assets/images/school.png'),
-  'gym': require('../../../assets/images/gym.png'),
-  'private beach': require('../../../assets/images/sunbed.png'),
-  'community pool': require('../../../assets/images/pool.png'),
-  
-};
-
-const defaultIcon = require('../../../assets/images/amenites.png');
-
-const getAmenityIcon = (amenityName) => {
-  const lowerCaseAmenityName = amenityName.toLowerCase();
-  return Object.keys(amenityIcons).reduce((icon, key) => {
-    if (key === lowerCaseAmenityName) {
-      return amenityIcons[key];
-    }
-    return icon;
-  }, defaultIcon);
-};
+import AmenitiesDisplay from '../../components/AmenitiesDisplay';
 
 
 
@@ -50,10 +23,6 @@ const galleryImages = [
   // ... add other images as needed
 ];
 
-
-
-
-
 const ShowProperties = ({ route, navigation }) => {
   const { propertyId } = route.params?.params || {};
   const [propertyDetails, setPropertyDetails] = useState(null);
@@ -62,6 +31,7 @@ const ShowProperties = ({ route, navigation }) => {
   const [imageModalVisible, setImageModalVisible] = useState(false)
   const [error, setError] = useState('');
   const scrollViewRef = useRef();
+  const [backscreen, setBackScreen] = useState('')
   const desRef = useRef();
   const amRef = useRef();
   const gmRef = useRef();
@@ -70,6 +40,17 @@ const ShowProperties = ({ route, navigation }) => {
     const effectivePropertyId = propertyId || route.params?.propertyId;
     console.log("Effective Property ID for use:", effectivePropertyId);
 
+    const nestedBackScreen = route.params?.params?.backScreen;
+    const directBackScreen = route.params?.backScreen;
+    const effectiveBackScreen = nestedBackScreen || directBackScreen;
+    console.log("Effective Back Screen for use:", effectiveBackScreen);
+
+    if (effectiveBackScreen) {
+      console.log("Navigated from:", effectiveBackScreen);
+      setBackScreen(effectiveBackScreen)
+    } else {
+      console.log("No Back Screen provided in route params.");
+    }
     const fetchPropertyDetails = async () => {
       if (!effectivePropertyId) {
         console.log("No Property ID provided");
@@ -170,16 +151,29 @@ const ShowProperties = ({ route, navigation }) => {
   }
 
   const amenitiesArray = propertyDetails.details.amenities.map(item => item.trim()).filter(Boolean);
+
+  const handleBack = () => {
+    if (backscreen==="Home") {
+      navigation.navigate("Home");
+    
+    } else if(backscreen==="Properties"){
+      navigation.navigate("properties", {
+        screen: "Customer Properties",
+      });
+    } else if(backscreen==="Favorites"){
+      navigation.navigate("Favorites");
+    } else {
+      navigation.goBack();
+    }
+  };
   
   return (
-    <SafeAreaView style={{flex: 1}}>
-    <StatusBar/>
+    <View style={styles.mainContainer}>
+      <HeaderContainer title="Properties" 
+          ImageLeft={require('../../../assets/images/back arrow icon.png')}
+          ImageRight={require('../../../assets/images/belliconblue.png')}
+          onPress={handleBack}/>     
     <ScrollView ref={scrollViewRef} style={styles.container} contentContainerStyle={styles.contentContainer}>
-    <HeaderContainer title="Properties" 
-      ImageLeft={require('../../../assets/images/back arrow icon.png')}
-      ImageRight={require('../../../assets/images/belliconblue.png')}
-      onPress={()=>{navigation.goBack()}}/>
-      
     <SafeAreaView style={styles.slidingContainer}>
       <SlidingCarousel/>
     </SafeAreaView>
@@ -225,17 +219,7 @@ const ShowProperties = ({ route, navigation }) => {
         </View>
       </View>
     </View>
-    <View ref={amRef} style={styles.amContainer}>
-  <Text style={styles.amHeader}>Amenities:</Text>
-  <View style={styles.amenitiesContainer}>
-    {amenitiesArray.map((amenity, index) => (
-      <View key={index} style={styles.amenity}>
-        <Image source={getAmenityIcon(amenity)} style={styles.icon} />
-        <Text style={styles.text}>{amenity}</Text>
-      </View>
-    ))}
-     </View>
-    </View>
+    <AmenitiesDisplay ref={amRef} amenities={amenitiesArray} />
     <View ref={gmRef} style={styles.gmContainer}>
       <Text style={styles.gmHeader}>Gallery:</Text>
       <View style={styles.galleryContainer}>
@@ -248,7 +232,7 @@ const ShowProperties = ({ route, navigation }) => {
     </View>
     <EnquireContainer/>
     </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 

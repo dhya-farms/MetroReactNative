@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { TextInput } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import { PRIMARY_COLOR } from '../constants/constantstyles/colors';
 
 const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
     return (
@@ -56,6 +58,9 @@ const PaymentModal = ({ modalVisible, setModalVisible, onDone}) => {
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
+        <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+              <Icon name="times" size={20} color={PRIMARY_COLOR} />
+        </TouchableOpacity>
         <Text style={styles.modalTitle}>Payment</Text>
           <FloatingLabelInput
             label="Payment Amount"
@@ -113,7 +118,13 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5
+    elevation: 5,
+    position: 'relative' ,
+  },
+  closeButton: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
   },
   modalTitle: {
     fontFamily: 'Poppins',

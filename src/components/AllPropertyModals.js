@@ -10,7 +10,7 @@ import ConfirmationModal from '../modals/ConfirmationModal';
 import PaymentModal from '../modals/PaymentModal';
 
 
-const AllModals = ({ modalVisibility, toggleModalVisibility, handleYesPress, handleNoPress, handleDetailsInputDone, dropYesPress, confirmationPress, handleDropAddressDone, sameAddressPress, 
+const AllModals = ({ modalVisibility, toggleModalVisibility, handleYesPress, handleNoPress, handleDetailsInputDone, propertyName, dropYesPress, confirmationPress, handleDropAddressDone, sameAddressPress, 
   dropNoPress, handleConfirmPress, handleDetailsPaymentDone, handleDocVeifyDone, handleDetailsFullPaymentDone }) => {
   return (
     <>
@@ -24,6 +24,7 @@ const AllModals = ({ modalVisibility, toggleModalVisibility, handleYesPress, han
             modalVisible={modalVisibility.detailsInputModalVisible}
             setModalVisible={(isVisible) => toggleModalVisibility('detailsInputModalVisible', isVisible)}
             onDone={handleDetailsInputDone}
+            propertyName={propertyName}
           />
           <DropModal
             modalVisible={modalVisibility.dropModalVisible}

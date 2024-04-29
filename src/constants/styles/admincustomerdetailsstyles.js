@@ -3,9 +3,12 @@ import { StyleSheet } from "react-native";
 
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
+    mainContainer: {
+      flex: 1,  // Use flex to take up the whole screen
       backgroundColor: 'white'
+    },
+    container: {
+      width: '100%',  // Ensures the ScrollView takes the full width
     },
     contentContainer: {
       flexGrow: 1,

@@ -2,9 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const SdCard = ({ sitename, plotsAvailable, pricePerSqFt, bgimage, onPress }) => {
+const SdCard = ({ sitename, detailInfo, pricePerSqFt, bgimage, onPress }) => {
   // Formatting changes here based on the properties
-  const formattedSiteName = `${sitename}\n${plotsAvailable} BHK`;
+  const formattedSiteName = `${sitename}\n${detailInfo}`;
   const formattedPrice = `Starts @ \n₹${pricePerSqFt}/sqft`;
 
   return (
@@ -18,13 +18,7 @@ const SdCard = ({ sitename, plotsAvailable, pricePerSqFt, bgimage, onPress }) =>
   );
 };
 
-
-
-const SiteDetailsCard = ({siteData, onCardPress})=>{
-  const calculatePricePerSqFt = (price, sqFtFrom) => {
-    if (!price || !sqFtFrom) return "N/A";
-    return (parseFloat(price) / parseFloat(sqFtFrom)).toFixed(2);
-  };
+const SiteDetailsCard = ({siteData=[], onCardPress})=>{
 
     return (
         <FlatList
@@ -33,12 +27,12 @@ const SiteDetailsCard = ({siteData, onCardPress})=>{
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
             <SdCard
-                sitename={item.name}
-                plotsAvailable={item.plots_available}
-                pricePerSqFt={calculatePricePerSqFt(item.price, item.sq_ft_from)}
-                bgimage={item.source} // Ensure you have a way to determine the bgimage based on the property data
-                onPress={() => onCardPress()}
-           />
+              sitename={item.siteName}
+              detailInfo={item.detailInfo} // pass additional info if necessary
+              pricePerSqFt={item.pricePerSqFt}
+              bgimage={item.bgimage}
+              onPress={() => onCardPress(item.id)}
+            />
           )}
           keyExtractor={item => item.id.toString()}
           style={styles.flatList}
@@ -56,6 +50,7 @@ const styles = StyleSheet.create({
         height: 179, // Set your desired card height
         position: 'relative',
         marginHorizontal: 15, // Allows absolute positioning within
+        borderRadius: 10,
       },
     cardImage: {
         width: '100%',
@@ -69,7 +64,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         width: '100%',
-        padding: 10, // Adjust to your padding
+        padding: 6, // Adjust to your padding
+        backgroundColor: 'rgba(0, 0, 0, 0.6)'
       },
       cardTitle: {
         fontFamily: 'Poppins',

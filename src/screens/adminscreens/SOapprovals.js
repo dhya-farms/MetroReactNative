@@ -37,12 +37,13 @@ const SOApprovals = ({navigation}) => {
 
   
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.mainContainer}>
       <StatusBar/>
       <HeaderContainer title="Approval List" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}/>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={{zIndex: 2000, justifyContent: 'space-between', alignItems: 'center', width: '100%'}}>
       <SortHeader title="Approval"  />
       </View>
@@ -52,13 +53,17 @@ const SOApprovals = ({navigation}) => {
         }}/>
         </View>
     </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  mainContainer: {
+    flex: 1,  // Use flex to take up the whole screen
     backgroundColor: 'white'
+  },
+  container: {
+    width: '100%',  // Ensures the ScrollView takes the full width
   },
   contentContainer: {
     flexGrow: 1,

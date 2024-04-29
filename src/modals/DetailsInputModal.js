@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { TextInput } from 'react-native-paper';
+import { CustomDatePickerInput } from '../components/CustomDatepickerInput';
+import { CustomTimePickerInput } from '../components/CustomTimePickerInput';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import { PRIMARY_COLOR } from '../constants/constantstyles/colors';
 
 const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
     return (
@@ -11,18 +15,18 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
         style={styles.input}
         mode="outlined"
         outlineColor="#1D9BF0" // Here you set the border color
-        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent' } }}
+        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent' , onSurface: 'black'} }}
         {...props}
       />
     );
   };
 
-const DetailsInputModal = ({ modalVisible, setModalVisible, onDone }) => {
+const DetailsInputModal = ({ modalVisible, setModalVisible, onDone, propertyName }) => {
   // State for input fields
   const [pickupAddress, setPickupAddress] = useState('');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [property, setProperty] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [time, setTime] = useState(new Date());
+  const [property, setProperty] = useState(`${propertyName}`);
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleDonePress = () => {
@@ -31,21 +35,32 @@ const DetailsInputModal = ({ modalVisible, setModalVisible, onDone }) => {
 
     // Validate inputs
     if (!pickupAddress || !date || !time || !property) {
-      setErrorMessage('Please fill all the details.'); // Update error message state
-      return;
+        setErrorMessage('Please fill all the details.'); // Update error message state
+        return;
     }
+
+    // Extracting hours and minutes from time state
+    const hours = time.getHours();
+    const minutes = time.getMinutes();
+    const seconds = time.getSeconds();
+
+    // Setting hours, minutes, and seconds to the date state
+    date.setHours(hours, minutes, seconds, 0);
+
+    // Convert local time to UTC and remove milliseconds
+    const utcDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+    const pickupDateTimeIso = utcDate.toISOString().replace(/\.\d{3}/, '');
 
     // If validation passes, proceed to call the onDone callback
     onDone({
-      pickupAddress,
-      date,
-      time,
-      property,
+        pickupAddress,
+        date: pickupDateTimeIso,  // Sending datetime as an ISO string without milliseconds
+        property,
     });
 
     // Close the modal
     setModalVisible(false);
-  };
+};
 
   return (
     <Modal
@@ -55,26 +70,30 @@ const DetailsInputModal = ({ modalVisible, setModalVisible, onDone }) => {
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
+        <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+              <Icon name="times" size={20} color={PRIMARY_COLOR} />
+        </TouchableOpacity>
         <Text style={styles.modalTitle}>Pick up</Text>
           <FloatingLabelInput
             label="Pickup Address"
             value={pickupAddress}
             onChangeText={setPickupAddress}
           />
-          <FloatingLabelInput
-            label="Date"
-            value={date}
-            onChangeText={setDate}
+          <CustomDatePickerInput
+              label="Date"
+              date={date}
+              setDate={setDate}
           />
-          <FloatingLabelInput
-            label="Time"
-            value={time}
-            onChangeText={setTime}
+          <CustomTimePickerInput
+                label="Time"
+                time={time}
+                setTime={setTime}
           />
           <FloatingLabelInput
             label="Property"
             value={property}
             onChangeText={setProperty}
+            editable={false}
           />
           {errorMessage !== '' && (
             <Text style={styles.errorText}>{errorMessage}</Text> // Display the error message
@@ -109,7 +128,12 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5
+    position: 'relative' 
+  },
+  closeButton: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
   },
   modalTitle: {
     fontFamily: 'Poppins',

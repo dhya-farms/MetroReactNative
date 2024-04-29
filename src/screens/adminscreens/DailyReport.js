@@ -59,12 +59,13 @@ const DailyReport = ({navigation}) => {
 
   
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.mainContainer}>
       <StatusBar/>
       <HeaderContainer title="Daily Report" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}/>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <SortHeader title="Overview"  isSortVisible={false} />
       <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
         <ReportCard reportData={reportData} onPress={handleReportPress}/>
@@ -83,6 +84,7 @@ const DailyReport = ({navigation}) => {
         <Text style={styles.dorText}>Download Overall Report</Text>
     </TouchableOpacity>
     </ScrollView>
+    </View>
   );
 };
 

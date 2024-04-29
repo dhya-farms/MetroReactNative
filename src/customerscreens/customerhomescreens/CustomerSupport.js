@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, TextInput, StatusBar} 
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput, StatusBar} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import ContactButton from '../../components/ContactButton';
@@ -19,13 +19,13 @@ const CustomerSupport = ({navigation}) => {
 
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <StatusBar/>
+    <View style={styles.mainContainer}>
+     <StatusBar/>
       <HeaderContainer title="Support" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}/>
-
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.helpContainer}>
         <Text style={styles.helpText}>How can we help</Text>
         <Text style={styles.availText}>We’re available for 24/7</Text>
@@ -50,19 +50,23 @@ const CustomerSupport = ({navigation}) => {
       </View>
     </View>
     </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,  // Use flex to take up the whole screen
+    backgroundColor: 'white'
+  },
   container: {
-    flex: 1,
+    width: '100%',  // Ensures the ScrollView takes the full width
   },
   contentContainer: {
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingBottom: 50,
-    backgroundColor: 'white',
   },
   helpContainer:{
     width: '90%',

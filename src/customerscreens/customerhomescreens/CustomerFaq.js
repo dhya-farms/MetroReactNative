@@ -11,8 +11,8 @@ const CustomerFaq = ({navigation}) => {
 
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <StatusBar
+    <View style={styles.mainContainer}>
+     <StatusBar
         backgroundColor="black" // Works on Android
         barStyle="light-content" // Works on iOS and Android
         />
@@ -20,6 +20,7 @@ const CustomerFaq = ({navigation}) => {
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}/>
+     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
 
       <View style={styles.faqContainer}>
         <Text style={styles.faqText}>Frequently asked questions</Text>
@@ -46,18 +47,22 @@ const CustomerFaq = ({navigation}) => {
       </View>
     </View>
     </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,  // Use flex to take up the whole screen
+    backgroundColor: 'white'
+  },
   container: {
-    flex: 1,
+    width: '100%',  // Ensures the ScrollView takes the full width
   },
   contentContainer: {
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
-    backgroundColor: 'white',
     paddingBottom: 50,
   },
   faqContainer:{

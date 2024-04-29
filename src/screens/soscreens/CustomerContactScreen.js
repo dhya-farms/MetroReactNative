@@ -4,7 +4,7 @@ import SortHeader from '../../components/SortHeader';
 import HeaderContainer from '../../components/HeaderContainer';
 import ContactCard from '../../components/ContactCard';
 import styles from '../../constants/styles/customercontactscreenstyles';
-import { listCustomers } from '../../apifunctions/listCustomersApi';
+import { useSoCustomers } from '../../contexts/useSoCustomersData';
 
 
 const CustomerData = [
@@ -37,48 +37,50 @@ const CustomerData = [
 
 
 
-const CustomerContactScreen = ({navigation}) => {
-  const [apiCustomers, setApiCustomers] = useState([]);
+const CustomerContactScreen = ({route, navigation}) => {
+  const [customers, setCustomers] = useState([]);
+  const soCustomers = useSoCustomers()
+  console.log("global",soCustomers)
+  const routeCustomers = route.params?.customers;
+  const customerData = routeCustomers || soCustomers;
 
   useEffect(() => {
-    const loadData = async () => {
-        try {
-            const customers = await listCustomers();
-            // Transform if needed, or directly set the fetched data
-            const customerData = customers.map((customer, index) => ({
-              id: (index + 1).toString(), // Generate an ID
-              name: customer.name,
-              number: customer.mobile_no,
-              mailId: `${customer.name.toLowerCase()}@example.com`, // Dummy email ID
-              progress: "Initial Contact", // Dummy progress state
-              personimage: require('../../../assets/images/person.png'), // Default image path
-          }));
+    // Check if customers are passed through params, else set dummy data
+    if (customerData) {
+      // Transform and set the customers passed through navigation params
+      setCustomers(customerData.map(customer => ({
+        ...customer,
+        progress: "Initial Contact", // Dummy progress state
+        personimage: require('../../../assets/images/person.png'), // Default image path
+      })));
+    } else {
+      // No customers passed in params, consider fetching here or set dummy data
+      setCustomers(CustomerData); // CustomerData from your static list above
+    }
+  }, [routeCustomers, soCustomers]);
 
-          setApiCustomers(customerData)
-        } catch (error) {
-            console.error('Error fetching customer data:', error);
-        }
-    };
-
-    loadData();
-}, []);
 
   
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} >
+    <View style={styles.mainContainer}>
       <HeaderContainer title="Customers" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}/>
+     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} >
       <View style={{zIndex: 2000, justifyContent: 'space-between', alignItems: 'center', width: '100%'}}>
       <SortHeader title="Contact Form"  />
       </View>
       <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-        <ContactCard customerData={apiCustomers} onCardPress={() => {
-            navigation.navigate("SO Client", { screen: "SO Customer Details"});
+        <ContactCard customerData={customers} onCardPress={(customerId) => {
+            navigation.navigate("SO Client", { 
+              screen: "SO Customer Details",
+              params: { customerId: customerId } // Pass customerId to the detail screen
+          })
         }}/>
       </View>
     </ScrollView>
+    </View>
   );
 };
 

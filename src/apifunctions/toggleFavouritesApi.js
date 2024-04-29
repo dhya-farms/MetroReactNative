@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
 
 export const toggleFavorite = async (propertyId, shouldLike, paramsToken, onFavoriteStatusChange) => {
   // Function to obtain the auth headers
@@ -26,9 +27,22 @@ export const toggleFavorite = async (propertyId, shouldLike, paramsToken, onFavo
       if (onFavoriteStatusChange) {
         onFavoriteStatusChange(propertyId, shouldLike);
       }
-      alert(shouldLike ? "Added to favorites" : "Removed from favorites");
+      Toast.show({
+        type: 'success',
+        text1: shouldLike ? "Added to favorites" : "Removed from favorites",
+        visibilityTime: 1200,  // Toast will be visible for 2 seconds
+        text1Style: {
+          fontFamily: 'Poppins',
+          fontSize: 12,
+          fontWeight: '400'
+        }
+      });
     } else {
-      alert("Failed to update favorites.");
+      Toast.show({
+        type: 'error',
+        text1: "Failed to update favorites. Please Try Again",
+        visibilityTime: 1800,
+      });
     }
   } catch (error) {
     console.error('Error toggling favorite', error);

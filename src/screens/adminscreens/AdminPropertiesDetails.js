@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, StatusBar} 
+import React, { useRef, useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, StatusBar, ActivityIndicator} 
 from 'react-native';
 import SlidingCarousel from '../../components/SlidingCarousel';
 import { SafeAreaView } from 'react-native';
@@ -8,21 +8,10 @@ import { TabBar } from '../../components/TabComponent';
 import EnquireContainer from '../../components/EnquireContainer';
 import HeaderContainer from '../../components/HeaderContainer';
 import styles from '../../constants/styles/commonpropertydetailsstyles';
+import axios from 'axios';
+import LayoutImageModal from '../../modals/LayoutImageModal';
+import AmenitiesDisplay from '../../components/AmenitiesDisplay';
 
-
-
-
-
-const amenities = [
-  { icon: require('../../../assets/images/playground.png'), text: 'Playground' },
-  { icon: require('../../../assets/images/pool.png'), text: 'Pool' },
-  { icon: require('../../../assets/images/market.png'), text: 'Market' },
-  { icon: require('../../../assets/images/kidspark.png'), text: 'Kids Park' },
-  { icon: require('../../../assets/images/busstand.png'), text: 'Bus Stand' },
-  { icon: require('../../../assets/images/walkingarea.png'), text: 'Walking Area' },
-  { icon: require('../../../assets/images/school.png'), text: 'School' },
-  // ... add other amenities as needed
-];
 
 
 
@@ -40,13 +29,97 @@ const galleryImages = [
 
 
 
-const AdminPropertiesDetails = ({navigation}) => {
-  const fullText = `Lorem ipsum dolor sit amet consectetur. Malesuada urna egestas ultricies facilisi. Purus ut est faucibus habitasse. Sodales et justo pellentesque orci facilisis quam nulla. Lorem ipsum dolor sit amet consectetur. Malesuada urna egestas ultricies facilisi. Purus ut est faucibus habitasse. Sodales et justo pellentesque orci facilisis quam nulla. Lorem ipsum dolor sit amet consectetur. Malesuada urna egestas ultricies facilisi. Purus ut est faucibus habitasse. Sodales et justo pellentesque orci facilisis quam nulla. Lorem ipsum dolor sit amet consectetur. Malesuada urna egestas ultricies facilisi. Purus ut est faucibus habitasse. Sodales et justo pellentesque orci facilisis quam nulla.`;
+const AdminPropertiesDetails = ({route, navigation}) => {
+  const { propertyId } = route.params?.params || {};
+  const [propertyDetails, setPropertyDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [imageModalVisible, setImageModalVisible] = useState(false)
+  const [error, setError] = useState('');
+  const [backscreen, setBackScreen] = useState('')
   const [textShown, setTextShown] = useState(false);
   const scrollViewRef = useRef();
   const desRef = useRef();
   const amRef = useRef();
   const gmRef = useRef();
+
+  useEffect(() => {
+    const effectivePropertyId = propertyId || route.params?.propertyId;
+    console.log("Effective Property ID for use:", effectivePropertyId);
+
+    const nestedBackScreen = route.params?.params?.backScreen;
+    const directBackScreen = route.params?.backScreen;
+    const effectiveBackScreen = nestedBackScreen || directBackScreen;
+    console.log("Effective Back Screen for use:", effectiveBackScreen);
+
+    if (effectiveBackScreen) {
+      console.log("Navigated from:", effectiveBackScreen);
+      setBackScreen(effectiveBackScreen)
+    } else {
+      console.log("No Back Screen provided in route params.");
+    }
+
+    const fetchPropertyDetails = async () => {
+      if (!effectivePropertyId) {
+        console.log("No Property ID provided");
+        setError("No property ID provided");
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const response = await axios.get(`https://splashchemicals.in/metro/api/properties/${effectivePropertyId}/`);
+        console.log("Fetch success:", response.data);
+        setPropertyDetails(response.data);
+      } catch (error) {
+        console.error("Fetch error:", error);
+        setError(error.response ? error.response.data.message : error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPropertyDetails();
+  }, [propertyId, route.params]);
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+  }
+
+  if (error) {
+    return <Text>Error: {error}</Text>;
+  }
+
+  if (!propertyDetails) {
+    return <Text>No property details available.</Text>;
+  }
+
+  // Define a function to get plot type text
+  const getPlotTypeText = (propertyType) => {
+    switch(propertyType) {
+      case 1:
+        return 'DTCP PLOTS';
+      case 2:
+        return 'Farmlands';
+      case 3:
+        return 'Flat';
+      case 4:
+        return 'Villa';
+      default:
+        return 'Unknown Plot Type';
+    }
+  };
+
+  const propertyType = propertyDetails.property_type ? propertyDetails.property_type.id : 0;
+  const isPlotOrFarmland = propertyType === 1;
+  const isSpecialUnit = propertyType === 2;  // Treat property type 2 as a special case
+
+  const numberOfUnitsLabel = isPlotOrFarmland ? 'No of Plots:' : (isSpecialUnit ? 'No of Units:' : (propertyType === 3 ? 'No of Homes:' : 'No of Villas:'));
+  const numberOfUnits = propertyDetails.details ? 
+    (isPlotOrFarmland ? propertyDetails.details.plots_available : 
+      (isSpecialUnit ? propertyDetails.details.units_available : 
+        (propertyType === 3 ? propertyDetails.details.homes_available : propertyDetails.details.villas_available))) : 'N/A';
+
   
   const toggleTextShown = () => {
     setTextShown(!textShown);
@@ -60,6 +133,10 @@ const AdminPropertiesDetails = ({navigation}) => {
     return text;
   };
 
+  const ImageToggle = ()=>{
+    setImageModalVisible(!imageModalVisible)
+  }
+
   const scrollToSection = (sectionRef) => {
     sectionRef.current.measureLayout(
       scrollViewRef.current,
@@ -69,24 +146,54 @@ const AdminPropertiesDetails = ({navigation}) => {
       () => {} // Error callback method
     );
   };
+
+  const calculatePricePerSqFt = () => {
+    if (propertyDetails && propertyDetails.price && propertyDetails.details.sq_ft_from) {
+      const price = parseFloat(propertyDetails.price);
+      const sqFtFrom = parseFloat(propertyDetails.details.sq_ft_from);
+      return (price / sqFtFrom).toFixed(2); // Keeping two decimal places for the result.
+    }
+    return "N/A"; // Return "N/A" if the data is not available to perform the calculation.
+  };
+
+  if (!propertyDetails) {
+    return <><Text>Property details not found.</Text> {console.log(propertyId)}</>;
+  }
+
+  const amenitiesArray = propertyDetails.details.amenities.map(item => item.trim()).filter(Boolean);
+
+  const handleBack = () => {
+    if (backscreen==="Home") {
+      navigation.navigate("Home", {
+        screen: "Admin Home",
+      });
+    
+    } else if(backscreen==="Properties"){
+      navigation.navigate("Sites", {
+        screen: "Admin Properties",
+      });
+    } else {
+      navigation.goBack();
+    }
+  };
   
   return (
-    <SafeAreaView style={{flex: 1}}>
+    <View style={styles.mainContainer}>
     <StatusBar/>
-    <ScrollView ref={scrollViewRef} style={styles.container} contentContainerStyle={styles.contentContainer}>
     <HeaderContainer title="Properties" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
-      onPress={()=>{navigation.goBack()}}/>
-      
+      onPress={handleBack}/>
+    <ScrollView ref={scrollViewRef} style={styles.container} contentContainerStyle={styles.contentContainer}>    
     <SafeAreaView style={styles.slidingContainer}>
       <SlidingCarousel/>
     </SafeAreaView>
     <View style={styles.cityConatiner}>
-      <Text style={styles.cityText}>Dawn City</Text>
-      <Text style={styles.cityAmount}>₹ 2200/sqft</Text>
+      <Text style={styles.cityText}>{propertyDetails.name}</Text>
+      <Text style={styles.cityAmount}>₹ {calculatePricePerSqFt()}/sqft</Text>
     </View>
-    <LayoutHeader/>
+    <LayoutHeader onPress={ImageToggle} gmapUrl={propertyDetails.gmap_url}/>
+    <LayoutImageModal modalVisible={imageModalVisible} setModalVisible={setImageModalVisible}/>
     <View style={styles.separator} />
     <TabBar onTabSelect={(tab) => {
           if (tab === 'Overview') scrollToSection(desRef);
@@ -96,45 +203,32 @@ const AdminPropertiesDetails = ({navigation}) => {
     <View ref={desRef} style={styles.desContainer}>
       <Text style={styles.desHeader}>Description:</Text>
       <Text style={styles.desText}>
-      {textShown ? fullText : truncateText(fullText, 40)}
+      {textShown ? propertyDetails.description : truncateText(propertyDetails.description, 40)}
       </Text>
     <TouchableOpacity onPress={toggleTextShown}>
     <Text style={styles.smText}>{textShown ? 'Show Less -' : 'Show More +'}</Text>
     </TouchableOpacity>
-    <View style={styles.LocationImageContainer}>
-      <View style={styles.LocationImage}></View>
-    </View>
     <View style={styles.plotContainer}>
-      <Text style={styles.plotHeader}>Plots information:</Text>
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoLabel}>Plot Type</Text>
-        <Text style={styles.infoContent}>Farm Land</Text>
-      </View>
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoLabel}>Property Id:</Text>
-        <Text style={styles.infoContent}>1234FL</Text>
-      </View>
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoLabel}>No of Plots:</Text>
-        <Text style={styles.infoContent}>100 plots</Text>
-      </View>
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoLabel}>Sq.ft:</Text>
-        <Text style={styles.infoContent}>from 200sq.ft</Text>
-      </View>
-    </View>
-    </View>
-    <View ref={amRef} style={styles.amContainer}>
-      <Text style={styles.amHeader}>Amenities:</Text>
-      <View style={styles.amenitiesContainer}>
-        {amenities.map((amenity, index) => (
-          <View key={index} style={styles.amenity}>
-            <Image source={amenity.icon} style={styles.icon} />
-            <Text style={styles.text}>{amenity.text}</Text>
-          </View>
-        ))}
+        <Text style={styles.plotHeader}>Plot Information:</Text>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>Property Type:</Text>
+          <Text style={styles.infoContent}>{getPlotTypeText(propertyType)}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>Property ID:</Text>
+          <Text style={styles.infoContent}>{propertyDetails.id}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>{numberOfUnitsLabel}</Text>
+          <Text style={styles.infoContent}>{numberOfUnits}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>Sq.ft:</Text>
+          <Text style={styles.infoContent}>{propertyDetails.details ? `from ${propertyDetails.details.sq_ft_from} sq.ft` : 'N/A'}</Text>
+        </View>
       </View>
     </View>
+    <AmenitiesDisplay ref={amRef} amenities={amenitiesArray} />
     <View ref={gmRef} style={styles.gmContainer}>
       <Text style={styles.gmHeader}>Gallery:</Text>
       <View style={styles.galleryContainer}>
@@ -147,7 +241,7 @@ const AdminPropertiesDetails = ({navigation}) => {
     </View>
     <EnquireContainer/>
     </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 

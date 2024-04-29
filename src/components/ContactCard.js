@@ -1,9 +1,24 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, Dimensions, FlatList } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { View, Text, Image, StyleSheet, Dimensions, FlatList , Linking, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const CustomerCard = ({ name, number, mailId, progress, personimage }) => {
+const CustomerCard = ({ name, number, mailId, progress, personimage, propertyName }) => {
+
+  const openWhatsApp = (number) => {
+    let whatsappUrl = `https://wa.me/${number}`;
+    Linking.openURL(whatsappUrl).catch(err => console.error('An error occurred', err));
+  };
+
+const makeCall = (number) => {
+    let phoneNumber = `tel:${number}`;
+    Linking.openURL(phoneNumber);
+};
+
+const sendEmail = (email) => {
+    let emailUrl = `mailto:${email}`;
+    Linking.openURL(emailUrl);
+};
+
   return (
     <View style={styles.cardContainer}>
      <View style={styles.textWithImageContainer}>
@@ -11,16 +26,26 @@ const CustomerCard = ({ name, number, mailId, progress, personimage }) => {
             <Text style={styles.nameText}>{name}</Text>
             <Text style={styles.mmText}>{number}</Text>
             <Text style={styles.mmText}>{mailId}</Text>
-          <View style={styles.smIconsContainer}>
-           <View style={styles.iconContainer}><Image source={require("../../assets/images/wpicon.png")} style={styles.iconImage}/></View> 
-           <View style={styles.iconContainer}><Image source={require("../../assets/images/clicon.png")} style={styles.iconImage}/></View>
-           <View style={styles.iconContainer}><Image source={require("../../assets/images/mpicon.png")} style={styles.iconImage}/></View>
-          </View>
         </View>
         <View style={styles.imageContainer}>
         <Image source={personimage} style={styles.personImage} />
         </View>
      </View>
+     <View style={styles.prContainer}>
+                <Text style={styles.prHeader}>Property Name: </Text>
+                <Text style={styles.prText}>{propertyName}</Text>
+     </View>
+     <View style={styles.smIconsContainer}>
+                <TouchableOpacity onPress={() => openWhatsApp(number)} style={styles.iconContainer}>
+                  <Image source={require("../../assets/images/wpicon.png")} style={styles.iconImage} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => makeCall(number)} style={styles.iconContainer}>
+                  <Image source={require("../../assets/images/clicon.png")} style={styles.iconImage} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => sendEmail(mailId)} style={styles.iconContainer}>
+                  <Image source={require("../../assets/images/mpicon.png")} style={styles.iconImage} />
+                </TouchableOpacity>
+      </View>
      <View style={styles.separator} />
       <View style={styles.progressContainer}>
         <View style={{flex:1, flexDirection: 'row', alignItems: 'center'}}>
@@ -37,13 +62,14 @@ const CustomerCard = ({ name, number, mailId, progress, personimage }) => {
 
 const ContactCard = ({ customerData, onCardPress }) => {
     const renderItem = ({ item }) => (
-      <TouchableOpacity onPress={() => onCardPress()}>
+      <TouchableOpacity onPress={() => onCardPress(item.uniqueId)}>
       <CustomerCard
         name={item.name}
         number={item.number}
         mailId={item.mailId}
         progress={item.progress}
         personimage={item.personimage}
+        propertyName={item.property}
       />
       </TouchableOpacity>
     );
@@ -52,7 +78,7 @@ const ContactCard = ({ customerData, onCardPress }) => {
       <FlatList
         data={customerData}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.uniqueId}
       />
       
     );
@@ -79,14 +105,14 @@ const styles = StyleSheet.create({
     textWithImageContainer:{
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         marginHorizontal: 5,
     },
     nameText:{
         fontFamily: 'Poppins',
         fontWeight: '600',
         fontSize: 20,
-        marginBottom: 5
+        marginBottom: 3
     },
     mmText:{
         fontFamily: 'Poppins',
@@ -147,6 +173,21 @@ const styles = StyleSheet.create({
       fontWeight: '400',
       fontSize: 12,
       marginRight: 5,
+    },
+    prContainer:{
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: 10,
+    },
+    prHeader:{
+      fontFamily: 'Poppins',
+      fontWeight: '400',
+      fontSize: 14,
+    },
+    prText:{
+      fontFamily: 'Poppins',
+      fontWeight: '600',
+      fontSize: 16,
     }
     // Add other styles for status indicators and checkmark
   });

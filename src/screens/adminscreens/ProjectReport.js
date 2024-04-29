@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, StatusBar} 
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StatusBar} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
-import { LineChart } from 'react-native-chart-kit';
 import ProjectDropdown from '../../components/ProjectDropdown';
 import SortHeader from '../../components/SortHeader';
 import ReportCard from '../../components/ReportCards';
@@ -58,12 +57,13 @@ const ProjectReport = ({navigation}) => {
 
 
    return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.mainContainer}>
       <StatusBar/>
       <HeaderContainer title="Project Report" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}/>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <SortHeader title="Project"  isSortVisible={false} />
       <View style={{ width: '90%', margin: 15 }}>
       <ProjectDropdown options={properties} onSelect={handleSelection} />
@@ -83,6 +83,7 @@ const ProjectReport = ({navigation}) => {
     </View>
       )}
     </ScrollView>
+    </View>
   );
 };
 

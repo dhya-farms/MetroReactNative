@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StatusBar, TouchableOpacity} 
+import { View, Text, ScrollView, TouchableOpacity,ActivityIndicator} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import { TextInput } from 'react-native-paper';
@@ -8,7 +8,9 @@ import CustomDropdownInput from '../../components/CustomInput';
 import { fetchCustomerDetails } from '../../apifunctions/fetchCustomerDetailsApi';
 import ProfileHeader from '../../components/ProfileHeader';
 import updateCustomerDetailsApiCall from '../../apifunctions/UpdateCustomerApi';
-
+import { useIsFocused } from '@react-navigation/native';
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
+import Toast from 'react-native-toast-message';
 
 
 const propertyTypeMappings = {
@@ -23,7 +25,7 @@ const areaOfPurposeMappings = {
   2: 'Commercial',
 };
 
-const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
+const FloatingLabelInput = ({ label, value, onChangeText,editable = true, ...props }) => {
     return (
       <TextInput
         label={label}
@@ -31,8 +33,9 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
         onChangeText={onChangeText}
         style={styles.input}
         mode="outlined"
-        outlineColor="#1D9BF0" // Here you set the border color
-        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent', text: 'black' } }}
+        outlineColor={editable ? "#1D9BF0" : "#D9D9D9"}
+        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent', onSurface: editable ? '#424242' : "#D9D9D9"} }}
+        editable={editable}
         {...props}
       />
     );
@@ -55,6 +58,7 @@ const CustomerProfile = ({route, navigation}) => {
   const [error, setError] = useState(null);
   const aopOptions = ['Residential', 'Commercial'];
   const typeOptions = ['DTCP PLOTS', 'Farmlands', 'Flat', 'Villa'];
+  const isFocused = useIsFocused(); 
   const [inputValues, setInputValues] = useState({
     name: '',
     emailId: '',
@@ -63,6 +67,16 @@ const CustomerProfile = ({route, navigation}) => {
     occupation: '',
     budget: '',
   });
+
+  useEffect(() => {
+    if (isFocused) {
+      setIsEditMode(false); // Reset edit mode whenever this screen is focused
+    }
+  }, [isFocused]); 
+
+  const handleCancel = ()=>{
+    setIsEditMode(false)
+  }
 
   useEffect(() => {
     const paramsToken = route.params?.token;
@@ -95,7 +109,7 @@ const CustomerProfile = ({route, navigation}) => {
       });
   }, []);// Dependency array is empty, so this effect runs once on mount
 
-  if (loading) return <Text>Loading...</Text>;
+  if (loading) return <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />;
   if (error) return <Text>Error: {error}</Text>;
 
   const toggleEditMode = () => {
@@ -124,8 +138,10 @@ const CustomerProfile = ({route, navigation}) => {
     const updateData = {
       name: inputValues.name,
       email: inputValues.emailId,
+      mobile_no: inputValues.mobileNo,
       occupation: inputValues.occupation,
       address: inputValues.address,
+
       preferences: {
         area_of_purpose: getIdsFromSelection(aop, areaOfPurposeMappings), 
         property_types: getIdsFromSelection(type, propertyTypeMappings), 
@@ -135,14 +151,32 @@ const CustomerProfile = ({route, navigation}) => {
     setLoading(true);
     try {
       await updateCustomerDetailsApiCall(paramsUserId, updateData, paramsToken);
-      setSaveMessage('Customer details updated successfully');
+      Toast.show({
+        type: 'success',
+        text1: 'Customer details updated successfully',
+        visibilityTime: 1900,  // Toast will be visible for 2 seconds
+        text1Style: {
+          fontFamily: 'Poppins',
+          fontSize: 12,
+          fontWeight: '400'
+        }
+      });
       setTimeout(() => {
         // Here you can re-fetch the customer details to reflect the update or simply update the state
         setIsEditMode(false);
         setSaveMessage('');
       }, 2000);
     } catch (error) {
-      setSaveMessage('Failed to update customer details');
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to update customer details',
+        visibilityTime: 2000,  // Toast will be visible for 2 seconds
+        text1Style: {
+          fontFamily: 'Poppins',
+          fontSize: 12,
+          fontWeight: '400'
+        }
+      });
     } finally {
       setLoading(false);
     }
@@ -151,27 +185,35 @@ const CustomerProfile = ({route, navigation}) => {
 
   
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <HeaderContainer
+    <View style={styles.mainContainer}>
+       <HeaderContainer
         title="Profile"
         ImageLeft={require('../../../assets/images/back arrow icon.png')}
         ImageRight={require('../../../assets/images/belliconblue.png')}
         onPress={() => { navigation.goBack() }}
+        hideBackArrow={isEditMode}
       />
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {
         isEditMode ? (
           <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
           <View style={styles.textInputContainer}>
-            {inputFields.map((field) => (
-              <FloatingLabelInput
-                key={field.name}
-                label={field.label}
-                value={inputValues[field.name]}
-                onChangeText={(value) => handleInputChange(field.name, value)}
-                keyboardType={field.keyboardType}
-                disabled={field.name === 'mobileNo'} 
-              />
-            ))}
+          {
+              inputFields.map((field) => {
+                const isMobileNoField = field.name === 'mobileNo';
+                return (
+                  <FloatingLabelInput
+                    key={field.name}
+                    label={field.label}
+                    value={inputValues[field.name]}
+                    onChangeText={(value) => handleInputChange(field.name, value)}
+                    keyboardType={field.keyboardType}
+                    editable={!isMobileNoField}
+                    outlineColor={!isMobileNoField ? "#1D9BF0" : "#D9D9D9"}
+                  />
+                );
+              })
+            }
             <View style={[styles.customTextinputContainer, { zIndex: 7000 }]}>
               <CustomDropdownInput
                 label="Type"
@@ -191,9 +233,14 @@ const CustomerProfile = ({route, navigation}) => {
             {saveMessage !== '' && (
             <Text style={styles.saveMessage}>{saveMessage}</Text>
             )}
-           <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-            <Text style={styles.saveText}>Save</Text>
-           </TouchableOpacity>
+            <View style={styles.cancelSaveContainer}>
+              <TouchableOpacity style={[styles.saveBtn, {backgroundColor: 'white', borderWidth: 1, borderColor: PRIMARY_COLOR}]} onPress={handleCancel}>
+                <Text style={[styles.saveText, {color: PRIMARY_COLOR}]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+                <Text style={styles.saveText}>Save</Text>
+              </TouchableOpacity>
+           </View>
           </View>
           </View>
         ) : (
@@ -208,6 +255,7 @@ const CustomerProfile = ({route, navigation}) => {
         )
       }
     </ScrollView>
+    </View>
   );
 };
 

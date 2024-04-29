@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { TextInput } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import { PRIMARY_COLOR } from '../constants/constantstyles/colors';
 
 const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
     return (
@@ -19,7 +21,7 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
 
 const AddressModal = ({ modalVisible, setModalVisible,  onDone}) => {
   // State for input fields
-  const [pickupAddress, setPickupAddress] = useState('');
+  const [dropAddress, setdropAddress] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleAddressPress = () => {
@@ -27,14 +29,14 @@ const AddressModal = ({ modalVisible, setModalVisible,  onDone}) => {
     setErrorMessage('');
 
     // Validate inputs
-    if (!pickupAddress) {
+    if (!dropAddress) {
       setErrorMessage('Please fill the address.'); // Update error message state
       return;
     }
 
     // If validation passes, proceed to call the onDone callback
     onDone({
-      pickupAddress,
+      dropAddress,
     });
 
     // Close the modal
@@ -49,12 +51,15 @@ const AddressModal = ({ modalVisible, setModalVisible,  onDone}) => {
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
+        <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+              <Icon name="times" size={20} color={PRIMARY_COLOR} />
+        </TouchableOpacity>
         <Text style={styles.modalTitle}>Drop</Text>
         <Text style={styles.locationText}>The drop-off location</Text>
           <FloatingLabelInput
             label="Address"
-            value={pickupAddress}
-            onChangeText={setPickupAddress}
+            value={dropAddress}
+            onChangeText={setdropAddress}
           />
            {errorMessage !== '' && (
             <Text style={styles.errorText}>{errorMessage}</Text> // Display the error message
@@ -89,7 +94,13 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5
+    elevation: 5,
+    position: 'relative' ,
+  },
+  closeButton: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
   },
   modalTitle: {
     fontFamily: 'Poppins',

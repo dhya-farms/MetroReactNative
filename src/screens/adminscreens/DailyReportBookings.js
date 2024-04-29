@@ -1,14 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, StatusBar} 
 from 'react-native';
 import SortHeader from '../../components/SortHeader';
-import Carousel from '../../components/Carousel';
 import HeaderContainer from '../../components/HeaderContainer';
-import CustomerCard from '../../components/CustomerCard';
-import SOcards from '../../components/SOcard';
-import ReportCard from '../../components/ReportCards';
-import ShowAllButton from '../../components/ShowAllButton';
-import { LineChart } from 'react-native-chart-kit';
 import TabSelector from '../../components/TabSelector';
 import { BarChart } from 'react-native-chart-kit';
 import CustomDateSelector from '../../components/CustomDateSelector';
@@ -101,12 +95,13 @@ const DailyReportBookings = ({navigation}) => {
 
   
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.mainContainer}>
       <StatusBar/>
       <HeaderContainer title="Bookings" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}/>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={{width: '90%' , marginVertical: 10,}}>
         <TabSelector selectedTab={selectedTab} setSelectedTab={setSelectedTab}/>
       </View>
@@ -182,13 +177,17 @@ const DailyReportBookings = ({navigation}) => {
       </View>
        )}
     </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  mainContainer: {
+    flex: 1,  // Use flex to take up the whole screen
     backgroundColor: 'white'
+  },
+  container: {
+    width: '100%',  // Ensures the ScrollView takes the full width
   },
   contentContainer: {
     flexGrow: 1,

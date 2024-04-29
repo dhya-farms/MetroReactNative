@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View, Linking } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 const EnquireContainer = () => {
     const phoneNumber = '7695941098';
@@ -29,10 +30,10 @@ const EnquireContainer = () => {
         <Text style={styles.enText}>Enquire Now</Text>
     </TouchableOpacity>
     <TouchableOpacity style={styles.callButton} onPress={handleWhatsAppPress}>
-    <MaterialIcons name="phone" size={20.96} color="white" />
+    <FontAwesome name="whatsapp" size={20.96} color="white" /> 
     </TouchableOpacity>
     <TouchableOpacity style={styles.msgButton} onPress={handleEmailPress}>
-    <MaterialIcons name="message" size={20.96} color="white" />
+    <MaterialIcons name="email" size={20.96} color="white" />
     </TouchableOpacity>
     </View>
   );
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
         padding: 10,
         width: 48,
         borderRadius: 24,
-        backgroundColor: '#00DC00',
+        backgroundColor: '#25D366',
         justifyContent: 'center',
         alignItems: 'center'
     },
@@ -72,7 +73,7 @@ const styles = StyleSheet.create({
         padding: 10,
         width: 48,
         borderRadius: 24,  
-        backgroundColor: '#25A36F',
+        backgroundColor: '#FF4949',
         justifyContent: 'center',
         alignItems: 'center'
     }

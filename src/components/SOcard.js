@@ -44,7 +44,7 @@ const Card = ({ name, number, mailId, points, clients, source }) => {
 
     const renderItem = (item, index) => (
       <React.Fragment key={item.id}>
-        <TouchableOpacity  onPress={() => onCardPress()}>
+        <TouchableOpacity  onPress={() => onCardPress(item.id)}>
         <Card
           name={item.name}
           number={item.number}
@@ -101,8 +101,8 @@ const Card = ({ name, number, mailId, points, clients, source }) => {
     marginVertical: 10,// This adds a shadow on Android
     },
     profileImage: {
-        width: 60, 
-        height: 60,
+        width: 50, 
+        height: 50,
         borderRadius: 30, // Half the width/height to make it round
         // ... any other styling for the image
       },

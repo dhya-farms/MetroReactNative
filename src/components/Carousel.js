@@ -16,7 +16,8 @@ const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFav
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const imageScrollRef = useRef();
 
-    const images = item.images.map(img => ({ uri: img.image }));
+    const images = item.property ? item.property.images.map(img => ({ uri: img.image })) 
+    : item.images.map(img => ({ uri: img.image }));
 
     useEffect(() => {
       if (images.length <= 1) return;
@@ -94,22 +95,31 @@ const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFav
                 <MaterialIcons name={liked ? 'favorite' : 'favorite-border'} size={24} color={liked ? 'red' : 'black'} />
               </TouchableOpacity>
             )}
-            <View style={styles.ratingContainer}>
-              <MaterialIcons name="star" size={20} color="gold" />
-              <Text style={styles.rating}>4.3</Text>
+            <View style={styles.ratingStarContainer}>
+              <View style={styles.starContainer}>
+                <MaterialIcons name="star" size={16} color="#FEC623" />
+              </View>
+              <View style={styles.ratingContainer}>
+                <Text style={styles.rating}>4.3</Text>
+              </View>
             </View>
           </View>
         {renderPagination()}
         <View style={styles.cardContent}>
-          <Text style={styles.title}>{item.name}</Text>
+          <Text style={styles.title}>{item.property ? item.property.name : item.name}</Text>
           <Text style={styles.description}>{item.displayText}</Text>
           <View style={styles.locationContainer}>
             <MaterialIcons name="place" size={20} color="#757575" />
-            <Text style={styles.location}>{item.location}</Text>
+            <Text style={styles.location}>{item.property ? item.property.location : item.location}</Text>
           </View>
         </View>
       </View>
     );
+  };
+
+  const onPressHandler = () => {
+    const propertyId = item.property ? item.property.id : item.id;
+    onCardPress(propertyId);
   };
 
   return (
@@ -117,7 +127,7 @@ const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFav
       <FlatList
         data={data}
         renderItem={({ item }) => (
-          <PropertyCard item={item} onCardPress={onCardPress} isHeartVisible={isHeartVisible} />
+          <PropertyCard item={item} onCardPress={onPressHandler} isHeartVisible={isHeartVisible} />
         )}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
@@ -197,17 +207,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginVertical: 5,
   },
-  ratingContainer: {
+  ratingStarContainer:{
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 5,
-    backgroundColor: 'black',
-    borderRadius: 20,
+    backgroundColor: '#424242',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  starContainer:{
+    backgroundColor: '#fff',
+    width: 20,
+    height: 20,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 4,
+  },
+  ratingContainer: {
+    paddingRight: 6,
+    paddingLeft: 0, 
+    backgroundColor: '#424242',
   },
   rating: {
-    marginLeft: 5,
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'Poppins',
+    fontSize: 12,
+    fontWeight: '400',
     color: 'white',
   },
   paginationContainer: {
@@ -230,7 +254,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1D9BF0',
   },
   paginationDotInactive: {
-    backgroundColor: '#C4C4C4',
+    backgroundColor: '#FFFFFF',
   },
   scrollViewContainer:{
     width: cardWidth,

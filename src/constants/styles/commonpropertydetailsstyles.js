@@ -1,9 +1,12 @@
 import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
+    mainContainer: {
+      flex: 1,  // Use flex to take up the whole screen
       backgroundColor: 'white'
+    },
+    container: {
+      width: '100%',  // Ensures the ScrollView takes the full width
     },
     contentContainer: {
       flexGrow: 1,
@@ -161,7 +164,7 @@ const styles = StyleSheet.create({
     amenitiesContainer:{
       flexDirection: 'row',
       flexWrap: 'wrap',
-      justifyContent: 'space-between',
+      justifyContent: 'space-around',
     },
     amenity: {
       alignItems: 'center',
@@ -171,12 +174,13 @@ const styles = StyleSheet.create({
     icon: {
       width: 35,
       height: 35,
-      // Include other styling for your icons
+      resizeMode: 'cover'
     },
     text: {
       fontFamily: 'Poppins',
       fontWeight: '400',
       fontSize: 10,
+      textAlign: 'center'
     },
     gmContainer:{
       width: '90%',
@@ -204,6 +208,27 @@ const styles = StyleSheet.create({
       resizeMode: 'cover',
       borderRadius: 15
     },
+    bookContainer:{
+      flexDirection: 'row',
+      width: '90%',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginVertical: 20,
+   },
+   bookButton:{
+      paddingVertical: 14,
+      paddingHorizontal: 28,
+      borderRadius: 5,
+      backgroundColor: '#1D9BF0',
+      justifyContent: 'center',
+      alignItems: 'center',
+   },
+   bookText:{
+      fontFamily: 'Poppins',
+      fontSize: 14,
+      fontWeight: '500',
+      color: 'white'
+   },
   });
 
 export default styles

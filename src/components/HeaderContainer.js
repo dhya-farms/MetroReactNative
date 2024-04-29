@@ -2,15 +2,17 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-const HeaderContainer = ({ title, ImageLeft, ImageRight, onPress }) => {
+const HeaderContainer = ({ title, ImageLeft, ImageRight, onPress, hideBackArrow = false }) => {
   return (
     <View style={styles.headerContainer}>
-      <TouchableOpacity style={styles.backArrowButton} onPress={onPress}>
-       <Image
+      {!hideBackArrow && (
+        <TouchableOpacity style={styles.backArrowButton} onPress={onPress}>
+          <Image
             source={ImageLeft}
             style={styles.bellIcon}
-        />
+          />
         </TouchableOpacity>
+      )}
         <Text style={styles.headerTitle}>{title}</Text>
         <TouchableOpacity style={styles.filterButton}>
           <Image
@@ -24,6 +26,7 @@ const HeaderContainer = ({ title, ImageLeft, ImageRight, onPress }) => {
 
 const styles = StyleSheet.create({
     headerContainer: {
+        zIndex:9999,
         width: '100%',
         flexDirection: 'row',
         justifyContent: 'space-between',

@@ -17,7 +17,7 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
         style={styles.input}
         mode="outlined"
         outlineColor="#000000" // Here you set the border color
-        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent' } }}
+        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent', onSurface: 'black' } }}
         {...props}
       />
       </View>
@@ -189,12 +189,12 @@ const CustomerTokenAdvance = ({route, navigation}) => {
 
     
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.mainContainer}>
       <HeaderContainer title="Token Advance" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}/>
-
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {currentView === 'form' && (
        plots.map((plot, index) => (
         <View key={plot.id} style={styles.plotContainer}>
@@ -387,6 +387,7 @@ const CustomerTokenAdvance = ({route, navigation}) => {
       )}
 
     </ScrollView>
+    </View>
   );
 };
 

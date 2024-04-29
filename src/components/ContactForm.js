@@ -12,7 +12,7 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
         style={styles.input}
         mode="outlined"
         outlineColor="#1D9BF0" // Here you set the border color
-        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent' } }}
+        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent', onSurface:'black' } }}
         {...props}
       />
     );

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, FlatList, TouchableOpacity, ScrollView, Text, StyleSheet, Image } from 'react-native';
-import { TextInput, Button, Portal, Provider } from 'react-native-paper';
+import { View, TouchableOpacity, ScrollView, Text, StyleSheet, Image } from 'react-native';
+import { TextInput, Provider } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
 const CustomDropdownInput = ({ label, selectedValues=[], setSelectedValues, options }) => {
@@ -38,7 +38,7 @@ const CustomDropdownInput = ({ label, selectedValues=[], setSelectedValues, opti
         mode="outlined"
         outlineColor="#1D9BF0"
         editable={false}
-        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent', background: 'white' } }}
+        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent', background: 'white' , onSurface: 'black'} }}
         right={<CustomDropdownIcon />}
         style={styles.input}
       />

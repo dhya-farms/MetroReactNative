@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, TouchableOpacity, Text, Image, StatusBar} 
+import { View, ScrollView, TouchableOpacity, Text, Image, StatusBar, ActivityIndicator} 
 from 'react-native';
 import ShowAllButton from '../../components/ShowAllButton';
 import SOcards from '../../components/SOcard';
@@ -8,8 +8,8 @@ import CustomerCard from '../../components/CustomerCard';
 import SiteDetailsCard from '../../components/SiteDetailsCard';
 import styles from '../../constants/styles/adminhomestyles';
 import { fetchCustomers } from '../../apifunctions/fetchCustomerApi';
-import { useProperties } from '../../contexts/usePropertiesContext';
-
+import { fetchAdminProperties } from '../../apifunctions/fetchAdminPropertiesApi';
+import { fetchSoUsers } from '../../apifunctions/fetchSoApi';
 
 const cardData = [
     {
@@ -32,103 +32,87 @@ const cardData = [
     },
   ]
 
-const CustomerData = [
-    {
-        id: '1',
-        name: 'Suraj',
-        number: '+91-9486077810',
-        mailId: 'suraj@gmail.com', 
-        personimage: require('../../../assets/images/person.png'),
-    },
-    {
-        id: '2',
-        name: 'Ravi',
-        number: '+91-9486077810',
-        mailId: 'ravi@gmail.com', 
-        personimage: require('../../../assets/images/person.png'),
-    },
-    {
-        id: '3',
-        name: 'Darshan',
-        number: '+91-9486077810',
-        mailId: 'darshan@gmail.com', 
-        personimage: require('../../../assets/images/person.png'),
-    }
-]
-
-const siteData = [
-    {
-        id: '1',
-        sitename: 'Individuval flats 240 BHK',
-        price: 'Starts @ ₹2499/sqft', 
-        bgimage: require('../../../assets/images/Sarav.png'),
-    },
-    {
-        id: '2',
-        sitename: 'Single flats 240 BHK',
-        price: 'Starts @ ₹2499/sqft', 
-        bgimage: require('../../../assets/images/Sarav2.png'),
-    },
-    {
-        id: '3',
-        sitename: 'Single flats 240 BHK',
-        price: 'Starts @ ₹2499/sqft', 
-        bgimage: require('../../../assets/images/Sarav2.png'),
-    }
-]
-
-const SOdata  = [
-    {
-        id: 1,
-        name: 'Hari Kowshick',
-        number: '+91-9486077810',
-        mailId: 'hari@gmail.com',
-        points: '7Metro Points',
-        clients: '3 Clients',
-        source: require('../../../assets/images/soperson.png')
-    },
-    {
-        id: 2,
-        name: 'Ranjith',
-        number: '+91-9486077810',
-        mailId: 'ranjith@gmail.com',
-        points: '6Metro Points',
-        clients: '2 Clients',
-        source: require('../../../assets/images/soperson.png')
-    },
-    {
-        id: 3,
-        name: 'Dinesh',
-        number: '+91-9486077810',
-        mailId: 'dinesh@gmail.com',
-        points: '10Metro Points',
-        clients: '5 Clients',
-        source: require('../../../assets/images/soperson.png')
-    }
-]
 
 
-const AdminHome = ({route, navigation}) => {
-  const { properties } = useProperties();
+const AdminHome = ({ route, navigation }) => {
   const [customers, setCustomers] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [soUsers, setSoUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+
+  const fetchData = async () => {
+    setLoading(true);
+    const paramsToken = route.params?.token;
+    // Fetch customers
+    try {
+      const fetchedCustomers = await fetchCustomers(paramsToken);
+      if (!fetchedCustomers.error) {
+        setCustomers(fetchedCustomers);
+      } else {
+        console.error('Error fetching customers:', fetchedCustomers.error);
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    }
+
+    // Fetch properties
+    try {
+      const paramsDirectorId = route.params?.userId;
+      const adminProperties = await fetchAdminProperties(paramsToken, paramsDirectorId);
+      if (!adminProperties.error) {
+        setProperties(adminProperties);
+      } else {
+        console.error('Error fetching properties:', adminProperties.error);
+      }
+    } catch (error) {
+      console.error('Error fetching admin properties:', error);
+    }
+    // Fetch SO Users
+    try {
+      const fetchedSOData = await fetchSoUsers(paramsToken);
+      if (fetchedSOData.error) {
+        console.error(fetchedSOData.error);
+      } else {
+        const transformedData = fetchedSOData.details.results.map(user => ({
+          id: user.id,
+          name: user.name,
+          number: user.mobile_no,
+          mailId: user.email,
+          points: '10Metro Points',  // Dummy data
+          clients: '5 Clients',  // Dummy data
+          source: require('../../../assets/images/soperson.png')  // Assuming a placeholder image
+        }));
+        setSoUsers(transformedData);
+      }
+    } catch (error) {
+      console.error('Error fetching SO users:', error);
+    }
+
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const paramsToken = route.params?.token;
-    fetchCustomers(paramsToken).then(customers => {
-        if (customers.error) {
-            // Handle the error state in your component (e.g., show a message)
-            console.error(customers.error);
-        } else {
-            // Update state with fetched customers
-            setCustomers(customers);
-        }
-    });
-}, []);
+    fetchData();
+  }, [route.params?.token]);
+
+  if (loading) {
+    // Return a loader or indicate loading state
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+
+  // Rest of your component code goes here...
+
   
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <StatusBar/>
+    <View style={styles.mainContainer}>
+      <StatusBar/>
         <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Home</Text>
         <TouchableOpacity style={styles.filterButton}>
@@ -138,6 +122,7 @@ const AdminHome = ({route, navigation}) => {
           />
         </TouchableOpacity>
       </View>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <ShowAllButton text="Office Updates"/>
       <View style={{width: '100%'}}>
         <OfficeUpdateView cardData={cardData}/>
@@ -145,30 +130,51 @@ const AdminHome = ({route, navigation}) => {
       <View style={styles.separator} />
       <ShowAllButton text="Customers" onPress={()=> navigation.navigate("Client", { 
       screen: "Customer List" ,
-      params: { allCustomers: customers }
+      params: { allCustomers: customers, backScreen: 'Home' }
     })}/>
       <View style={{width: '100%'}}>
-          <CustomerCard customerData={customers.slice(0, 3)} onCardPress={() => {
-              navigation.navigate("Client", { screen: "List Customer Details"});
+          <CustomerCard customerData={customers.slice(0, 3)} onCardPress={(customerId) => {
+              navigation.navigate("Client", { 
+                screen: "List Customer Details",
+                params: { customerId: customerId, backScreen: 'Home'} // Pass customerId to the detail screen
+            });
+
           }}/>
       </View>
-      <ShowAllButton text="Site Details" onPress={()=> navigation.navigate("Sites", { 
-      screen: "Admin Properties" 
+      <ShowAllButton text="Site Details" onPress={()=> 
+      navigation.navigate("Sites", { screen: "Admin Properties", 
+            params: { properties: properties}
     })}/>
       <View style={{width: '100%'}}>
-        <SiteDetailsCard siteData={properties} onCardPress={() => {
-           navigation.navigate("Sites", { screen: "Admin Properties Details"});
-        }}/>
-      </View>
-      <ShowAllButton text="SO List" onPress={()=> navigation.navigate("SO", { 
-      screen: "SO Officers List" 
-    })}/>
+      <SiteDetailsCard
+        siteData={properties}
+        onCardPress={(propertyId) => {
+          navigation.navigate("Sites", {
+            screen: "Admin Properties Details",
+            params: {
+              propertyId: propertyId,
+              backScreen: "Home"  // Indicating that the navigation originated from the Properties screen
+            }
+          });
+        }}
+      />
+    </View>
+
+    <ShowAllButton text="SO List" onPress={()=> 
+         navigation.navigate("SO", { 
+          screen: "SO Officers List" ,
+          params: { soUsers: soUsers, backScreen: 'Home'}
+        })}/>
       <View style={{width: '100%', justifyContent: 'center', alignItems: 'center', marginHorizontal: 20}}>
-        <SOcards data={SOdata} onCardPress={() => {
-           navigation.navigate("SO", { screen: "SO Officers Details"});
+        <SOcards data={soUsers} onCardPress={(SoId) => {
+           navigation.navigate("SO", {
+            screen: "SO Officers Details",
+            params: { SoId: SoId, backScreen: 'Home'  },
+          });
         }}/>
       </View>
     </ScrollView>
+    </View>
   );
 };
 

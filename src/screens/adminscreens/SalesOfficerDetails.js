@@ -1,117 +1,188 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, StatusBar} 
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, StatusBar, ActivityIndicator, Linking} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
-import { TextInput } from 'react-native-paper';
-import Icon from 'react-native-vector-icons/FontAwesome5';
-
-const CustomRight = ({}) => (
-    <Image
-      source={require('../../../assets/images/bellicon.png')}
-      style={{ width: 24, height: 24 }}
-    />
-  );
-
-const FloatingLabelInput = ({ label, value, onChangeText, iconName, ...props }) => {
-    return (
-      <View style={styles.tiContainer}>
-      <TextInput
-        label={label}
-        value={value}
-        onChangeText={onChangeText}
-        style={styles.input}
-        mode="outlined"
-        outlineColor="#1D9BF0" // Here you set the border color
-        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent' } }}
-        right={<CustomRight />}
-        {...props}
-      />
-      <Icon name={iconName} size={20} color="#1D9BF0" style={{ position: 'absolute', right: 40 }}/>
-      </View>
-    );
-  };
+import axios from 'axios';
+import SoProfileHeader from '../../components/SoProfileHeader';
 
 
 
-const SalesOfficerDetails = ({navigation}) => {
+const SalesOfficerDetails = ({route, navigation}) => {
+    
+    const { SoId } = route.params?.params || {};
+    const soUsers = route.params?.soUsers
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [soDetails, setSoDetails] = useState(null);
+    const [customers, setCustomers] = useState([]);
+    const [backscreen, setBackScreen] = useState('')
+    const [bsSoId, setBsSoId ] = useState(null)
 
-    const [inputValues, setInputValues] = useState({
-      joinedDate: '',
-      mailId: '',
-      address: '',
-      metroPoints: '',
-      customerHandles: '',
-    });
+    useEffect(() => {
+      const effectiveSoId = SoId || route.params?.SoId;
+      setBsSoId(effectiveSoId)
+  
+      const fetchCustomerDetails = async () => {
+          if (!effectiveSoId) {
+              console.log("No So ID provided");
+              setError("No So ID provided");
+              setLoading(false);
+              return;
+          }
 
-    const handleInputChange = (name, value) => {
-      setInputValues(prevState => ({
-        ...prevState,
-        [name]: value,
-      }));
+          const nestedBackScreen = route.params?.params?.backScreen;
+          const directBackScreen = route.params?.backScreen;
+          const effectiveBackScreen = nestedBackScreen || directBackScreen;
+          console.log("Effective Back Screen for use:", effectiveBackScreen);
+        
+            if (effectiveBackScreen) {
+              console.log("Navigated from:", effectiveBackScreen);
+              setBackScreen(effectiveBackScreen)
+            } else {
+              console.log("No Back Screen provided in route params.");
+            }
+  
+          setLoading(true);
+          try {
+              const response = await axios.get(`https://splashchemicals.in/metro/api/users/${effectiveSoId}/`);
+              console.log("Fetch success for SO details:", response.data);
+              setSoDetails(response.data);
+          } catch (error) {
+              console.error("Fetch error for SO details:", error);
+              setError(error.response ? error.response.data.message : error.message);
+          }
+  
+          try {
+              const response = await axios.get(`https://splashchemicals.in/metro/api/crm-leads/?assigned_so_id=${effectiveSoId}`);
+              console.log("Fetch success for customers:", response.data.results);
+              const customerDetails = response.data.results.map(entry => {
+                  const { customer, property } = entry;
+                  return {
+                      uniqueId: entry.id,
+                      customerId: customer?.id || 'Unknown',
+                      name: customer?.name || 'No Name',
+                      number: customer?.mobile_no || 'No Mobile Number',
+                      mailId: customer?.email || 'No Email',
+                      personimage: require('../../../assets/images/person.png'), // Ensure this path is correct
+                      property: property?.name || 'No Property'
+                  };
+              });
+              setCustomers(customerDetails);
+              console.log('cd', customerDetails)
+          } catch (error) {
+              console.error("Fetch error for customers:", error);
+              setError(error.response ? error.response.data.message : error.message);
+          } finally {
+              setLoading(false);
+          }
+      };
+  
+      fetchCustomerDetails();
+  }, [SoId, route.params]);
+
+    const handleWhatsAppPress = () => {
+      let whatsappUrl = `https://wa.me/${soDetails.mobile_no}`;
+      Linking.openURL(whatsappUrl).catch(err => console.error('An error occurred', err));
+    };
+  
+    const handleCallPress = () => {
+      const callLink = `tel:${soDetails.mobile_no}`;
+      Linking.openURL(callLink);
+    };
+  
+    const handleMailPress = () => {
+      let emailUrl = `mailto:${soDetails.email}`;
+      Linking.openURL(emailUrl).catch(err => console.error('An error occurred', err));
     };
 
-    const inputFields = [
-      { name: 'joinedDate', label: 'Joined Date', iconName: 'calendar-alt',  keyboardType: 'numeric' },
-      { name: 'mailId', label: 'Email Id', iconName: 'at', keyboardType: 'email-address' },
-      { name: 'address', label: 'Address' ,iconName: 'address-card',},
-      { name: 'metroPoints', label: 'Metro Points', iconName: 'star', },
-      { name: 'customerHandles', label: 'Occupation', iconName: "headset" },
-    ];
+    if (loading) {
+      return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+    }
   
+    if (error) {
+      return <Text>Error: {error}</Text>;
+    }
+  
+    if (!soDetails) {
+      return <Text>No so details available.</Text>;
+    }
 
+    const handleBack = () => {
+      if (backscreen==="Home") {
+        navigation.navigate("Home", {
+          screen: "Admin Home",
+        });
+      
+      } else if(backscreen==="SOList"){
+        navigation.navigate("SO", { 
+          screen: "SO Officers List" ,
+          params: { soUsers: soUsers}
+        })  
+      }  else if(backscreen==="SOManager"){
+        navigation.navigate("SO", { 
+          screen: "So Manager" ,
+        })
+        
+      } else {
+        navigation.goBack();
+      }
+    };
     
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style= {styles.mainContainer}>
       <StatusBar/>
       <HeaderContainer title="Sales Officer Details" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
-      onPress={()=>{navigation.navigate("So Manager")}}/>
-      <View style={styles.imageContainer}>
-       <Image source={require('../../../assets/images/gsoperson.jpg')} style={styles.personImage} />
-      </View>
-      <View style={styles.soTextContainer}>
-        <Text style={styles.soText}>Hari Kowshick</Text>
-        <Text style={[styles.soText, {fontWeight: '400', fontSize: 14}]}>+91-9486077810</Text>
+      onPress={()=>navigation.goBack()}/>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <View
+        style={styles.linearGradient}
+      >
+        <View style={styles.avatarContainer}>
+          <Image
+            source={require('../../../assets/images/gsoperson.jpg')} // Replace with your dummy image path
+            style={styles.avatar}
+          />
+        </View>
+        <Text style={styles.nameText}>{soDetails.name}</Text>
       </View>
       <View style={styles.smIconsContainer}>
-        <View style={{marginHorizontal: 20}}>
+        <TouchableOpacity style={{marginHorizontal: 20}} onPress={handleWhatsAppPress}>
         <Image source={require("../../../assets/images/wpicon.png")}/>
-        </View>
-        <View style={{marginHorizontal: 20}}>
+        </TouchableOpacity>
+        <TouchableOpacity style={{marginHorizontal: 20}} onPress={handleCallPress}>
         <Image source={require("../../../assets/images/clicon.png")}/>
-        </View>
-        <View style={{marginHorizontal: 20}}>
+        </TouchableOpacity>
+        <TouchableOpacity style={{marginHorizontal: 20}} onPress={handleMailPress}>
         <Image source={require("../../../assets/images/mpicon.png")}/>
+        </TouchableOpacity>
         </View>
-        </View>
-        {inputFields.map((field) => (
-          <FloatingLabelInput
-            key={field.name}
-            label={field.label}
-            value={inputValues[field.name]}
-            onChangeText={(value) => handleInputChange(field.name, value)}
-            iconName={field.iconName}
-            keyboardType={field.keyboardType}
-          />
-        ))} 
+        <SoProfileHeader soDetails={soDetails}/>
         <View style={styles.acContainer}>
             <TouchableOpacity style={styles.button} onPress={()=> navigation.navigate("SO Approvals")}>
                 <Text style={styles.btnText}>Approvals</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.button, {backgroundColor: 'white',
-             borderWidth: 1, borderColor: '#1D9BF0'}]}>
+             borderWidth: 1, borderColor: '#1D9BF0'}]} onPress={()=> navigation.navigate("Client", { 
+              screen: "Customer List" ,
+              params: { allCustomers: customers}
+           })}>
                 <Text style={[styles.btnText, {color: '#1D9BF0'}]}>Customers</Text>
             </TouchableOpacity>
         </View>
     </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  mainContainer: {
+    flex: 1,  // Use flex to take up the whole screen
     backgroundColor: 'white'
+  },
+  container: {
+    width: '100%',  // Ensures the ScrollView takes the full width
   },
   contentContainer: {
     flexGrow: 1,
@@ -119,19 +190,29 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     paddingBottom: 50,
   },
-  imageContainer:{
-    width: 150,
-    height: 150,
-    borderRadius: 150/2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 70,
-  },
-  personImage:{
+  linearGradient: {
+    borderBottomLeftRadius: 99,
+    borderBottomRightRadius: 99,
     width: '100%',
-    height: '100%',
-    borderRadius: 75,
-    resizeMode: 'cover'    
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#1D9BF0',
+    marginBottom: 20,
+  },
+  avatarContainer: {
+    marginBottom: 10,
+  },
+  avatar: {
+    width: 124,
+    height: 124,
+    borderRadius: 68,
+    backgroundColor: 'white', // Placeholder for the image
+  },
+  nameText: {
+    fontFamily: 'Poppins',
+    fontWeight: '600',
+    fontSize: 20,
+    color: '#424242',
   },
   soTextContainer:{
     width: '100%',
@@ -150,7 +231,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 15,
-    marginBottom: 10,
+    marginBottom: 2,
   },
   input: {
     flex: 1,
@@ -169,12 +250,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   acContainer:{
-    width: '90%',
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginVertical: 20,
+    marginVertical: 10,
     marginHorizontal: 10,
+    paddingHorizontal: 20,
   },
   button:{
     width: 110,

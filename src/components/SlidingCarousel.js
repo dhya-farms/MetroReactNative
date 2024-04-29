@@ -2,10 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, FlatList, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 
 const images = [
-  require('../../assets/images/caurosal1.png'),
-  require('../../assets/images/caurosal2.png'),
-  require('../../assets/images/caurosal3.png'),
-  require('../../assets/images/caurosal1.png'), // Assuming you have a fourth image
+  require('../../assets/images/caro1.webp'),
+  require('../../assets/images/caro.jpg'),
+  require('../../assets/images/caro2.jpeg'),
 ];
 
 
@@ -95,7 +94,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   imageContainer: {
-    width: 525, // Fixed width as requested
+    width: 550, // Fixed width as requested
     height: imageHeight, // Make sure the container has enough height for the images
     justifyContent: 'center',
     alignItems: 'center',
@@ -118,13 +117,13 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   dot: {
-    height: 10,
-    width: 10,
-    borderRadius: 5,
-    backgroundColor: 'gray',
+    height: 8,
+    width: 8,
+    borderRadius: 4,
+    backgroundColor: '#C4C4C4',
     margin: 5,
   },
   activeDot: {
-    backgroundColor: 'blue',
+    backgroundColor: '#1D9BF0',
   },
 });

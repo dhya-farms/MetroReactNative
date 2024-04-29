@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StatusBar, ActivityIndicator} 
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, Image, ScrollView, ActivityIndicator} 
 from 'react-native';
 import { SafeAreaView } from 'react-native';
 import styles from '../../constants/styles/propertydetailsstyles';
@@ -12,61 +12,10 @@ import AllModals from '../../components/AllPropertyModals';
 import EnquireContainer from '../../components/EnquireContainer';
 import LayoutImageModal from '../../modals/LayoutImageModal';
 import axios from 'axios';
+import AmenitiesDisplay from '../../components/AmenitiesDisplay';
+import NearbyDisplay from '../../components/NearbyDisplay';
 
-
-
-const amenityIcons = {
-  'play ground': require('../../../assets/images/playground.png'),
-  'swimming pool': require('../../../assets/images/pool.png'),
-  'market': require('../../../assets/images/market.png'),
-  'kids park': require('../../../assets/images/kidspark.png'),
-  'bus stand': require('../../../assets/images/busstand.png'),
-  'walking area': require('../../../assets/images/walkingarea.png'),
-  'school': require('../../../assets/images/school.png'),
-  'gym': require('../../../assets/images/gym.png'),
-  'parking': require('../../../assets/images/parking.png'),
- };
-
- const defaultIcon = require('../../../assets/images/amenites.png');
-
-const getAmenityIcon = (amenityName) => {
-  const lowerCaseAmenityName = amenityName.toLowerCase();
-  return Object.keys(amenityIcons).reduce((icon, key) => {
-    if (key === lowerCaseAmenityName) {
-      return amenityIcons[key];
-    }
-    return icon;
-  }, defaultIcon);
-};
-
-  const nearbyIcons = {
-    'mall': require('../../../assets/images/mall.png'),
-    'yogi': require('../../../assets/images/yogi.png'), 
-    'play ground': require('../../../assets/images/playground.png'),
-    'swimming pool': require('../../../assets/images/pool.png'),
-    'market': require('../../../assets/images/market.png'),
-    'kids park': require('../../../assets/images/kidspark.png'),
-    'bus stand': require('../../../assets/images/busstand.png'),
-    'walking area': require('../../../assets/images/walkingarea.png'),
-    'school': require('../../../assets/images/school.png'),
-    'gym': require('../../../assets/images/gym.png'),
-    'parking': require('../../../assets/images/parking.png'),
-    // ... add other amenities as needed
-  };
-
-  const getNearByIcon = (nearByName) => {
-    const lowerCaseNearByName = nearByName.toLowerCase();
-    return Object.keys(nearbyIcons).reduce((icon, key) => {
-      if (key === lowerCaseNearByName) {
-        return nearbyIcons[key];
-      }
-      return icon;
-    }, defaultIcon);
-  };
-
-
-
-const MyPropertiesDetails = ({route, navigation}) => {
+ const MyPropertiesDetails = ({route, navigation}) => {
   const [activeTab, setActiveTab] = useState('Details');
   const [bookingCompleted, setBookingCompleted] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
@@ -79,6 +28,7 @@ const MyPropertiesDetails = ({route, navigation}) => {
   const [propertyDetails, setPropertyDetails] = useState({});
   const [pickupNeeded, setPickupNeeded] = useState(true);
   const [error, setError] = useState('');
+  const [backscreen, setBackScreen] = useState('')
   const [siteVisitDetails, setSiteVisitDetails] = useState({
     propertyName: '',
     date: '',
@@ -120,19 +70,26 @@ const MyPropertiesDetails = ({route, navigation}) => {
   const { propertyId } = route.params?.params || {};
 
   useEffect(() => {
-    console.log("Initial route.params:", route.params);
     const nestedPropertyId = route.params?.params?.propertyId;
     const directPropertyId = route.params?.propertyId;
-    console.log("Directly Extracted Property ID:", directPropertyId);
   
-    // Use whichever is available
     const effectivePropertyId = nestedPropertyId || directPropertyId;
-    console.log("Effective Property ID for use:", effectivePropertyId);
+
+    const nestedBackScreen = route.params?.params?.backScreen;
+    const directBackScreen = route.params?.backScreen;
+    const effectiveBackScreen = nestedBackScreen || directBackScreen;
   
     if (effectivePropertyId) {
       setCurrentPropertyId(effectivePropertyId);
     } else {
       console.log("No Property ID found in route params.");
+    }
+
+    if (effectiveBackScreen) {
+      console.log("Navigated from:", effectiveBackScreen);
+      setBackScreen(effectiveBackScreen)
+    } else {
+      console.log("No Back Screen provided in route params.");
     }
   }, [route.params]);
 
@@ -150,9 +107,9 @@ const MyPropertiesDetails = ({route, navigation}) => {
       setError('');
   
       try {
-        const response = await axios.get(`https://splashchemicals.in/metro/api/properties/${currentPropertyId}/`);
+        const response = await axios.get(`https://splashchemicals.in/metro/api/crm-leads/${currentPropertyId}/`);
         console.log("Fetch success:", response.data);
-        setPropertyDetails(response.data);
+        setPropertyDetails(response.data.property);
       } catch (error) {
         console.error("Fetch error:", error); 
         setError(error.response ? error.response.data.message : error.message);
@@ -202,6 +159,19 @@ const MyPropertiesDetails = ({route, navigation}) => {
       // Data is valid, proceed to close DetailsInputModal and open DropModal
       toggleModalVisibility('detailsInputModalVisible', false);
       toggleModalVisibility('dropModalVisible', true);
+    }
+  };
+
+  const handleBack = () => {
+    if (backscreen==="Home") {
+      navigation.navigate("Home");
+    
+    } else if(backscreen==="Properties"){
+      navigation.navigate("properties", {
+        screen: "Customer Properties",
+      });
+    } else {
+      navigation.goBack();
     }
   };
 
@@ -373,11 +343,12 @@ const MyPropertiesDetails = ({route, navigation}) => {
   const amenitiesArray = propertyDetails?.details?.amenities?.map(item => item.trim()).filter(Boolean) || [];
   const nearByArray = propertyDetails?.details?.nearby_attractions?.map(item => item.trim()).filter(Boolean) || [];
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-    <HeaderContainer title="My Properties" 
+    <View style={styles.mainContainer}>
+      <HeaderContainer title="My Properties" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
-      onPress={()=>{navigation.goBack()}}/>
+      onPress={handleBack}/>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
     <SafeAreaView style={styles.slidingContainer}>
       <SlidingCarousel/>
     </SafeAreaView>
@@ -385,7 +356,7 @@ const MyPropertiesDetails = ({route, navigation}) => {
       <Text style={styles.cityText}>{propertyDetails.name}</Text>
       <Text style={styles.cityAmount}>₹ {calculatePricePerSqFt()}/sqft</Text>
     </View>
-    <LayoutHeader onPress={ImageToggle}/>
+    <LayoutHeader onPress={ImageToggle} gmapUrl={propertyDetails.gmap_url}/>
     <LayoutImageModal modalVisible={imageModalVisible} setModalVisible={setImageModalVisible}/>
     <View style={styles.separator} />
     <DetailsTab activeTab={activeTab} setActiveTab={setActiveTab}/>
@@ -414,28 +385,8 @@ const MyPropertiesDetails = ({route, navigation}) => {
         <Text style={styles.infoContent}>{`from ${propertyDetails?.details?.sq_ft_from}sq.ft`}</Text>
       </View>
     </View>
-    <View style={styles.amContainer}>
-      <Text style={styles.amHeader}>Amenities:</Text>
-      <View style={styles.amenitiesContainer}>
-        {amenitiesArray.map((amenity, index) => (
-          <View key={index} style={styles.amenity}>
-            <Image source={getAmenityIcon(amenity)} style={styles.icon} />
-            <Text style={styles.text}>{amenity}</Text>
-          </View>
-        ))}
-      </View>
-    </View>
-    <View style={styles.nbContainer}>
-      <Text style={styles.nbHeader}>Nearby attractions:</Text>
-      <View style={styles.NearbyContainer}>
-        {nearByArray.map((nearby, index) => (
-          <View key={index} style={styles.nearby}>
-          <Image source={getNearByIcon(nearby)} style={styles.icon} />
-          <Text style={styles.text}>{nearby}</Text>
-        </View>
-        ))}
-      </View>
-    </View>
+    <AmenitiesDisplay amenities={amenitiesArray} />
+    <NearbyDisplay nearby={nearByArray}/>
     </>
     )}
     {activeTab === 'Progress' && (
@@ -464,6 +415,7 @@ const MyPropertiesDetails = ({route, navigation}) => {
           handleYesPress={handleYesPress}
           handleNoPress={handleNoPress} 
           handleDetailsInputDone={handleDetailsInputDone}
+          propertyName={propertyDetails.name}
           dropYesPress={dropYesPress} 
           confirmationPress={confirmationPress} 
           handleDropAddressDone={handleDropAddressDone} 
@@ -484,7 +436,7 @@ const MyPropertiesDetails = ({route, navigation}) => {
               <View style={{width: '100%', marginLeft: 10}}>
                 <Text style={styles.details}>Details</Text>
                 <InfoRow label="PropertyName" value={siteVisitDetails.propertyName} />
-                <InfoRow label="Site Visit Date" value={siteVisitDetails.date} />
+                <InfoRow label="Site Visit Date" value= {`${siteVisitDetails.date}`} />
                 <InfoRow label="Driver Name" value="Pasupathi" />
                 <InfoRow label="PickUp Location" value={siteVisitDetails.pickupAddress} />
               </View>
@@ -649,6 +601,7 @@ const MyPropertiesDetails = ({route, navigation}) => {
     )}
     <EnquireContainer/>
     </ScrollView>
+    </View>
   );
 };
 

@@ -13,32 +13,10 @@ const { width: screenWidth } = Dimensions.get('window');
 const cardWidth = 320;
 
 
-const Card = ({ property={}, imageUrls = [], onPress, paramsToken }) => {
-    const [liked, setLiked] = useState(false);
+const Card = ({ property={}, displayText, imageUrls = [], onPress, paramsToken }) => {
 
     const imageSource = imageUrls.length > 0 ? { uri: imageUrls[0] } : require('../../assets/images/Sarav.png');
     
-
-    useEffect(() => {
-      const loadLikedStatus = async () => {
-          const likedStatus = await AsyncStorage.getItem(`liked_${property.id}`);
-          setLiked(likedStatus ? JSON.parse(likedStatus) : false);
-          console.log(imageUrls)
-      };
-
-      loadLikedStatus();
-  }, [property.id]);
-
-  
-  
-
-    const handleFavoritePress = () => {
-      const newLikedStatus = !liked;
-      toggleFavorite(property.id, newLikedStatus, paramsToken, (id, status) => {
-          setLiked(status);
-          // Optional: Call any additional side effects or state updates
-      });
-  };
 
     return (
       <TouchableOpacity style={styles.card} onPress={onPress}>
@@ -46,18 +24,20 @@ const Card = ({ property={}, imageUrls = [], onPress, paramsToken }) => {
           <View  style={{ width: cardWidth, height: 196 }}>
           <Image source={imageSource} style={styles.image} />
         </View>
-          {liked && (
-            <TouchableOpacity style={styles.favoriteButton} onPress={handleFavoritePress}>
-              <MaterialIcons name="favorite" size={24} color="red" />
-            </TouchableOpacity>
-          )}
         </View>
         <View style={styles.cardContent}>
           <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
           <Text style={styles.cardTitle}>{property.name}</Text>
-          <Text style={styles.rating}>4.3</Text>
+          <View style={styles.ratingStarContainer}>
+              <View style={styles.starContainer}>
+                <MaterialIcons name="star" size={16} color="#FEC623" />
+              </View>
+              <View style={styles.ratingContainer}>
+                <Text style={styles.rating}>4.3</Text>
+              </View>
+            </View>
           </View>
-          <Text style={styles.cardDescription}>{property.displayText}</Text>
+          <Text style={styles.cardDescription}>{displayText}</Text>
           <View style={{flexDirection: 'row',alignItems: 'center',}}>
             <MaterialIcons name="location-on" size={16} color="#424242" />
             <Text style={styles.cardAddress}>{property.location}</Text>
@@ -130,12 +110,32 @@ const styles = StyleSheet.create({
       fontSize: 18,
       marginVertical: 5,
     },
-    rating: {
+    ratingStarContainer:{
+      flexDirection: 'row',
+      alignItems: 'center',
       backgroundColor: '#424242',
-      borderRadius: 5,
-      paddingHorizontal: 10,
-      paddingVertical: 2,
-      color: 'white'
+      borderRadius: 12,
+      overflow: 'hidden',
+    },
+    starContainer:{
+      backgroundColor: '#fff',
+      width: 20,
+      height: 20,
+      borderRadius: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 4,
+    },
+    ratingContainer: {
+      paddingRight: 6,
+      paddingLeft: 0, 
+      backgroundColor: '#424242',
+    },
+    rating: {
+      fontFamily: 'Poppins',
+      fontSize: 12,
+      fontWeight: '400',
+      color: 'white',
     },
     cardDescription: {
       fontFamily: 'Poppins',
@@ -149,6 +149,7 @@ const styles = StyleSheet.create({
       fontSize: 12,
       marginLeft: 5,
       marginVertical: 5,
+      color: '#424242'
     },
     paginationContainer: {
       position: 'absolute', // Absolute position for the pagination container

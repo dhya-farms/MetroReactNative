@@ -64,13 +64,14 @@ const AdminSettings = ({navigation}) => {
     });
   };
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <StatusBar/>
+    <View style={styles.mainContainer}>
+        <StatusBar/>
       <HeaderContainer title="Settings" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}
      />
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
     <View style={{ flexGrow: 1 }}></View> 
     <View style={styles.settingsBtnContainer}>
         <LogOutModal
@@ -95,13 +96,17 @@ const AdminSettings = ({navigation}) => {
           </TouchableOpacity>
         </View>
     </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  mainContainer: {
+    flex: 1,  // Use flex to take up the whole screen
     backgroundColor: 'white'
+  },
+  container: {
+    width: '100%',  // Ensures the ScrollView takes the full width
   },
   contentContainer: {
     flexGrow: 1,

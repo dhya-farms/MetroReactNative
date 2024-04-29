@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import { PRIMARY_COLOR } from '../constants/constantstyles/colors';
 
 const PickupModal = ({ modalVisible, setModalVisible, onYesPress , onNoPress}) => {
 
@@ -12,6 +14,9 @@ const PickupModal = ({ modalVisible, setModalVisible, onYesPress , onNoPress}) =
     >
     <View style={styles.centeredView}>
       <View style={styles.modalView}>
+      <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+              <Icon name="times" size={20} color={PRIMARY_COLOR} />
+        </TouchableOpacity>
         <Text style={styles.modalTitle}>Pick up</Text>
         <Text style={styles.modalText}>
           Would you like our executive to arrange transportation for your visit?
@@ -56,7 +61,13 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5
+    elevation: 5,
+    position: 'relative' 
+  },
+  closeButton: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
   },
   modalTitle: {
     fontFamily: 'Poppins',

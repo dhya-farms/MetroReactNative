@@ -1,24 +1,27 @@
 import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
+      mainContainer: {
+        flex: 1,  // Use flex to take up the whole screen
         backgroundColor: 'white'
+      },
+      container: {
+        width: '100%',  // Ensures the ScrollView takes the full width
       },
       contentContainer: {
         flexGrow: 1,
         alignItems: 'center',
         justifyContent: 'flex-start',
         paddingBottom: 50,
-        backgroundColor: 'white'
       },
       headerContainer: {
+        zIndex: 6000,
         width: '100%',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 20,
-        paddingVertical: 15, // Adjust padding as needed
+        paddingVertical: 15,
         backgroundColor: '#fff',
         shadowColor: '#000',
         shadowOffset: {
@@ -29,7 +32,7 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
       },
-      headerTitle: {
+          headerTitle: {
         fontSize: 20,
         fontWeight: '500',
       },
@@ -105,8 +108,10 @@ const styles = StyleSheet.create({
         marginLeft: 10,
       },
       categoryText: {
+        fontFamily: 'Poppins',
+        fontWeight: '400',
         color: '#000', // Text color
-        fontSize: 16, // Text font size
+        fontSize: 14, // Text font size
       },
       bannerContainer: {
         width: 320,

@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   valueText: {
     flex: 1, // This will take up the rest of the space in the container
     fontFamily: 'Poppins',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: '#424242',
     textAlign: 'left', // Align the text to the left
