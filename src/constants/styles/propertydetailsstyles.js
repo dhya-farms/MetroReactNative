@@ -44,36 +44,43 @@ const styles = StyleSheet.create({
     },
     plotContainer: {
       width: '90%',
+      backgroundColor: '#fff', 
     },
     plotHeader: {
       fontFamily: 'Poppins',
       fontWeight: '500',
       color: '#424242',
       fontSize: 14,
-      marginBottom: 15,
+      marginBottom: 10,
     },
     infoContainer: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginBottom: 10,
+      justifyContent: 'flex-start',
+      marginBottom: 4,
       marginHorizontal: 10,
-      alignItems: 'flex-start', // Align items to the start of the cross axis
+      flexWrap: 'wrap', // Align items to the start of the cross axis
     },
     infoLabel: {
+      flex: 1,
       fontFamily: 'Poppins',
       fontWeight: '600',
       color: '#424242',
       fontSize: 12,
-      minWidth: 100, // Set a minimum width for labels
-      textAlign: 'left',
+      marginRight: 10, // Give some space between the label and content
     },
     infoContent: {
+      flex: 1, 
       fontFamily: 'Poppins',
       fontWeight: '400',
       color: '#424242',
       fontSize: 12,
-      textAlign: 'left',
-      width: '100%'
+    },
+    smText:{
+      fontFamily: 'Poppins',
+      fontWeight: '500',
+      color: '#1D9BF0',
+      fontSize: 12,
+      marginVertical: 5
     },
     amContainer:{
       width: '90%',
@@ -172,7 +179,7 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      width: '90%', // Ensure the row takes full width
+      width: '95%', // Ensure the row takes full width
       padding: 10,
       borderWidth: 1,
       borderColor: '#1D9BF0',
@@ -180,11 +187,18 @@ const styles = StyleSheet.create({
       marginRight: 8,
       // ... (your existing styles)
     },
+
     completedStatusItem: {
       borderColor: '#80FF00', // Green border color for completed status
     },
-    completedStatusCheck:{
-      backgroundColor: '#80FF00'
+    approvedStatusItem:{
+      borderColor: '#1D9BF0',
+    },
+    pendingStatusItem: {
+      borderColor: '#FDF525', // Yellow for pending
+    },
+    rejectedStatusItem: {
+      borderColor: 'red', // Red for rejected
     },
     siteText: {
       fontFamily: 'Poppins',
@@ -200,6 +214,18 @@ const styles = StyleSheet.create({
       justifyContent: 'center', // Center the icon vertically
       alignItems: 'center', // Center the icon horizontally
     },
+    completedStatusCheck:{
+      backgroundColor: '#80FF00'
+    },
+    approvedStatusCheck:{
+      borderColor: '#1D9BF0',
+    },
+    pendingStatusCheck:{
+      backgroundColor: '#FDF525'
+    },
+    rejectedStatusCheck:{
+      backgroundColor: '#FF0000',
+    },
     detailToggle: {
       fontFamily: 'Poppins',
       fontSize: 10,
@@ -211,28 +237,59 @@ const styles = StyleSheet.create({
       fontFamily: 'Poppins',
       fontSize: 12,
       fontWeight: '600',
-      marginBottom: 10,
     },
     infoRow: {
       flexDirection: 'row',
+      justifyContent: 'flex-start',
       alignItems: 'center',
-      marginBottom: 5, // Add space between rows
-    },
-    contextText: {
-      fontFamily: 'Poppins'
+      marginBottom: 4,
+      marginHorizontal: 10,
+      flexWrap: 'wrap', // Align items to the start of the cross axis
     },
     labelText: {
+      flex: 0,  // Flex set to 0 to maintain width only to content
+      minWidth: 100, // Minimum width for label
+      fontFamily: 'Poppins',
       fontWeight: '400',
+      color: '#424242',
       fontSize: 10,
+      marginRight: 10, // Give some space between the label and content
     },
     colonText: {
-      marginRight: 4, // Space after the colon before the value
-      // Colon styles if any
+      marginRight: 4,
     },
+  
     valueText: {
+      flex: 1, 
+      fontFamily: 'Poppins',
       fontWeight: '600',
-      fontSize: 12,
+      color: '#424242',
+      fontSize: 12, // Space after the colon before the value
     },
+    documentItem: {
+      width: '80%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: 4,
+      borderBottomWidth: 1,
+      borderBottomColor: '#ccc'
+    },
+    docDetailText:{
+        flex: 1,
+        fontFamily: 'Poppins',
+        fontWeight: '500',
+        fontSize: 10,
+        marginVertical: 5,
+    },
+    balanceAmountContainer:{
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    },
+
+    
 });
 
 export default styles;

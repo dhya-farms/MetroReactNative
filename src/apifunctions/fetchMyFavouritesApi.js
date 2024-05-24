@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 const BASE_URL = 'https://splashchemicals.in/metro/api';
-const PROPERTIES_ENDPOINT = `${BASE_URL}/properties/my-favourites`;
+const PROPERTIES_ENDPOINT = `${BASE_URL}/phases/my-favourites`;
 
 // Function to get authorization headers
 const getAuthHeaders = async (paramsToken) => {
@@ -13,38 +13,67 @@ const getAuthHeaders = async (paramsToken) => {
   };
 };
 
-export const fetchMyFavourites = async (paramsToken) => {
+function getDisplayInfo(property, prop) {
+  const plotCount = prop.no_of_plots;
+  const areaSize = prop.area_size_from;
+  const unitName = prop.area_size_unit.name_vernacular;
+
+  // Helper function to determine the correct noun form
+  const formatPlural = (count, singular, plural) => count === 1 ? singular : plural;
+
+  switch (property.property_type.name) {
+      case 'FLAT':
+          return `${plotCount} ${formatPlural(plotCount, 'Home', 'Homes')} available, starts from ${areaSize} ${unitName}`;
+      case 'VILLA':
+          return `${plotCount} ${formatPlural(plotCount, 'villa', 'villas')} available, starts from ${areaSize} ${unitName}`;
+      case 'DTCP_PLOTS':
+          return `${plotCount} ${formatPlural(plotCount, 'plot', 'plots')} available, starts from ${areaSize} ${unitName}`;
+      case 'FARMLANDS':
+          return `${plotCount} ${formatPlural(plotCount, 'unit', 'units')} available, starts from ${areaSize} ${unitName}`;
+      default:
+          return 'Details unavailable';
+  }
+}
+
+  function getDetailInfo(property, prop) {
+    switch (property.property_type.name) {
+        case 'FLAT':
+            return `${property.details.flat_type}`;
+        case 'VILLA':
+            return `${prop.no_of_plots} Villas available`;
+        case 'DTCP_PLOTS':
+            return `${prop.no_of_plots} plots available`;
+        case 'FARMLANDS':
+            return `${property.details.farmland_type}`;
+        default:
+            return 'Details unavailable';
+    }
+ }
+export const fetchMyFavourites = async (paramsToken, pageUrl = null) => {
+  const endpoint = pageUrl || PROPERTIES_ENDPOINT;
   try {
     const headers = await getAuthHeaders(paramsToken);
-    const response = await axios.get(PROPERTIES_ENDPOINT, { headers });
-    return response.data.results.map(property => {
-      // Define display text based on the property_type.id
-      let displayText = "";
-      switch (property.property_type.id) {
-        case 1: // DTCP_PLOTS
-          console.log('DTCP_PLOTS:', property.details);
-          displayText = `${property.details.plots_available} plots available, starts from ${property.details.sq_ft_from} sqft`;
-          break;
-        case 3: // FLAT
-          displayText = `${property.details.homes_available} homes available, starts from ${property.details.sq_ft_from} sqft`;
-          break;
-        case 2: // FARMLANDS
-          displayText = `${property.details.units_available} units available, starts from ${property.details.sq_ft_from} sqft`;
-          break;
-        case 4: // VILLA
-          displayText = `${property.details.villas_available} villas available, starts from ${property.details.sq_ft_from} sqft`;
-          break;
-        default:
-          displayText = `Details not Entered Correctly`;
-      }
-      return {
-        ...property,
-        displayText,
-        source: require('../../assets/images/Sarav.png'), // Adjust the path as necessary
-      };
-    });
+    const response = await axios.get(endpoint, { headers });
+    const formattedProperties = response.data.results.map(prop => {
+     return {
+        ...prop,
+        id: prop.id, // Use phase ID for unique identification
+        propertyId: prop.property.id,
+        name: `${prop.property.name} Phase-${prop.phase_number}`,
+        location: prop.property.location,
+        displayText: getDisplayInfo(prop.property, prop),
+        detailInfo: getDetailInfo(prop.property, prop),
+        sqFtFrom: prop.sq_ft_from,
+        bgimage: prop.property.images.length ? { uri: prop.property.images[0].image } : null,
+        phaseDetails: prop // Include phase details
+    };
+    })
+    return {
+      properties: formattedProperties,
+      nextPageUrl: response.data.next, 
+    };
   } catch (error) {
     console.error('Failed to fetch Favourites:', error);
-    return []; // Return an empty array or handle the error as you see fit
+    return { properties: [], nextPageUrl: null }; // Handle errors by returning an empty list and no next page
   }
 };

@@ -40,13 +40,12 @@ const PickupModal = ({ modalVisible, setModalVisible, onYesPress , onNoPress}) =
 };
 
 const styles = StyleSheet.create({
-  // ... other styles ...
 
   centeredView: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 22
+    backgroundColor: 'rgba(0, 0, 0, 0.5)'
   },
   modalView: {
     margin: 20,

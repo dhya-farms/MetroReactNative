@@ -1,13 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-// Base URL for your API
-const BASE_URL = 'https://splashchemicals.in/metro';
-const USER_PROPERTIES_ENDPOINT = `${BASE_URL}/api/crm-leads/?customer_id=`;
-// Function to get authorization headers
+const BASE_URL = 'https://splashchemicals.in/metro/api';
+const USER_PROPERTIES_ENDPOINT = `${BASE_URL}/crm-leads/?customer_id=`;
+
 const getAuthHeaders = token => ({
   'Content-Type': 'application/json',
-  'Authorization': `Token ${token}`
+  'Authorization': `Token ${token}`,
 });
 
 // Function to fetch data with authorization headers
@@ -16,64 +15,78 @@ const fetchDataWithAuth = async (url, token) => {
   return response.data;
 };
 
-// Function to fetch customer properties
-export const fetchCustomerProperties = async (paramsToken, paramsUserId) => {
+function getDisplayInfo(property, phase) {
+  const plotCount = phase.no_of_plots;
+  const areaSize = phase.area_size_from;
+  const unitName = phase.area_size_unit.name_vernacular;
+  
+  if (areaSize === "No plots or no unsold plots") {
+    return "All plots are sold";
+  }
+
+  const formatPlural = (count, singular, plural) => count === 1 ? singular : plural;
+
+  switch (property.property_type.name) {
+      case 'FLAT':
+          return `${plotCount} ${formatPlural(plotCount, 'Home', 'Homes')} available, starts from ${areaSize} ${unitName}`;
+      case 'VILLA':
+          return `${plotCount} ${formatPlural(plotCount, 'villa', 'villas')} available, starts from ${areaSize} ${unitName}`;
+      case 'DTCP_PLOTS':
+          return `${plotCount} ${formatPlural(plotCount, 'plot', 'plots')} available, starts from ${areaSize} ${unitName}`;
+      case 'FARMLANDS':
+          return `${plotCount} ${formatPlural(plotCount, 'unit', 'units')} available, starts from ${areaSize} ${unitName}`;
+      default:
+          return 'Details unavailable';
+  }
+}
+
+
+export const fetchCustomerProperties = async (paramsToken, paramsUserId, pageUrl = null) => {
   let token = paramsToken || await AsyncStorage.getItem('userToken');
   let userId = paramsUserId || await AsyncStorage.getItem('userId');
 
   if (!token || !userId) {
-    console.log('No token or userId found');
-    return [];
+    console.error('No token or userId found');
+    return { properties: [], nextPageUrl: null };
   }
 
+  const url = pageUrl || `${USER_PROPERTIES_ENDPOINT}${userId}`;
+
   try {
-    const propertiesResponse = await fetchDataWithAuth(`${USER_PROPERTIES_ENDPOINT}${userId}`, token);
-    console.log(`${USER_PROPERTIES_ENDPOINT}${userId}`)
-    console.log('pr', propertiesResponse)
+    const propertiesResponse = await fetchDataWithAuth(url, token);
     if (!propertiesResponse.results || !Array.isArray(propertiesResponse.results)) {
-      console.log('No properties found or incorrect data format');
-      return [];
+      console.error('No properties found or incorrect data format');
+      return { properties: [], nextPageUrl: null };
     }
 
     const formattedProperties = propertiesResponse.results.map(prop => {
-      // Check both direct and nested property access
-      const property = prop.property;
-      console.log('pr', property)
 
-      if (!property.property_type || !property.details) {
-        console.log('Property or property details missing:', property);
-        return null;
-      }
+      const thumbnailImages = prop.property.images.filter(image => image.is_thumbnail && !image.is_slider_image);
 
-      let displayText = "";
-      switch (property.property_type.id) {
-        case 1:  // DTCP_PLOTS
-          displayText = `${property.details.plots_available} plots available, starts from ${property.details.sq_ft_from} sqft`;
-          break;
-        case 3:  // FLAT
-          displayText = `${property.details.homes_available} homes available, starts from ${property.details.sq_ft_from} sqft`;
-          break;
-        case 2:  // FARMLANDS
-          displayText = `${property.details.units_available} units available, starts from ${property.details.sq_ft_from} sqft`;
-          break;
-        case 4:  // VILLA
-          displayText = `${property.details.villas_available} villas available, starts from ${property.details.sq_ft_from} sqft`;
-          break;
-        default:
-          displayText = 'Details not available';
-      }
-
+      // Select the first thumbnail image if available, or default to a local asset
+      const displayImage = thumbnailImages.length > 0 ? { uri: thumbnailImages[0].image } : require('../../assets/images/Sarav.png');
       return {
         ...prop,
-        displayText,
-        source: require('../../assets/images/Sarav.png')
+        id: prop.phase.id,
+        propertyId: prop.id,
+        name: `${prop.property.name} Phase-${prop.phase.phase_number}`,
+        location: prop.property.location,
+        phaseDetails: prop.phase,
+        displayText: getDisplayInfo(prop.property, prop.phase),
+        source: displayImage
       };
-    }).filter(p => p != null);
+    });
 
     console.log('Properties data retrieval success:', formattedProperties);
-    return formattedProperties;
+    return {
+      properties: formattedProperties,
+      nextPageUrl: propertiesResponse.next // Provide the next page URL for pagination
+    };
   } catch (error) {
     console.error('Data retrieval error:', error.response ? error.response.data : error.message);
-    return [];
+    return { properties: [], nextPageUrl: null };
   }
 };
+
+
+

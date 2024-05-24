@@ -98,7 +98,7 @@ const MobileLoginScreen = ({navigation}) => {
       />
       <Text style={styles.gLoginText}>Login With your Google Account</Text>
       </View>
-      <TouchableOpacity style={styles.registerButton} onPress={{}}>
+      <TouchableOpacity style={styles.registerButton} onPress={()=> navigation.navigate('REscreen')}>
         <Text style={styles.registerButtonText}>Don't have an account yet?<Text style={{color: '#1D9BF0'}}> Register</Text></Text>
       </TouchableOpacity>
       </ScrollView>

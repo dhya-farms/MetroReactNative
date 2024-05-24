@@ -87,6 +87,23 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       backgroundColor: 'white'
     },
+    loadingIndicator:{
+      width: '100%', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      height: '20%',
+    },
+    npContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    nopText: {
+      fontSize: 14,
+      color: '#757575',
+      fontFamily: 'Poppins'
+    },
 });
 
 export default styles;

@@ -6,19 +6,20 @@ const AdminPropertiesContext = createContext();
 
 export const AdminPropertiesProvider = ({ children }) => {
   const [adminProperties, setAdminProperties] = useState([]);
+  const [nextGlobalPageUrl, setGlobalNextPageUrl] = useState(null);
 
   useEffect(() => {
     // Fetch properties here or provide a method to do so
     const fetchPropertiesDetails = async () => {
-      const fetchedProperties = await fetchAdminProperties();
+      const { properties: fetchedProperties, nextPageUrl: nextPage } = await fetchAdminProperties();
       setAdminProperties(fetchedProperties);
+      setGlobalNextPageUrl(nextPage)
     };
 
     fetchPropertiesDetails();
   }, []);
-
   return (
-    <AdminPropertiesContext.Provider value={{ adminProperties, setAdminProperties }}>
+    <AdminPropertiesContext.Provider value={{ adminProperties, setAdminProperties, nextGlobalPageUrl, setGlobalNextPageUrl}}>
       {children}
     </AdminPropertiesContext.Provider>
   );

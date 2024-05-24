@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-const SortHeader = ({ title, isSortVisible = true }) => {
+const SortHeader = ({ title, onSort, isSortVisible = true }) => {
 
   const [isSortDropdownVisible, setIsSortDropdownVisible] = useState(false)
   const [selectedOption, setSelectedOption] = useState(null);
@@ -13,6 +13,13 @@ const SortHeader = ({ title, isSortVisible = true }) => {
 
   const toggleSortVisibility = () => {
     setIsSortDropdownVisible(!isSortDropdownVisible);
+  };
+
+  const handleConfirmSort = () => {
+    if (selectedOption) {
+      onSort(selectedOption);  // Trigger the sorting in the parent component
+      setIsSortDropdownVisible(false);  // Close the dropdown
+    }
   };
 
   return (
@@ -48,8 +55,8 @@ const SortHeader = ({ title, isSortVisible = true }) => {
          <Text style={styles.optionText}>Oldest First</Text>
        </TouchableOpacity>
        {selectedOption && (
-         <TouchableOpacity style={styles.okButton}>
-           <Text style={styles.okButtonText}>Ok</Text>
+         <TouchableOpacity style={styles.okButton} onPress={handleConfirmSort}>
+            <Text style={styles.okButtonText}>Ok</Text>
          </TouchableOpacity>
        )}
      </View>

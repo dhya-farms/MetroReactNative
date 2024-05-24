@@ -1,25 +1,43 @@
 import React, { useCallback, useState,useEffect, } from 'react';
 import { View, Text, TouchableOpacity, Image, ScrollView, ActivityIndicator, Linking} 
 from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import HeaderContainer from '../../components/HeaderContainer';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import PickupModal from '../../modals/PickUpModal';
 import DetailsInputModal from '../../modals/DetailsInputModal';
 import DropModal from '../../modals/DropModal';
 import AddressModal from '../../modals/AddressModal';
 import DropAddessConfimModal from '../../modals/DropAddressConfirmModal';
 import ConfirmationModal from '../../modals/ConfirmationModal';
-import PaymentModal from '../../modals/PaymentModal';
-import { SECONDARY_COLOR } from '../../constants/constantstyles/colors';
-import { useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { PRIMARY_COLOR, SECONDARY_COLOR } from '../../constants/constantstyles/colors';
 import styles from '../../constants/styles/socustomerdetailsstyles';
 import axios from 'axios';
 import { postSiteVisit } from '../../apifunctions/postSiteVisitApi';
+import { fetchStatus } from '../../apifunctions/fetchStatusApi';
+import { useCustomer } from '../../contexts/useCustomerContext';
+import { updateApprovalStatus } from '../../apifunctions/updateApprovalStatusApi';
+import { handleCallPress, handleMailPress, handleWhatsAppPress } from '../../functions/linkers';
+import { getStatusColor, getStatusItemStyle, getIconName, getStatusText} from '../../functions/adminStatusHelpers';
+import PlotSelectModal from '../../modals/PlotSelectModal';
+import updatePlotId from '../../apifunctions/updatePlotApi';
+import Toast from 'react-native-toast-message';
+import UploadIcon from 'react-native-vector-icons/FontAwesome5'
+import { fetchDocumentationDetails } from '../../functions/fetchDocumentDeatils';
+import downloadAndShareFile from '../../functions/downloadFile';
+import { fetchTokenPaymentDetails } from '../../functions/fetchTokenSoDetails';
+import { fetchFullPaymentDetails } from '../../functions/fetchFullPaymentDeatils';
+import { useRefresh } from '../../contexts/useRefreshContext';
+import { postStatusChangeRequest } from '../../apifunctions/postStatusChangeRequest';
+import { fetchDocumentationDeliveryDetails } from '../../functions/fetchDocumentDeliveryDetails';
+
+
 
 
 const SoCustomerDetails = ({route ,navigation}) => {
-
+  const { setGlobalCustomerId } = useCustomer();
+  const { globalCustomerId } = useCustomer();
+  const { dummyState, triggerDataRefresh} = useRefresh();
   const { customerId } = route.params?.params || {};
   const [pickupModalVisible, setPickupModalVisible] = useState(false);
   const [isPickup, setIsPickup] = useState(false);
@@ -29,10 +47,13 @@ const SoCustomerDetails = ({route ,navigation}) => {
   const [detailsInputModalVisible, setDetailsInputModalVisible] = useState(false);
   const [dropModalVisible, setDropModalVisible] = useState(false)
   const [addressModalVisible, setAddressModalVisible] = useState(false)
+  const [plotSelectModalVisible, setPlotSelectModalVisible] = useState(false)
   const [addressConfirmModalVisible, setAddressConfirmModalVisible ] = useState(false)
   const [confirmationModalVisible, setConfirmationModalVisible] = useState(false)
+  const [statusChangeRequestId, setStatusChangeRequestId] = useState(null);
   const [paymentModalVisible, setPaymentModalVisible] = useState(false)
-  const [bookingCompleted, setBookingCompleted] = useState(false);
+  const [bookingStatus, setBookingStatus] = useState(false);
+  const [tokenAdvanceStatus, setTokenAdvanceStatus] = useState(false)
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [cameFromPickupNo, setCameFromPickupNo] = useState(false);
   const [verificationComplete, setVerificationComplete] = useState(false)
@@ -45,136 +66,235 @@ const SoCustomerDetails = ({route ,navigation}) => {
   const [pickupDate, setPickupDate] = useState('')
   const [selectedDocuments, setSelectedDocuments] = useState([]);
   const [deliveryCompleted, setDeliveryCompleted] = useState(false)
-  const [paymentDetails, setPaymentDetails] = useState({
-    date: '',
-    amountPaid: '',
-    paymentMethod: '',
-    referenceNumber: ''
-  });
+  const [refreshCounter, setRefreshCounter] = useState(0);
+  const [tokenDetailsFetch, setTokenDetailsFetch] = useState(false)
+  const [documentsRefetch, setDocumentsRefetch] = useState(false)
+  const effectiveCustomerId = customerId || route.params?.customerId;
+  const [phaseId, setPhaseId] = useState(null)
+  const [plotInfo, setPlotInfo] = useState({})
   const [customerDetails, setCustomerDetails] = useState(null);
+  const [status, setStatus] = useState({
+    siteVisit: {
+      isProgress: false,
+      isApproved: false,
+      isPending: false,
+      isRejected: false,
+      isCompleted: false,
+      details: []
+    },
+    tokenAdvance: {
+      isProgress: false,
+      isApproved: false,
+      isPending: false,
+      isRejected: false,
+      isCompleted: false,
+      details: []
+    },
+    documentation: {
+      isProgress: false,
+      isApproved: false,
+      isPending: false,
+      isRejected: false,
+      isCompleted: false,
+      detailsVisible: false,
+      details: [],
+    },
+    payment: {
+      isProgress: false,
+      isApproved: false,
+      isPending: false,
+      isRejected: false,
+      isCompleted: false,
+      detailsVisible: false,
+      details: [{}],
+    },
+    ddDelivery:{
+      isProgress: false,
+      isApproved: false,
+      isPending: false,
+      isRejected: false,
+      isCompleted: false,
+      detailsVisible: false,
+      details: [],
+    }
+  });
+
+  const statusMapping = {
+    'SITE_VISIT': 'siteVisit',
+    'TOKEN_ADVANCE': 'tokenAdvance',
+    'DOCUMENTATION': 'documentation',
+    'PAYMENT': 'payment',
+    'DOCUMENT_DELIVERY': 'ddDelivery'
+  };
+
+const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails) => {
+    let newState = { ...status };
+    const allStageKeys = Object.keys(statusMapping); // Get all the keys from the mapping
+    const normalizedCrmStatusName = crmStatusName ? crmStatusName.toUpperCase() : "";
+
+    console.log("All stage keys:", allStageKeys); // Display all keys
+    console.log("Normalized CRM Status Name:", normalizedCrmStatusName);
+    
+    if (!normalizedCrmStatusName || !(normalizedCrmStatusName in statusMapping)) {
+      allStageKeys.forEach(key => newState[statusMapping[key]] = {
+          isPending: false,
+          isApproved: false,
+          isRejected: false,
+          isCompleted: false,
+          isProgress: false
+      });
+      newState[statusMapping[allStageKeys[0]]].isProgress = true; // Set the first stage to in progress
+      console.log("No valid CRM status, setting initial stage to progress");
+      return newState;
+  }// Display normalized name
+
+    // Use the keys to find the index
+    const currentStageIndex = allStageKeys.indexOf(normalizedCrmStatusName);
+    console.log("current stage index", currentStageIndex);
 
 
-  useFocusEffect(
-    useCallback(() => {
-      
+    const currentStage = statusMapping[normalizedCrmStatusName]; // This should now correctly retrieve 'siteVisit', 'tokenAdvance', etc.
 
-      const paymentDone = route.params?.paymentCompleted ?? paymentCompleted; 
-      const verificationDone = route.params?.verificationComplete ?? verificationComplete; 
-      const newSelectedDocuments = route.params?.selectedDocuments;
-      const deliveryComplete = route.params?.deliveryComplete
+    // Initialize all stages to default values
+    allStageKeys.forEach(key => {
+        newState[statusMapping[key]] = {
+            isPending: false,
+            isApproved: false,
+            isRejected: false,
+            isCompleted: false,
+            isProgress: false
+        };
+    });
 
-
-      if (route.params?.paymentCompleted !== undefined) {
-        setPaymentCompleted(paymentDone);
-      }
-      if (route.params?.verificationComplete !== undefined) {
-        setVerificationComplete(verificationDone);
-      }
-      if (route.params?.deliveryComplete !== undefined) {
-        setDeliveryCompleted(deliveryComplete)
-      }
-
-      if (newSelectedDocuments !== undefined) {
-        setSelectedDocuments(newSelectedDocuments);
-        console.log("Updating selectedDocuments state with:", route.params.selectedDocuments);
-        console.log("Selected Documents set to state:", newSelectedDocuments);
-      }
-  
-      
-      const newPaymentDetails = {
-        date: route.params?.date ?? '',
-        amountPaid: route.params?.amountPaid ?? '',
-        paymentMethod: route.params?.paymentMethod ?? '',
-        referenceNumber: route.params?.referenceNumber ?? ''
-      };
-
-      if (route.params?.newPaymentEntries) {
-        // Here, you merge the new entries with the existing ones
-        setPaymentEntries(prevEntries => [...prevEntries, ...route.params.newPaymentEntries]);
-      }
-
-  
-
-      if (route.params?.completePayment !== undefined) {
-        setCompletePayment(route.params.completePayment);
-      }
-      
-      // Here, you're defensively checking if at least one property is non-empty to update
-      if (newPaymentDetails.date || newPaymentDetails.amountPaid || newPaymentDetails.paymentMethod || newPaymentDetails.referenceNumber) {
-        setPaymentDetails(prevDetails => ({ ...prevDetails, ...newPaymentDetails }));
-      }
-
-    }, [route.params, paymentCompleted, verificationComplete]) // Removed the state dependencies to prevent re-triggering from their updates
-  );
-  const paymentInfoExists = paymentDetails.date || paymentDetails.amountPaid || paymentDetails.paymentMethod || paymentDetails.referenceNumber;
-
-  useEffect(() => {
-    const fetchSiteVisits = async () => {
-        const crmId = customerId || route.params?.customerId;
-        const token = await AsyncStorage.getItem('userToken');
-        setCrmId(crmId);
-
-        if (!crmId) {
-            console.log("No CRM ID provided");
-            setBookingCompleted(false);
-            return;
-        }
-
-        try {
-            const response = await axios.get(`https://splashchemicals.in/metro/api/site-visits/?crm_lead_id=${crmId}`, {
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Token ${token}`,
-                }
-            });
-
-            if (response.data.count > 0) {
-                setBookingCompleted(true);
-                console.log(`Booking for customer ID ${crmId} has been completed.`);
-            } else {
-                setBookingCompleted(false);
-                console.log(`No bookings found for customer ID ${crmId}.`);
-            }
-        } catch (error) {
-            console.error("Failed to fetch site visits:", error);
-            setBookingCompleted(false);
-        }
+    // Set the current stage based on the status
+    newState[currentStage] = {
+        isPending: statusName === "PENDING",
+        isApproved: statusName === "APPROVED",
+        isRejected: statusName === "REJECTED",
+        isCompleted: statusName === "COMPLETED",
+        isProgress: statusName === null || statusName === "IN_PROGRESS"
     };
 
-    fetchSiteVisits();
-}, [customerId, route.params]);
+    // Update previous stages to completed
+    for (let i = 0; i < currentStageIndex; i++) {
+        newState[statusMapping[allStageKeys[i]]].isCompleted = true;
+    }
 
+    // Set the next stage to in progress if the current stage is completed
+    if (newState[currentStage].isCompleted && currentStageIndex + 1 < allStageKeys.length) {
+        newState[statusMapping[allStageKeys[currentStageIndex + 1]]].isProgress = true;
+    }
 
+    return newState;
+  };
   useEffect(() => {
-    const effectiveCustomerId = customerId || route.params?.customerId;
-    setCrmId(effectiveCustomerId)
-    const fetchCustomerDetails = async () => {
-      if (!effectiveCustomerId) {
-        console.log("No customer ID provided");
-        setError("No customer ID provided");
-        setLoading(false);
-        return;
-      }
+    if (effectiveCustomerId) {
+      setGlobalCustomerId(effectiveCustomerId);
+    }
+  }, [effectiveCustomerId, setGlobalCustomerId]);
 
-      setLoading(true);
-      try {
-        const response = await axios.get(`https://splashchemicals.in/metro/api/crm-leads/${effectiveCustomerId}/`);
-        console.log("Fetch success:", response.data);
-        setCustomerDetails(response.data);
-      } catch (error) {
-        console.error("Fetch error:", error);
-        setError(error.response ? error.response.data.message : error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCustomerDetails();
-  }, [customerId, route.params]);
   
+  useEffect(() => {
+      if (globalCustomerId) {
+        fetchCustomerDetails(globalCustomerId);
+        setCrmId(globalCustomerId);
+      } else {
+        console.log("No Global Customer ID provided");
+      }
+    }, [globalCustomerId, dummyState]);
+
+    useEffect(() => {
+      const relevantStatusChange = status.documentation.isApproved || status.documentation.isRejected || status.documentation.isCompleted || status.documentation.isPending
+  
+      if (relevantStatusChange) {
+        console.log("Fetching payment details due to status change in tokenAdvance.");
+        fetchDocumentationDetails(globalCustomerId, setLoading, setStatus, setError);  // `1` is the enum value for token advance
+      }
+    }, [
+      status.documentation.isApproved,
+      status.documentation.isRejected,
+      status.documentation.isCompleted,
+      status.documentation.isPending,
+      documentsRefetch,
+      dummyState,
+      globalCustomerId
+    ]);
 
 
+    useEffect(() => {
+      const relevantStatusChange = status.tokenAdvance.isApproved || status.tokenAdvance.isRejected || status.tokenAdvance.isCompleted || status.tokenAdvance.isPending;
+  
+      if (relevantStatusChange) {
+        console.log("Fetching payment details due to status change in tokenAdvance.");
+        fetchTokenPaymentDetails(globalCustomerId, setLoading, setStatus, setError);  // `1` is the enum value for token advance
+      }
+    }, [
+      status.tokenAdvance.isApproved,
+      status.tokenAdvance.isRejected,
+      status.tokenAdvance.isCompleted,
+      status.tokenAdvance.isPending,
+      dummyState,
+      tokenDetailsFetch,
+      globalCustomerId
+    ]);
 
+    useEffect(() => {
+      const relevantStatusChange = status.payment.isApproved || status.payment.isRejected || status.payment.isCompleted || status.payment.isPending;
+      if (relevantStatusChange) {
+        console.log("Fetching payment details due to status change in payment.");
+        fetchFullPaymentDetails(globalCustomerId, setLoading, setStatus, setError); 
+      }
+    }, [globalCustomerId, dummyState, status.payment.isApproved ,status.payment.isRejected, status.payment.isCompleted, status.payment.isPending]);
+
+    useEffect(() => {
+      const relevantStatusChange = status.ddDelivery.isCompleted ;
+      if (relevantStatusChange) {
+        console.log("Fetching ddDelivery details due to status change in ddDelivery.");
+        fetchDocumentationDeliveryDetails(globalCustomerId, setLoading, setStatus, setError); 
+      }
+    }, [globalCustomerId, status.ddDelivery.isCompleted]);
+
+   
+   
+
+
+const fetchCustomerDetails = async (customerId) => {
+  if (!customerId) {
+    console.log("No customer ID provided");
+    setError("No customer ID provided");
+    setBookingStatus("Not Booked");
+    setLoading(false);
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const response = await axios.get(`https://splashchemicals.in/metro/api/crm-leads/${customerId}/`);
+    console.log("Fetch success:", response.data);
+    setCustomerDetails(response.data);
+    console.log("plot info", plotInfo)
+    setStatusChangeRequestId(response.data.status_change_request?.id);
+    setPhaseId(response.data.phase.id)
+
+    const customerStatus = response.data;
+    const statusName = response.data.current_approval_status ? response.data.current_approval_status.name : null;
+    const crmStatusName = response.data.current_crm_status ? response.data.current_crm_status.name : null;
+
+
+          const updatedStatus = updateStatusBasedOnResponse(statusName, crmStatusName, customerStatus);
+          setStatus(updatedStatus);
+
+    return response;  
+  } catch (error) {
+    console.error("Fetch error:", error);
+    setError(error.response ? error.response.data.message : error.message);
+    setBookingStatus("Not Booked");
+  } finally {
+    setLoading(false);
+  }
+};
+
+  
   const handleYesPress = () => {
     setIsPickup(true);
     setPickupModalVisible(false);
@@ -187,6 +307,10 @@ const SoCustomerDetails = ({route ,navigation}) => {
     setPickupModalVisible(false);
     setDropModalVisible(true)
     setCameFromPickupNo(true);
+  }
+
+  const handlePlotSelectPress = ()=>{
+    setPickupModalVisible(true)
   }
 
   const dropNoPress = ()=>{
@@ -218,10 +342,8 @@ const SoCustomerDetails = ({route ,navigation}) => {
   };
 
   const pickupDonePress = (details) => {
-    setPickupAddress(details.pickupAddress); // Store the address
-    setPickupDate(details.date); // Store the full ISO string of date and time
-    // Since the full date-time ISO string is stored, you might not need to store time separately.
-    // But if you do need it separately for other parts of your app:
+    setPickupAddress(details.pickupAddress);
+    setPickupDate(details.date);
     const timeFromDetails = new Date(details.date);
     setPickupTime(`${timeFromDetails.getHours().toString().padStart(2, '0')}:${timeFromDetails.getMinutes().toString().padStart(2, '0')}`);
 
@@ -247,7 +369,7 @@ const SoCustomerDetails = ({route ,navigation}) => {
 
         if (isPickup) {
             payload.pickup_address = pickupAddress;
-            payload.pickup_date = pickupDate; // Directly use the ISO string from pickupDate
+            payload.pickup_date = pickupDate; 
         }
 
         if (isDrop) {
@@ -257,24 +379,22 @@ const SoCustomerDetails = ({route ,navigation}) => {
         // Sending the request to the server
         const response = await postSiteVisit(payload);
         console.log('Booking successful:', response);
-
-        // Save booking state and ID with customer specific key
-        await AsyncStorage.setItem(`bookingCompleted_${crmId}`, 'true');
-        await AsyncStorage.setItem(`bookingId_${crmId}`, response.id.toString());
-
-        setBookingCompleted(true);
         alert('Site visit booked successfully!');
-    } catch (error) {
+
+        const statusResponse = await fetchStatus(crmId);
+          if (statusResponse && statusResponse.approvalStatus && statusResponse.crmStatus) {
+            const updatedStatus = updateStatusBasedOnResponse(statusResponse.approvalStatus, statusResponse.crmStatus);
+            setStatus(updatedStatus);
+          } 
+     } catch (error) {
         console.error('Failed to book site visit:', error);
         alert('Failed to book site visit. Please try again.');
-        setBookingCompleted(false);
+        setBookingStatus("Not Booked");
     }
   };
-  const paymentConfirmPress = ()=>{
-    setPaymentModalVisible(false)
-    setPaymentCompleted(true)
-  }
+  
 
+  
 
   const InfoRow = ({ label, value }) => {
     return (
@@ -285,27 +405,11 @@ const SoCustomerDetails = ({route ,navigation}) => {
     );
   };
 
-  const navigateToTokenAdvance = async () => {
-    try {
-      // Retrieve the stored details from AsyncStorage
-      const paymentDetailsString = await AsyncStorage.getItem('paymentDetails');
-      const paymentDetails = paymentDetailsString ? JSON.parse(paymentDetailsString) : {};
-  
-      // Navigate to the Token Advance screen and pass the retrieved details
-      navigation.navigate('Token Advance', {
-        summaryData: paymentDetails, // Pass this object to the Token Advance screen
-        currentView: 'summary' // Indicate that you want to show the summary view
-      });
-    } catch (error) {
-      // Handle any errors that occur during the process
-      console.error('Failed to load payment details.', error);
-    }
-  };
 
   const navigateToCompletePayment = () => {
     navigation.navigate("SO Client", {
       screen: "Payment Method",
-      params: {  existingPaymentEntries: paymentEntries, } // Optional: pass existing count if needed
+      params: {  crmId: customerDetails.id, } // Optional: pass existing count if needed
     });
   };
 
@@ -321,20 +425,144 @@ const SoCustomerDetails = ({route ,navigation}) => {
     return <Text>No customer details available.</Text>;
   }
 
-  const handleWhatsAppPress = () => {
-    let whatsappUrl = `https://wa.me/${customerDetails.customer.mobile_no}`;
-    Linking.openURL(whatsappUrl).catch(err => console.error('An error occurred', err));
+
+  const handleDoneWithPlot = (plotId, plotInfo) => {
+    console.log("Selected Plot ID:", plotId);
+    console.log("selected plot info", plotInfo)
+    setPlotInfo(plotInfo);
+  
+    completeBooking(statusChangeRequestId, globalCustomerId, plotId);
   };
 
-  const handleCallPress = () => {
-    const callLink = `tel:${customerDetails.customer.mobile_no}`;
-    Linking.openURL(callLink);
+  
+  const completeBooking = async (statusChangeRequestId, globalCustomerId, plotId) => {
+    try {
+      // First, update the plot ID if a plot was selected
+      if (plotId) {
+        await updatePlotId(globalCustomerId, plotId); 
+        console.log("Plot ID update successful");
+      }
+  
+      // Then, update the booking status to completed
+      const response = await updateApprovalStatus(5, statusChangeRequestId, false);
+      console.log("Completion status update success:", response);
+  
+      // Fetch the updated status
+      const statusResponse = await fetchStatus(globalCustomerId);
+      if (statusResponse && statusResponse.approvalStatus && statusResponse.crmStatus) {
+        const updatedStatus = updateStatusBasedOnResponse(statusResponse.approvalStatus, statusResponse.crmStatus);
+        setStatus(updatedStatus);
+        Toast.show({
+          type: 'success',
+          text1: 'Booking and plot update completed successfully.',
+          visibilityTime: 2000,
+          text1Style: {
+            fontFamily: 'Poppins',
+            fontSize: 12,
+            fontWeight: '400'
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error in booking or plot update:", error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to update booking or plot ID. Please try again.',
+        visibilityTime: 2000,
+        text1Style: {
+          fontFamily: 'Poppins',
+          fontSize: 12,
+          fontWeight: '400',
+        }
+      });
+    }
   };
 
-  const handleMailPress = () => {
-    let emailUrl = `mailto:${customerDetails.customer.email}`;
-    Linking.openURL(emailUrl).catch(err => console.error('An error occurred', err));
+  const completeTokenAdvance= async(statusChangeRequestId, globalCustomerId)=>{
+    try{
+      const response = await updateApprovalStatus(5, statusChangeRequestId, false);
+      console.log("Completion status update success:", response);
+      const statusResponse = await fetchStatus(globalCustomerId);
+      if (statusResponse && statusResponse.approvalStatus && statusResponse.crmStatus) {
+        const updatedStatus = updateStatusBasedOnResponse(statusResponse.approvalStatus, statusResponse.crmStatus);
+        setStatus(updatedStatus);
+        setTokenDetailsFetch(true)
+
+      }
+    }
+    catch(error) {
+      console.error("Error in booking or plot update:", error);
+    }
+  }
+
+  const completeDocumentation = async(statusChangeRequestId, globalCustomerId)=>{
+    try{
+      const response = await updateApprovalStatus(5, statusChangeRequestId, false);
+      console.log("Completion status update success:", response);
+      const statusResponse = await fetchStatus(globalCustomerId);
+      if (statusResponse && statusResponse.approvalStatus && statusResponse.crmStatus) {
+        const updatedStatus = updateStatusBasedOnResponse(statusResponse.approvalStatus, statusResponse.crmStatus);
+        setStatus(updatedStatus);
+        setTokenDetailsFetch(true)
+        setDocumentsRefetch(true)
+      }
+    }
+    catch(error) {
+      console.error("Error in booking or plot update:", error);
+    }
+
+  }
+
+  const completeFullPayment = async(statusChangeRequestId, globalCustomerId)=>{
+    try{
+      const response = await updateApprovalStatus(5, statusChangeRequestId, false);
+      console.log("Completion status update success:", response);
+      const statusResponse = await fetchStatus(globalCustomerId);
+      if (statusResponse && statusResponse.approvalStatus && statusResponse.crmStatus) {
+        const updatedStatus = updateStatusBasedOnResponse(statusResponse.approvalStatus, statusResponse.crmStatus);
+        setStatus(updatedStatus);
+        setTokenDetailsFetch(true)
+        setDocumentsRefetch(true)
+        triggerDataRefresh();
+
+      }
+    }
+    catch(error) {
+      console.error("Error in payment", error);
+    }
+
+  }
+
+  const toggleDetailsVisibility = (category) => {
+    setStatus((prevState) => ({
+      ...prevState,
+      [category]: {
+        ...prevState[category],
+        detailsVisible: !prevState[category].detailsVisible,
+      },
+    }));
   };
+
+  const handleGetApproval = async () => {
+    try {
+      const requestedById = await AsyncStorage.getItem('userId');  // Retrieve user ID from storage
+      const response = await postStatusChangeRequest(globalCustomerId, requestedById);
+      setStatusChangeRequestId(response.id);  // Set the ID from the response, indicating success
+      console.log('Approval requested successfully:', response);
+      Toast.show({
+        type: 'success',
+        text1: 'Approval Requested Successfully',
+        visibilityTime: 2200,
+    });
+    } catch (error) {
+      console.error('Failed to request approval:', error);
+    }
+  };
+  
+
+
+
+  
 
   return (
     <View style={styles.mainContainer}>
@@ -356,34 +584,44 @@ const SoCustomerDetails = ({route ,navigation}) => {
         </View>
       </View>
       <View style={styles.smIconsContainer}>
-        <TouchableOpacity onPress={handleWhatsAppPress}>
+        <TouchableOpacity onPress={()=>handleWhatsAppPress(customerDetails)}>
         <Image source={require("../../../assets/images/wpicon.png")}/>
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleCallPress}>
+        <TouchableOpacity onPress={()=>handleCallPress(customerDetails)}>
         <Image source={require("../../../assets/images/clicon.png")}/>
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleMailPress}>
+        <TouchableOpacity onPress={()=>handleMailPress(customerDetails)}>
         <Image source={require("../../../assets/images/mpicon.png")}/>
         </TouchableOpacity>
       </View>
     <View style={styles.separator} />
-
     <View style={styles.progressContainer}>
       <View style={styles.verticalLine}></View>
       <Text style={styles.statusText}>Progress Status:</Text>
       <View style={styles.itemContainer}>
         <View style={styles.statusContainer}>
-        <View style={[styles.statusItem, bookingCompleted ? styles.completedStatusItem : {}]}>
+        <View style={[
+          styles.statusItem, getStatusItemStyle(status.siteVisit)]
+        }>
         <Text style={styles.siteText}>Site Visit</Text>
-          {bookingCompleted ? (
-          null
-        ) : (
-          <>
+        {status.siteVisit.isProgress && (
             <TouchableOpacity onPress={() => setPickupModalVisible(true)} style={styles.button}>
               <Text style={styles.buttonText}>BOOK</Text>
             </TouchableOpacity>
-          </>
         )}
+        {status.siteVisit.isApproved && (
+          <TouchableOpacity style={styles.button} onPress={() => setPlotSelectModalVisible(true)}>
+          <Text style={styles.buttonText}>COMPLETE</Text>
+        </TouchableOpacity>
+         )}
+          <PlotSelectModal
+              modalVisible={plotSelectModalVisible}
+              setModalVisible={setPlotSelectModalVisible}
+              handlePlotSelectPress={handlePlotSelectPress}
+              customerDetails={customerDetails}
+              phaseId={phaseId}
+              onDone={handleDoneWithPlot}
+          />
           <PickupModal
             modalVisible={pickupModalVisible}
             setModalVisible={setPickupModalVisible}
@@ -419,153 +657,230 @@ const SoCustomerDetails = ({route ,navigation}) => {
           handleConfirmPress={handleConfirmPress}
          />
         </View>
-       <View style={[styles.checkicon, bookingCompleted ? styles.completedStatusCheck : {}]}>
-        <Icon name="check" size={20} color="white" />
+        <View style={[styles.checkicon, { backgroundColor: getStatusColor(status.siteVisit) }]}>
+           <Icon name={getIconName(status.siteVisit)} size={18} color="white" />
         </View>
        </View>
-        {bookingCompleted && (
-           <View style={{width: '100%' , marginLeft: 20,}}>
-           <Text style={styles.details}>Completed</Text>
-         </View>
-        )}
+       {!status.siteVisit.isProgress && (
+      <View style={{width: '100%', marginLeft: 20}}>
+        <Text style={styles.details}>{getStatusText(status.siteVisit)}</Text>
+      </View>
+    )}
         <View style={styles.statusContainer}>
-        <View style={[styles.statusItem, {borderColor: '#C4C4C4'} ,paymentCompleted ? styles.completedStatusItem : {}]}>
+        <View style={[styles.statusItem, getStatusItemStyle(status.tokenAdvance)]}>
           <Text style={styles.siteText}>Token Advance</Text>
-          {bookingCompleted && !paymentCompleted ? (
-          <TouchableOpacity onPress={() => {navigation.navigate("SO Client", { screen: "Token Advance"});}} style={styles.button}>
+          {status.tokenAdvance.isProgress ? (
+          <TouchableOpacity onPress={() => { navigation.navigate("SO Client", {
+            screen: "Token Advance",
+            params: { customerDetails: customerDetails , plotInfo: plotInfo},
+          })}} style={styles.button}>
               <Text style={styles.buttonText}>Payment</Text>
           </TouchableOpacity>
-        ) : null}
-        <PaymentModal
-            modalVisible={paymentModalVisible}
-            setModalVisible={setPaymentModalVisible}
-            paymentConfirmPress={paymentConfirmPress}
-        />
+         ) : null}
+         
+        
+        {status.tokenAdvance.isApproved && (
+          <TouchableOpacity style={styles.button} onPress={()=> completeTokenAdvance(statusChangeRequestId, globalCustomerId)}>
+          <Text style={styles.buttonText}>COMPLETE</Text>
+        </TouchableOpacity>
+         )}
         </View>
-        <View style={[styles.checkicon, {backgroundColor: '#C4C4C4'},
-        paymentCompleted ? styles.completedStatusCheck : {}]}>
-        <Icon name= {paymentCompleted ? "check" : "times"} size={20} color="white" />
+        <View style={[styles.checkicon, { backgroundColor: getStatusColor(status.tokenAdvance) }]}>
+          <Icon name={getIconName(status.tokenAdvance)} size={18} color="white" />
         </View>
         </View>
-        {paymentCompleted && (
-           <View style={{width: '100%' , marginLeft: 20,}}>
-           <Text style={styles.details}>Completed</Text>
-         </View>
-        )}
+        {!status.tokenAdvance.isProgress && (
+            <View style={{width: '100%', marginLeft: 20}}>
+              <Text style={styles.details}>{getStatusText(status.tokenAdvance)}</Text>
+            </View>
+          )}
         <View style={styles.statusContainer}>
-        <View style={[styles.statusItem, {borderColor: '#C4C4C4'}, ,verificationComplete ? styles.completedStatusItem : {}]}>
+        <View style={[styles.statusItem, getStatusItemStyle(status.documentation)] }>
           <Text style={styles.siteText}>Documentation</Text>
-          {bookingCompleted && paymentCompleted && !verificationComplete ? (
+          {status.documentation.isProgress ? (
           <TouchableOpacity onPress={() => {
             navigation.navigate("SO Client", {
               screen: "Documentation",
-              params: { paymentCompleted: paymentCompleted } // Pass the paymentCompleted status here
+              params: { customerDetails: customerDetails},
             });
           }} style={styles.button}>
               <Text style={styles.buttonText}>Submit</Text>
           </TouchableOpacity>
         ) : null}
+         {status.documentation.isApproved && (
+          <TouchableOpacity style={styles.button} onPress={() => completeDocumentation(statusChangeRequestId, globalCustomerId)}>
+          <Text style={styles.buttonText}>COMPLETE</Text>
+        </TouchableOpacity>
+         )}
         </View>
-        <View style={[styles.checkicon, {backgroundColor: '#C4C4C4'}, verificationComplete ? styles.completedStatusCheck : {}]}>
-        <Icon name= {verificationComplete ? "check" : "times"} size={20} color="white" />
+        <View style={[styles.checkicon, { backgroundColor: getStatusColor(status.documentation) }]}>
+          <Icon name={getIconName(status.documentation)} size={18} color="white" />
         </View>
         </View>
-        {verificationComplete && (
-        <View style={{ width: '100%' , marginLeft: 20 }}>
-          <Text style={styles.details}>Completed</Text>
-        </View>
-      )}
+        {!status.documentation.isProgress && (
+            <View style={{width: '80%', marginLeft: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+              <Text style={styles.details}>{getStatusText(status.documentation)}</Text>
+              {(!status.documentation.isProgress && (status.documentation.isPending || status.documentation.isApproved || status.documentation.isRejected || 
+              status.documentation.isCompleted))  && (
+              <TouchableOpacity onPress={() => toggleDetailsVisibility('documentation')}>
+                <Text style={styles.detailToggle}>
+                  {status.documentation.detailsVisible ? 'Less Details' : 'More Details >>>'}
+                </Text>
+              </TouchableOpacity>
+              )}
+            </View>
+        )}
+        {(!status.documentation.isProgress && (status.documentation.isPending || status.documentation.isApproved || status.documentation.isRejected || status.documentation.isCompleted)) 
+        && (
+        <>
+        {status.documentation.detailsVisible && (
+          <View style={{width: '100%', marginLeft: 10}}>
+            {status.documentation.details.length > 0 ? (
+                status.documentation.details.map((doc, index) => (
+                  <View key={doc.id} style={styles.documentItem}>
+                   <Text style={styles.docDetailText}>
+                   {`${index + 1}) ${doc.file_name.length > 13 ? doc.file_name.substring(0, 13) + '...' : doc.file_name}`}
+                  </Text>
+                  <TouchableOpacity onPress={() => downloadAndShareFile(doc.file_url, doc.file_name, doc.file_type)}>
+                  <UploadIcon name="file-download" size={18} color={PRIMARY_COLOR} />
+                  </TouchableOpacity>
+              </View>
+              ))
+            ) : (
+              <Text style={{marginLeft: 10}}>No details available.</Text>
+            )}
+          </View>
+        )}
+        </>
+        )}
+
         <View style={styles.statusContainer}>
-        <View style={[styles.statusItem, bookingCompleted && paymentCompleted && verificationComplete && completePayment ? styles.completedStatusItem : {borderColor: '#C4C4C4'}]}>
+         <View style={[styles.statusItem, getStatusItemStyle(status.payment)] }>
           <Text style={styles.siteText}>Payment</Text>
-          {bookingCompleted && paymentCompleted && verificationComplete && !completePayment ? (
-          <TouchableOpacity onPress={() => {
-            navigation.navigate("SO Client", {
-              screen: "Payment Method",
-              params: { paymentCompleted: paymentCompleted,
-              verificationComplete: verificationComplete ,
-              selectedDocuments: selectedDocuments} // Pass the paymentCompleted status here
-            });
-          }} style={styles.button}>
-              <Text style={styles.buttonText}>Complete Payment</Text>
-          </TouchableOpacity>
-        ) : null}
+          {status.payment.isProgress ? (
+            <TouchableOpacity onPress={() => {
+              navigation.navigate("SO Client", {
+                screen: "Payment Method",
+                params: { crmId: customerDetails.id}
+              });
+            }} style={styles.button}>
+                <Text style={styles.buttonText}>Complete Payment</Text>
+            </TouchableOpacity>
+          ) : null}
+           {status.payment.isApproved && (
+          <TouchableOpacity style={styles.button} onPress={() => completeFullPayment(statusChangeRequestId, globalCustomerId)}>
+            <Text style={styles.buttonText}>COMPLETE</Text>
+           </TouchableOpacity>
+           )}
+          {status.payment.isPending && !statusChangeRequestId && (
+            <TouchableOpacity onPress={handleGetApproval} style={styles.button}>
+              <Text style={styles.buttonText}>Get Approval</Text>
+            </TouchableOpacity>
+          )}
         </View>
-        <View style={[styles.checkicon, bookingCompleted && paymentCompleted && verificationComplete && completePayment ? styles.completedStatusCheck : {backgroundColor: '#C4C4C4'}]}>
-        <Icon name={bookingCompleted && paymentCompleted && verificationComplete && completePayment ? "check" : "times"} size={20} color="white" />
+        <View style={[styles.checkicon, { backgroundColor: getStatusColor(status.payment) }]}>
+          <Icon name={getIconName(status.payment)} size={18} color="white" />
         </View>
         </View>
-        {bookingCompleted && paymentCompleted && verificationComplete && completePayment && (
-        <View style={{ width: '100%' , marginLeft: 20 }}>
-          <Text style={styles.details}>Completed</Text>
-        </View>
-      )}
+        {!status.payment.isProgress && (
+            <View style={{width: '100%', marginLeft: 20}}>
+              <Text style={styles.details}>{getStatusText(status.payment)}</Text>
+            </View>
+        )}
         <View style={styles.statusContainer}>
-        <View style={[styles.statusItem, bookingCompleted && paymentCompleted && verificationComplete && completePayment && deliveryCompleted ? styles.completedStatusItem : {borderColor: '#C4C4C4'}]}>
+        <View style={[styles.statusItem, getStatusItemStyle(status.ddDelivery)] }>
           <Text style={styles.siteText}>Document Delivery</Text>
-          {bookingCompleted && paymentCompleted && verificationComplete && completePayment && !deliveryCompleted ? (
-          <TouchableOpacity onPress={() => {
-            console.log("Navigating to Document Delivery with:", selectedDocuments);
-            navigation.navigate("SO Client", {
-              screen: "Document Delivery",
-              params: { selectedDocuments: selectedDocuments } // Pass the paymentCompleted status here
-            });
-          }} style={styles.button}>
-              <Text style={styles.buttonText}>Submit</Text>
-          </TouchableOpacity>
-        ) : null}
         </View>
-        <View style={[styles.checkicon, bookingCompleted && paymentCompleted && verificationComplete && completePayment && deliveryCompleted ? styles.completedStatusCheck : {backgroundColor: '#C4C4C4'}]}>
-        <Icon name={bookingCompleted && paymentCompleted && verificationComplete && completePayment && deliveryCompleted  ? "check" : "times"} size={20} color="white" />
+        <View style={[styles.checkicon, { backgroundColor: getStatusColor(status.ddDelivery) }]}>
+          <Icon name={getIconName(status.ddDelivery)} size={18} color="white" />
         </View>
         </View>
-        {bookingCompleted && paymentCompleted && verificationComplete && completePayment && deliveryCompleted && (
-        <View style={{ width: '100%' , marginLeft: 20 }}>
-          <Text style={styles.details}>Completed</Text>
-        </View>
-      )}
+        {status.ddDelivery.isProgress ? (
+                 <View style={{width: '80%', marginLeft: 20}}>
+                <Text style={styles.details}>Upload In Progress</Text>
+                </View>
+          ) : null}
+        {!status.ddDelivery.isProgress && (
+            <View style={{width: '80%', marginLeft: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+              <Text style={styles.details}>{getStatusText(status.ddDelivery)}</Text>
+              { status.ddDelivery.isCompleted  && (
+              <TouchableOpacity onPress={() => toggleDetailsVisibility('ddDelivery')}>
+                <Text style={styles.detailToggle}>
+                  {status.ddDelivery.detailsVisible ? 'Less Details' : 'More Details >>>'}
+                </Text>
+              </TouchableOpacity>
+              )}
+            </View>
+        )}
+        {status.ddDelivery.isCompleted
+        && (
+        <>
+        {status.ddDelivery.detailsVisible && (
+          <View style={{width: '100%', marginLeft: 10}}>
+            {status.ddDelivery.details.length > 0 ? (
+                status.ddDelivery.details.map((doc, index) => (
+                  <View key={doc.id} style={styles.documentItem}>
+                   <Text style={styles.docDetailText}>
+                   {`${index + 1}) ${doc.file_name.length > 13 ? doc.file_name.substring(0, 13) + '...' : doc.file_name}`}
+                  </Text>
+                  <TouchableOpacity onPress={() => downloadAndShareFile(doc.file_url, doc.file_name, doc.file_type)}>
+                  <UploadIcon name="file-download" size={18} color={PRIMARY_COLOR} />
+                  </TouchableOpacity>
+              </View>
+              ))
+            ) : (
+              <Text style={{marginLeft: 10}}>No details available.</Text>
+            )}
+          </View>
+        )}
+        </>
+        )}
       </View>
       </View>
       <View style={styles.separator} />
       <View style={styles.paymentInfoContainer}>
+        <View style={styles.balanceAmountContainer}>
         <Text style={styles.paymentText}>Payment</Text>
-        {paymentInfoExists ? (
-          <>
-          <View style={{width: '100%', padding: 10, borderColor: SECONDARY_COLOR, borderWidth: 1, borderRadius: 6,}}>
-            <Text style={styles.statusText}>Token Advance</Text>
-            <InfoRow label="Amount Paid" value={paymentDetails.amountPaid} />
-            <InfoRow label="Mode of Pay" value={paymentDetails.paymentMethod} />
-            <InfoRow label="Ref Number" value={paymentDetails.referenceNumber} />
-            <InfoRow label="Date" value={paymentDetails.date} />
-          </View>
-          {paymentEntries.length === 0 && (
-            <TouchableOpacity style={styles.npContainer} onPress={navigateToTokenAdvance}>
-              <Text style={styles.npText}>+new payment</Text>
-            </TouchableOpacity>
-          )}
-          </>
-        ) : (
-          <Text style={[styles.paymentText, {fontWeight: '400', fontSize: 14}]}>
-            No Payment Has made yet
-          </Text>
+        {status.tokenAdvance.isCompleted && (
+         <Text style={[styles.paymentText, {fontSize: 12}]}>Balance Amount: {customerDetails.amount_to_paid}</Text>
         )}
-       {paymentEntries.length > 0 && (
+        </View>
+        {status.tokenAdvance.details && status.tokenAdvance.details.length > 0 ? (
+            status.tokenAdvance.details.map((detail, index) => (
+              <View key={index} style={{width: '100%', padding: 10, borderColor: SECONDARY_COLOR, borderWidth: 1, borderRadius: 6}}>
+                <Text style={styles.statusText}>Token Advance</Text>
+                <InfoRow label="Amount Paid" value={`Rs. ${detail.amountPaid}`} />
+                <InfoRow label="Mode of Pay" value={detail.modeOfPay} />
+                <InfoRow label="Ref Number" value={detail.referenceNumber || "Not Provided"} />
+                <InfoRow label="Date" value={detail.date} />
+              </View>
+            ))
+          ) : (
+            <Text style={[styles.paymentText, {fontWeight: '400', fontSize: 14}]}>
+              No Payment Has Made Yet
+            </Text>
+          )}
+      {status.payment.details && status.payment.details.length > 0 && (
           <>
-            {paymentEntries.map((entry, index) => (
+            {status.payment.details.map((entry, index) => (
+              
               <View key={index} style={styles.paymentEntryContainer}>
-                <Text style={styles.paymentEntryTitle}>Payment - {index + 1}</Text>
+                <Text style={styles.paymentEntryTitle}>Payment - {entry.id}</Text>
                 <InfoRow label="Amount Paid" value={`Rs. ${entry.amountPaid}`} />
                 <InfoRow label="Mode of Pay" value={entry.modeOfPay} />
-                <InfoRow label="Ref Number" value={entry.referenceNumber || "Not needed"} />
+                <InfoRow label="Ref Number" value={entry.refNumber || "Not needed"} />
                 <InfoRow label="Date" value={entry.date} />
               </View>
             ))}
+           {(!status.payment.isCompleted && !status.payment.isApproved) && 
+           (
             <TouchableOpacity style={styles.npContainer} onPress={navigateToCompletePayment}>
-              <Text style={styles.npText}>+new payment</Text>
+              <Text style={styles.npText}>+ New Payment</Text>
             </TouchableOpacity>
+            )
+            }
           </>
         )}
-
       </View>
     </ScrollView>
     </View>

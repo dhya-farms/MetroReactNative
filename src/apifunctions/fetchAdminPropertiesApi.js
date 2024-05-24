@@ -13,73 +13,91 @@ const getAuthData = async (paramsToken, paramsDirectorId) => {
       },
       directorId: directorId
     };
+
   };
+
+  function getDisplayInfo(property, phase) {
+    const plotCount = phase.no_of_plots;
+    const areaSize = phase.area_size_from;
+    const unitName = phase.area_size_unit.name_vernacular;
+  
+    // Helper function to determine the correct noun form
+    const formatPlural = (count, singular, plural) => count === 1 ? singular : plural;
+  
+    switch (property.property_type.name) {
+        case 'FLAT':
+            return `${plotCount} ${formatPlural(plotCount, 'Home', 'Homes')} available, starts from ${areaSize} ${unitName}`;
+        case 'VILLA':
+            return `${plotCount} ${formatPlural(plotCount, 'villa', 'villas')} available, starts from ${areaSize} ${unitName}`;
+        case 'DTCP_PLOTS':
+            return `${plotCount} ${formatPlural(plotCount, 'plot', 'plots')} available, starts from ${areaSize} ${unitName}`;
+        case 'FARMLANDS':
+            return `${plotCount} ${formatPlural(plotCount, 'unit', 'units')} available, starts from ${areaSize} ${unitName}`;
+        default:
+            return 'Details unavailable';
+    }
+  }
+
+
+  function getDetailInfo(property, phase) {
+    const plotCount = phase.no_of_plots;
+
+    const formatPlural = (count, singular, plural) => count === 1 ? singular : plural;
+
+    switch (property.property_type.name) {
+        case 'FLAT':
+            return `${property.details.flat_type}`;
+        case 'VILLA':
+            return `${plotCount} ${formatPlural(plotCount, 'villa', 'villas')} available`;
+        case 'DTCP_PLOTS':
+            return `${plotCount} ${formatPlural(plotCount, 'plot', 'plots')} available`;
+        case 'FARMLANDS':
+            return `${property.details.farmland_type}`;
+        default:
+            return 'Details unavailable';
+    }
+  }
+
+function formatPropertyDetails(property) {
+  let formattedProperties = [];
+  if (property.phases && property.phases.length > 0) {
+      property.phases.forEach(phase => {
+          const filteredImages = property.images.filter(img => img.is_thumbnail && !img.is_slider_image);
+          formattedProperties.push({
+              ...property,
+              id: phase.id, 
+              propertyId: property.id, // Use phase ID for unique identification
+              name: `${property.name} Phase-${phase.phase_number}`,
+              displayText: getDisplayInfo(property, phase),
+              detailInfo: getDetailInfo(property, phase),
+              sqFtFrom: phase.area_size_from,
+              phaseName: phase.area_size_unit.name_vernacular,
+              bgimage: filteredImages.length > 0 ? { uri: filteredImages[0].image } : null,
+              images: filteredImages, // Use the first matching image or null if none
+              phaseDetails: phase // Include phase details
+          });
+      });
+  }
+  return formattedProperties;
+}
+
   
 
 // Fetch properties for admin by director_id
-export const fetchAdminProperties = async (paramsToken, paramsDirectorId) => {
+export async function fetchAdminProperties(paramsToken, paramsDirectorId, pageUrl = null) {
   const { headers, directorId } = await getAuthData(paramsToken, paramsDirectorId);
-  const PROPERTIES_ENDPOINT = `${BASE_URL}/properties/?director_id=${directorId}`;
+  const url = pageUrl || `${BASE_URL}/properties/?director_id=${directorId}`;
 
   try {
-    const response = await axios.get(PROPERTIES_ENDPOINT, { headers });
-    return response.data.results.map(property => {
-      let siteDetails;
-      switch (property.property_type.name) {
-        case 'FLAT':
-          siteDetails = {
-            siteName: 'Individual Flats',
-            detailInfo: `${property.details.flat_type}`,
-            displayText: `${property.details.homes_available} homes available, starts from ${property.details.sq_ft_from} sqft`,
-            name: property.name,
-          };
-          break;
-        case 'VILLA':
-          siteDetails = {
-            siteName: property.details.villa_type,
-            detailInfo: `${property.details.villas_available} Villas available`,
-            displayText: `${property.details.villas_available} villas available, starts from ${property.details.sq_ft_from} sqft`,
-            name: property.name,
-          };
-          break;
-        case 'DTCP_PLOTS':
-          siteDetails = {
-            siteName: property.name,
-            detailInfo: `${property.details.plots_available} plots available`,
-            displayText: `${property.details.plots_available} plots available, starts from ${property.details.sq_ft_from} sqft`,
-            name: property.name,
-          };
-          break;
-        case 'FARMLANDS':
-          siteDetails = {
-            siteName: property.name,
-            detailInfo: `${property.details.farmland_type}`,
-            displayText: `${property.details.units_available} units available, starts from ${property.details.sq_ft_from} sqft`,
-            name: property.name
-          };
-          break;
-        default:
-          siteDetails = {
-            siteName: 'Unknown Type',
-            detailInfo: 'Details unavailable'
-          };
-          break;
-      }
+    const response = await axios.get(url, { headers });
+    const formattedProperties = response.data.results.map(formatPropertyDetails).flat(); // Flatten in case of phases
 
-      return {
-        ...property,
-        siteName: siteDetails.siteName, // Custom or default property name
-        detailInfo: siteDetails.detailInfo,
-        name: siteDetails.name,
-        displayText: siteDetails.displayText, // Additional details such as availability
-        pricePerSqFt: property.details.sq_ft_from ? 
-                      (parseFloat(property.price) / parseFloat(property.details.sq_ft_from)).toFixed(2) 
-                      : 'N/A', // Calculating price per sq ft here simplifies component logic
-        bgimage: property.images.length ? { uri: property.images[0].image } : null // Using an object for the Image source
-      };
-    });
+    return {
+      properties: formattedProperties,
+      nextPageUrl: response.data.next,
+    };
   } catch (error) {
     console.error('Failed to fetch admin properties:', error);
-    return []; // Return an empty array or handle the error as you see fit
+    return { properties: [], nextPageUrl: null }; // Handle errors by returning an empty list and no next page
   }
-};
+}

@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-const ProgressBar = ({ progress }) => {
+const ProgressBar = ({ progress, propertyName, progressText }) => {
     return (
       <View style={styles.container}>
         <View style={[styles.progressOverlay, { width: `${progress * 100}%` }]} />
-        <Text style={styles.headerText}>Progress Status</Text>
-        <Text style={styles.progressText}>Next step is to update the required documents</Text>
+        <Text style={styles.headerText}>Progress Status {propertyName}</Text>
+        <Text style={styles.progressText}>{progressText}</Text>
       </View>
     );
   };

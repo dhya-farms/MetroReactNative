@@ -3,7 +3,6 @@ import SObottomTab from './SObottomTab';
 
 
 const SoTabEntry = ({ route }) => {
-  const { cusToken, cusUserId } = route.params;
 
   return (
           <SObottomTab />

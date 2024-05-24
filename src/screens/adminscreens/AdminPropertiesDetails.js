@@ -8,22 +8,19 @@ import { TabBar } from '../../components/TabComponent';
 import EnquireContainer from '../../components/EnquireContainer';
 import HeaderContainer from '../../components/HeaderContainer';
 import styles from '../../constants/styles/commonpropertydetailsstyles';
-import axios from 'axios';
 import LayoutImageModal from '../../modals/LayoutImageModal';
 import AmenitiesDisplay from '../../components/AmenitiesDisplay';
+import { fetchPropertyDetails } from '../../apifunctions/fetchPropertyDetailsApi';
 
 
 
 
-const galleryImages = [
-  { source: require('../../../assets/images/land.webp'), id: '1' },
-  { source: require('../../../assets/images/land.webp'), id: '2' },
-  { source: require('../../../assets/images/land.webp'), id: '3' },
-  { source: require('../../../assets/images/land.webp'), id: '4' },
-  { source: require('../../../assets/images/land.webp'), id: '5' },
-  { source: require('../../../assets/images/land.webp'), id: '6' },
-  // ... add other images as needed
-];
+const dummyImageUri = require('../../../assets/images/Newmetro.jpeg')
+const dummyImageUris = new Array(3).fill(dummyImageUri); 
+
+const dummyGalleryImageUri = require('../../../assets/images/Newmetro.jpeg');
+const dummyGalleryImageUris = new Array(6).fill(dummyGalleryImageUri);
+
 
 
 
@@ -31,10 +28,16 @@ const galleryImages = [
 
 const AdminPropertiesDetails = ({route, navigation}) => {
   const { propertyId } = route.params?.params || {};
+  const {phaseId} = route.params?.params || {};
   const [propertyDetails, setPropertyDetails] = useState(null);
+  const [phaseDetails, setPhaseDetails]= useState([])
   const [loading, setLoading] = useState(true);
   const [imageModalVisible, setImageModalVisible] = useState(false)
+  const [currentPropertyId, setCurrentPropertyId] = useState();
+  const [carouselImages, setCarouselImages]= useState([])
+  const [galImages, setGalImages] = useState([])
   const [error, setError] = useState('');
+  const [showAll, setShowAll] = useState(false);
   const [backscreen, setBackScreen] = useState('')
   const [textShown, setTextShown] = useState(false);
   const scrollViewRef = useRef();
@@ -44,12 +47,22 @@ const AdminPropertiesDetails = ({route, navigation}) => {
 
   useEffect(() => {
     const effectivePropertyId = propertyId || route.params?.propertyId;
+    const effectivePhaseId = phaseId || route.params?.phaseId
+
     console.log("Effective Property ID for use:", effectivePropertyId);
+    console.log("effective phase id for use:", effectivePhaseId)
+
 
     const nestedBackScreen = route.params?.params?.backScreen;
     const directBackScreen = route.params?.backScreen;
     const effectiveBackScreen = nestedBackScreen || directBackScreen;
-    console.log("Effective Back Screen for use:", effectiveBackScreen);
+  
+    if (effectivePropertyId) {
+      setCurrentPropertyId(effectivePropertyId);
+      console.log("ep", effectivePropertyId)
+    } else {
+      console.log("No Property ID found in route params.");
+    }
 
     if (effectiveBackScreen) {
       console.log("Navigated from:", effectiveBackScreen);
@@ -57,30 +70,55 @@ const AdminPropertiesDetails = ({route, navigation}) => {
     } else {
       console.log("No Back Screen provided in route params.");
     }
-
-    const fetchPropertyDetails = async () => {
-      if (!effectivePropertyId) {
-        console.log("No Property ID provided");
-        setError("No property ID provided");
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
+    const getPropertyDetails = async () => {
       try {
-        const response = await axios.get(`https://splashchemicals.in/metro/api/properties/${effectivePropertyId}/`);
-        console.log("Fetch success:", response.data);
-        setPropertyDetails(response.data);
+        setLoading(true);
+        const details = await fetchPropertyDetails(effectivePropertyId, effectivePhaseId, true);
+        setPropertyDetails(details.propertyDetails);
+        setPhaseDetails(details.phaseDetails);
+
+        const fetchedSliderImages = details.propertyDetails.images
+          .filter(img => img.is_slider_image)
+          .sort((a, b) => a.slider_image_order - b.slider_image_order)
+          .map(img => ({ uri: img.image, key: img.id.toString() }));
+
+        // Check if the fetched images are fewer than 3
+        if (fetchedSliderImages.length < 3) {
+          const requiredDummyImages = 3 - fetchedSliderImages.length;
+          const dummyImages = dummyImageUris.slice(0, requiredDummyImages).map((uri, index) => ({
+            uri,
+            key: `dummy-${index}`  // Unique key for each dummy image
+          }));
+          setCarouselImages([...fetchedSliderImages, ...dummyImages]);
+        } else {
+          setCarouselImages(fetchedSliderImages);
+        }
+        const fetchedGalleryImages = details.propertyDetails.images
+          .filter(img => !img.is_thumbnail && !img.is_slider_image)
+          .map(img => ({ uri: img.image, key: img.id.toString() }));
+
+        if (fetchedGalleryImages.length < 6) {
+          const requiredDummyGalleryImages = 6 - fetchedGalleryImages.length;
+          const dummyGalleryImages = dummyGalleryImageUris.slice(0, requiredDummyGalleryImages).map((uri, index) => ({
+            uri,
+            key: `dummy-gallery-${index}`
+          }));
+          setGalImages([...fetchedGalleryImages, ...dummyGalleryImages]);
+        } else {
+          setGalImages(fetchedGalleryImages);
+        }
+        
       } catch (error) {
-        console.error("Fetch error:", error);
-        setError(error.response ? error.response.data.message : error.message);
+        setError(error.message);
+        alert('Error', error.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPropertyDetails();
-  }, [propertyId, route.params]);
+    getPropertyDetails();
+  }, [currentPropertyId, route.params]);
+
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
@@ -93,32 +131,6 @@ const AdminPropertiesDetails = ({route, navigation}) => {
   if (!propertyDetails) {
     return <Text>No property details available.</Text>;
   }
-
-  // Define a function to get plot type text
-  const getPlotTypeText = (propertyType) => {
-    switch(propertyType) {
-      case 1:
-        return 'DTCP PLOTS';
-      case 2:
-        return 'Farmlands';
-      case 3:
-        return 'Flat';
-      case 4:
-        return 'Villa';
-      default:
-        return 'Unknown Plot Type';
-    }
-  };
-
-  const propertyType = propertyDetails.property_type ? propertyDetails.property_type.id : 0;
-  const isPlotOrFarmland = propertyType === 1;
-  const isSpecialUnit = propertyType === 2;  // Treat property type 2 as a special case
-
-  const numberOfUnitsLabel = isPlotOrFarmland ? 'No of Plots:' : (isSpecialUnit ? 'No of Units:' : (propertyType === 3 ? 'No of Homes:' : 'No of Villas:'));
-  const numberOfUnits = propertyDetails.details ? 
-    (isPlotOrFarmland ? propertyDetails.details.plots_available : 
-      (isSpecialUnit ? propertyDetails.details.units_available : 
-        (propertyType === 3 ? propertyDetails.details.homes_available : propertyDetails.details.villas_available))) : 'N/A';
 
   
   const toggleTextShown = () => {
@@ -147,14 +159,6 @@ const AdminPropertiesDetails = ({route, navigation}) => {
     );
   };
 
-  const calculatePricePerSqFt = () => {
-    if (propertyDetails && propertyDetails.price && propertyDetails.details.sq_ft_from) {
-      const price = parseFloat(propertyDetails.price);
-      const sqFtFrom = parseFloat(propertyDetails.details.sq_ft_from);
-      return (price / sqFtFrom).toFixed(2); // Keeping two decimal places for the result.
-    }
-    return "N/A"; // Return "N/A" if the data is not available to perform the calculation.
-  };
 
   if (!propertyDetails) {
     return <><Text>Property details not found.</Text> {console.log(propertyId)}</>;
@@ -176,6 +180,71 @@ const AdminPropertiesDetails = ({route, navigation}) => {
       navigation.goBack();
     }
   };
+
+  const formatLabel = (key) => {
+    // Transform key from snake_case or camelCase to readable format
+    return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+   };
+
+   function formatSquareFeet(sqFt) {
+    // Convert to a float to remove any non-numeric characters
+    const number = parseFloat(sqFt);
+    // Check if the number is an integer
+    if (number % 1 === 0) {
+        return number.toString(); // Return as integer
+    } else {
+        return number.toFixed(2); // Keep two decimal places if needed
+    }
+}
+
+  const DetailItems = ({ details }) => {
+
+    const handleToggleShowAll = () => {
+      setShowAll(!showAll); // Toggle the state to show/hide additional details
+    };
+
+    const excludeKeys = ['amenities', 'sq_ft_from', 'phase_number'];
+
+    const sortedKeys = Object.keys(details).filter(key => !excludeKeys.includes(key)); // Exclude 'amenities'
+    const initialKeys = sortedKeys.slice(0, 3); // First three entries
+    const additionalKeys = sortedKeys.slice(3); // Remaining entries
+
+    return (
+      <View style={styles.plotContainer}>
+      <Text style={styles.plotHeader}>Plot Information:</Text>
+      {phaseDetails && (
+      <>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>No of Plots:</Text>
+          <Text style={styles.infoContent}>{phaseDetails.no_of_plots}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>{phaseDetails.area_size_unit.name_vernacular} From:</Text>
+          <Text style={styles.infoContent}>from {formatSquareFeet(phaseDetails.area_size_from)}{phaseDetails.area_size_unit.name_vernacular}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>Phase Number:</Text>
+          <Text style={styles.infoContent}>{phaseDetails.phase_number}</Text>
+        </View>
+      </>
+    )}
+      {initialKeys.concat(showAll ? additionalKeys : []).map((key) => {
+        const label = formatLabel(key);
+        return (
+          <View key={key} style={styles.infoContainer}>
+            <Text style={styles.infoLabel}>{label}:</Text>
+            <Text style={styles.infoContent}>{details[key].toString()}</Text>
+          </View>
+      );
+    })}
+    {sortedKeys.length > 3 && ( // Only show toggle if there are more than three items
+        <TouchableOpacity onPress={handleToggleShowAll}>
+        <Text style={styles.smText}>{showAll ? 'Show Less -' : 'Show More +'}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+  };
   
   return (
     <View style={styles.mainContainer}>
@@ -186,11 +255,11 @@ const AdminPropertiesDetails = ({route, navigation}) => {
       onPress={handleBack}/>
     <ScrollView ref={scrollViewRef} style={styles.container} contentContainerStyle={styles.contentContainer}>    
     <SafeAreaView style={styles.slidingContainer}>
-      <SlidingCarousel/>
+      <SlidingCarousel images={carouselImages}/>
     </SafeAreaView>
     <View style={styles.cityConatiner}>
-      <Text style={styles.cityText}>{propertyDetails.name}</Text>
-      <Text style={styles.cityAmount}>₹ {calculatePricePerSqFt()}/sqft</Text>
+      <Text style={styles.cityText}>{propertyDetails.name} Phase-{phaseDetails.phase_number}</Text>
+      <Text style={styles.cityAmount}>₹ {phaseDetails.price_from}/sqft</Text>
     </View>
     <LayoutHeader onPress={ImageToggle} gmapUrl={propertyDetails.gmap_url}/>
     <LayoutImageModal modalVisible={imageModalVisible} setModalVisible={setImageModalVisible}/>
@@ -208,36 +277,27 @@ const AdminPropertiesDetails = ({route, navigation}) => {
     <TouchableOpacity onPress={toggleTextShown}>
     <Text style={styles.smText}>{textShown ? 'Show Less -' : 'Show More +'}</Text>
     </TouchableOpacity>
-    <View style={styles.plotContainer}>
-        <Text style={styles.plotHeader}>Plot Information:</Text>
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoLabel}>Property Type:</Text>
-          <Text style={styles.infoContent}>{getPlotTypeText(propertyType)}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoLabel}>Property ID:</Text>
-          <Text style={styles.infoContent}>{propertyDetails.id}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoLabel}>{numberOfUnitsLabel}</Text>
-          <Text style={styles.infoContent}>{numberOfUnits}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoLabel}>Sq.ft:</Text>
-          <Text style={styles.infoContent}>{propertyDetails.details ? `from ${propertyDetails.details.sq_ft_from} sq.ft` : 'N/A'}</Text>
-        </View>
-      </View>
+    <DetailItems details={propertyDetails.details} />
     </View>
     <AmenitiesDisplay ref={amRef} amenities={amenitiesArray} />
     <View ref={gmRef} style={styles.gmContainer}>
       <Text style={styles.gmHeader}>Gallery:</Text>
       <View style={styles.galleryContainer}>
-        {galleryImages.map((image, index) => (
-          <TouchableOpacity key={index} style={styles.imageWrapper}>
-            <Image source={image.source} style={styles.image} />
-          </TouchableOpacity>
-        ))}
-      </View>
+        {galImages.length > 0 ? (
+          galImages.map((image, index) => (
+            <TouchableOpacity key={index} style={styles.imageWrapper}>
+              <Image
+                source={image.key.includes('dummy-gallery') ? image.uri : { uri: image.uri }}
+                style={styles.image}
+              />
+            </TouchableOpacity>
+          ))
+        ) : (
+          <View style={{flex:1, justifyContent: 'center', alignItems: 'center'}}>
+          <Text style={{fontFamily: 'Poppins', fontWeight: '500', fontSize: 12 }}>Gallery images not provided.</Text>
+          </View>
+        )}
+    </View>
     </View>
     <EnquireContainer/>
     </ScrollView>

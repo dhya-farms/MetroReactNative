@@ -1,81 +1,142 @@
-import React, {useState, useRef} from 'react';
-import {Text, View, Dimensions, Image} from 'react-native';
-import Carousel, {Pagination} from 'react-native-snap-carousel';
+import * as React from 'react';
+import {
+  StatusBar,
+  Text,
+  View,
+  StyleSheet,
+  FlatList,
+  Image,
+  Dimensions,
+  Animated,
+  TouchableOpacity,
+  Platform
+} from 'react-native';
+import Constants from 'expo-constants';
+const { width, height } = Dimensions.get('window');
 
-export const SLIDER_WIDTH = Dimensions.get('window').width + 30;
-export const ITEM_WIDTH = Math.round(SLIDER_WIDTH * 0.8);
+const SPACING = 7;
+const ITEM_SIZE = Platform.OS === 'ios' ? width * 0.62 : width * 0.64;
+const EMPTY_ITEM_SIZE = (width - ITEM_SIZE) / 2;
 
-const data = [
+const Loading = () => (
+  <View style={styles.loadingContainer}>
+    <Text style={styles.paragraph}>Loading...</Text>
+  </View>
+);
+
+const dummyMovies = [
   {
-    id: 1,
-    name: 'React JS',
-    url: require('../../assets/images/caurosal1.png'),
+    key: '1',
+    poster: require('../../assets/images/caro.jpg')
   },
   {
-    id: 2,
-    name: 'JavaScript',
-    url: require('../../assets/images/caurosal2.png'),
+    key: '2',
+    poster: require('../../assets/images/caurosal1.png')
   },
   {
-    id: 3,
-    name: 'Node JS',
-    url: require('../../assets/images/caurosal3.png'),
+    key: '3',
+    poster: require('../../assets/images/caurosal2.png')
   },
+  // Add more items as needed
 ];
 
-const renderItem = ({item}) => {
+
+
+export default function ImageCarousel() {
+  const [movies, setMovies] = React.useState([]);
+  const scrollX = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    // Initially load the dummy data into state
+    setMovies([{ key: 'empty-left' }, ...dummyMovies, { key: 'empty-right' }]);
+  }, []);
+
+  if (movies.length === 0) {
+    return <Loading />;
+  }
+
   return (
-    <View
-      style={{
-        borderWidth: 1,
-        padding: 20,
-        borderRadius: 20,
-        alignItems: 'center',
-        backgroundColor: 'lightgreen',
-      }}>
-      <Image source={item.url} style={{width: 200, height: 200}} />
-      <Text style={{marginVertical: 10, fontSize: 20, fontWeight: 'bold'}}>
-        {item.name}
-      </Text>
+    <View style={styles.container}>
+      <Animated.FlatList
+        showsHorizontalScrollIndicator={false}
+        data={movies}
+        keyExtractor={(item) => item.key}
+        horizontal
+        bounces={false}
+        decelerationRate={Platform.OS === 'ios' ? 0 : 0.98}
+        
+        renderToHardwareTextureAndroid
+        contentContainerStyle={{ alignItems: 'center' }}
+        snapToInterval={ITEM_SIZE}
+        snapToAlignment='start'
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+        renderItem={({ item, index }) => {
+          if (!item.poster) {
+            return <View style={{ width: EMPTY_ITEM_SIZE }} />;
+          }
+
+          const inputRange = [
+            (index - 2) * ITEM_SIZE,
+            (index - 1) * ITEM_SIZE,
+            index * ITEM_SIZE,
+          ];
+
+          const translateY = scrollX.interpolate({
+            inputRange,
+            outputRange: [80, 50, 80],
+            extrapolate: 'clamp'
+          });
+
+          return (
+            <View style={{ width: ITEM_SIZE }}>
+              <Animated.View
+                style={{
+                  marginHorizontal: SPACING,
+                  padding: SPACING * 2,
+                  alignItems: 'center',
+                  transform: [{ translateY }],
+                  backgroundColor: 'white',
+                  borderRadius: 34,
+                }}
+              >
+                <Image
+                 source={item.poster}
+                  style={styles.posterImage}
+                />
+              </Animated.View>
+            </View>
+          );
+        }}
+      />
     </View>
   );
-};
+}
 
-const ImageCaurosel = () => {
-  const [index, setIndex] = useState(0);
-  const isCarousel = useRef(null);
-  return (
-    <View style={{paddingTop: 200,
-      alignItems: 'center'}}>
-      <Carousel
-        ref={isCarousel}
-        data={data}
-        renderItem={renderItem}
-        sliderWidth={SLIDER_WIDTH}
-        itemWidth={ITEM_WIDTH}
-        onSnapToItem={index => setIndex(index)}
-      />
-      <Pagination
-        dotsLength={data.length}
-        activeDotIndex={index}
-        carouselRef={isCarousel}
-        dotStyle={{
-          width: 10,
-          height: 10,
-          borderRadius: 5,
-          marginHorizontal: 8,
-          backgroundColor: '#F4BB41',
-        }}
-        tappableDots={true}
-        inactiveDotStyle={{
-          backgroundColor: 'black',
-          // Define styles for inactive dots here
-        }}
-        inactiveDotOpacity={0.4}
-        inactiveDotScale={0.6}
-      />
-    </View>
-  );
-};
-
-export default ImageCaurosel; 
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  container: {
+    flex: 1,
+  },
+  paragraph: {
+    margin: 24,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  posterImage: {
+    width: '100%',
+    height: ITEM_SIZE * 0.8,
+    resizeMode: 'cover',
+    borderRadius: 24,
+    margin: 0,
+    marginBottom: 10,
+  },
+});

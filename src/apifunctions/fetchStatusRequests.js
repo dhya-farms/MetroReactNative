@@ -1,0 +1,56 @@
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const BASE_URL = 'https://splashchemicals.in/metro';
+const USER_DETAILS_ENDPOINT = `${BASE_URL}/api/status-change-requests/`;
+
+const getAuthHeaders = async (token) => {
+  const authToken = token || await AsyncStorage.getItem('userToken');
+  if (!authToken) {
+    console.error('Authentication token is not available.');
+    throw new Error('Authentication token is not available');
+  }
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Token ${authToken}`
+  };
+};
+
+export const fetchStatusRequests = async (paramsToken, pageUrl = null) => {
+    let headers;
+    try {
+      headers = await getAuthHeaders(paramsToken);
+    } catch (error) {
+      console.error('Failed to prepare authorization headers:', error);
+      return [];  // Consider how you want to handle this case in your app
+    }
+
+    const url = pageUrl || `${USER_DETAILS_ENDPOINT}`;
+    
+    try {
+        const response = await axios.get(url, { headers });
+        const formattedData = response.data.results.map((item) => {
+          return {
+                    id: item.crm_lead.id,
+                    name: `${item.requested_by.name}`,
+                    customer: item.crm_lead.customer.name,
+                    property: `${item.crm_lead.property.name} Phase-${item.crm_lead.phase.phase_number}`,
+                    requestDate: new Date(item.date_requested).toLocaleDateString('en-GB', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric'
+                    }),
+                    requestType: item.requested_status.name_vernacular,
+                    requested_at: item.date_requested
+                  };
+                });
+        return{ 
+            soRequests: formattedData,
+            nextPageUrl: response.data.next,
+        }
+    } catch (error) {
+        console.error('Failed to fetch status requested customers:', error);
+        return [];  // Handle error cases appropriately in your application context
+    }
+};
+

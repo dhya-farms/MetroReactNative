@@ -7,20 +7,21 @@ const PropertiesContext = createContext();
 // Provider component
 export const PropertiesProvider = ({ children }) => {
   const [properties, setProperties] = useState([]);
+  const [nextGlobalPageUrl, setGlobalNextPageUrl] = useState(null);
 
   useEffect(() => {
     // Fetch properties here or provide a method to do so
     const fetchPropertiesDetails = async () => {
-      const fetchedProperties = await fetchProperties();
+      const { properties: fetchedProperties, nextPageUrl: nextPage }= await fetchProperties();
       setProperties(fetchedProperties);
-      console.log(fetchedProperties)
+      setGlobalNextPageUrl(nextPage)
     };
 
     fetchPropertiesDetails();
   }, []);
 
   return (
-    <PropertiesContext.Provider value={{ properties, setProperties }}>
+    <PropertiesContext.Provider value={{ properties, setProperties, nextGlobalPageUrl, setGlobalNextPageUrl}}>
       {children}
     </PropertiesContext.Provider>
   );

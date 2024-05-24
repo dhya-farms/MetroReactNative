@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     },
     pmCheckBoxContainer:{
       width: '90%',
-      marginVertical: 5,
+      marginVertical: 2,
     },
     checkboxContainer: {
       flexDirection: 'row',
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     },
     input: {
       flex: 1,
-      height: 34, // Set the height
+      height: 54, // Set the height
       backgroundColor: 'white', // Set the background color
       marginVertical: 2,
       marginRight: 10,
@@ -97,6 +97,17 @@ const styles = StyleSheet.create({
       borderRadius: 4,
       // Add a bottom margin
     },
+
+    specialInput: {
+      flex: 1,
+      height: 30, // Set the height
+      backgroundColor: 'white', // Set the background color
+      marginVertical: 30,
+      marginRight: 10,
+      borderColor: '#1D9BF0',
+      borderRadius: 4,
+    },
+  
     tiContainer:{
       width: '90%', 
       marginHorizontal: 10,
@@ -105,6 +116,16 @@ const styles = StyleSheet.create({
       alignItems: 'center', 
       justifyContent: 'center'
     },
+
+    specialContainer: {
+      width: '100%', 
+      marginHorizontal: 5,
+      marginVertical: 5,
+      flexDirection: 'row', 
+      alignItems: 'center', 
+      justifyContent: 'center'
+    },
+
     pmTextContainer:{
       width: '90%',
       marginVertical: 10,
@@ -180,6 +201,70 @@ const styles = StyleSheet.create({
       fontWeight: '500',
       fontSize: 14,
       color: '#fff'
+    },
+    dropdown: {
+      borderRadius: 4,
+      width: '100%',
+    },
+    header: {
+      flexDirection: 'row',
+      width: '100%',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderColor: '#1D9BF0',
+      borderWidth: 1,
+      backgroundColor: '#FFF',
+      paddingLeft: 10,
+      borderRadius: 5
+    },
+    title: {
+      fontFamily: 'Poppins',
+      fontWeight: '400',
+      fontSize: 12,
+      textAlign: 'center'
+    },
+    icon: {
+      fontSize: 16,
+    },
+    optionsContainer: {
+      maxHeight: 200,
+      borderWidth: 1,
+      borderColor: '#C4C4C4',
+      borderBottomLeftRadius: 5,
+      borderBottomRightRadius: 5,
+      // Set a maximum height for the dropdown options to scroll
+    },
+    option: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderBottomColor: '#DDD',
+      borderBottomWidth: 1,
+      backgroundColor: '#FFF',
+      padding: 5
+      
+     
+    },
+    tickIcon:{
+      color: '#1D9BF0',
+      marginRight: 5,
+    },
+    dropdownContainer:{
+      width: 30,
+      height: 30,
+      backgroundColor: '#1D9BF0',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 3
+    },
+    dropIcon:{
+      width: 10,
+      color: 'white'
+    },
+    optionText:{
+      fontFamily: 'Poppins',
+      fontWeight: '400',
+      fontSize: 12,
+      textAlign: 'center'
     }
   });
 

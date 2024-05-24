@@ -5,69 +5,97 @@ import HeaderContainer from '../../components/HeaderContainer';
 import { TextInput } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../../constants/styles/customertokenadvancestyles';
+import CustomTokenDropdown from '../../components/CustomTokenDropdown';
+import axios from 'axios';
+import { fetchPaymentTypes } from '../../apifunctions/paymentTypesApi';
+import updatePlotId from '../../apifunctions/updatePlotApi';
+import createPayment from '../../apifunctions/createPaymentApi';
+import { useRefresh } from '../../contexts/useRefreshContext';
 
 
-const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
+const FloatingLabelInput = ({ label, value, onChangeText, editable = false, ...props }) => {
     return (
       <View style={styles.tiContainer}>
       <TextInput
         label={label}
         value={value}
         onChangeText={onChangeText}
-        style={styles.input}
+        style={[styles.input, { fontFamily: 'Poppins', fontSize: 14, fontWeight: '500' }]}
         mode="outlined"
-        outlineColor="#000000" // Here you set the border color
-        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent', onSurface: 'black' } }}
+        outlineColor="#1D9BF0" // Here you set the border color
+        theme={{
+          colors: { primary: '#1D9BF0', underlineColor: 'transparent', onSurface: 'black' },
+          fonts: { regular: { fontFamily: 'Poppins', fontWeight: '400', fontSize: 12 } } // Custom font family and weight
+        }}
+        editable={editable}
         {...props}
       />
       </View>
     );
   };
 
-  const RadioButton = ({ isSelected, onPress }) => {
-    return (
-      <TouchableOpacity style={styles.radioButton} onPress={onPress}>
-        {isSelected && <View style={styles.radioButtonSelected} />}
-      </TouchableOpacity>
-    );
-  };
-
-  let plotIdCounter = 0;
-
-  const initialPlot = () => ({
-    id: ++plotIdCounter, // or use another unique ID generation method
-    propertyName: '',
-    propertyType: '',
-    phaseNumber: '',
-    plotNumber: '',
-    sqft: '',
-    isSelected: false,
-  });
-  
-
 
 const CustomerTokenAdvance = ({route, navigation}) => {
-   const [plots, setPlots] = useState([initialPlot()]);
-   const [editable, setEditable] = useState(false);
-   const [totalAmount, setTotalAmount] = useState('');
+  const { triggerDataRefresh } = useRefresh();
+  const customerDetails = route.params?.customerDetails
+  const plotInfo = route.params?.plotInfo
+  const isNewPayment = route.params?.isNewPayment
+  const [selectedPlotNumber, setSelectedPlotNumber] = useState('');
+  const [selectedPlotId, setSelectedPlotId] = useState(plotInfo.id);
+  const [selectedPaymentMethod, setSelectedPaymentMethod]= useState('')
+  const [paymentMethods, setPaymentMethods] = useState([])
+  const [selectedPaymentId, setSelectedPaymentId]= useState(null)
+  const [plot, setPlot] = useState({
+    propertyName: customerDetails?.property?.name || '',
+    propertyType: customerDetails?.property?.property_type?.name_vernacular || '',
+    phaseNumber: customerDetails?.phase?.phase_number?.toString() || '',
+    plotNumber: plotInfo.plot_number,
+    sqft: plotInfo.area_size,
+    is_corner_site: plotInfo.is_corner_site,
+  });
+   const [totalAmount, setTotalAmount] = useState(plotInfo.total_amount.toString());
    const [amountPaid, setAmountPaid] = useState('');
-   const [paymentMethod, setPaymentMethod] = useState('');
    const [referenceNumber, setReferenceNumber] = useState('');
    const [balanceAmount, setBalanceAmount] = useState('')
    const [currentView, setCurrentView] = useState('form');
    const [errorMessage, setErrorMessage] = useState('')
+   const [successMessage, setSuccessMessage]= useState('')
+   const [paymentDropDownVisible, setPaymentDropdownVisible] = useState(false)
+
+
+
+   useEffect(() => {
+    const total = parseFloat(totalAmount) || 0; // Default to 0 if totalAmount is not a number
+    const paid = parseFloat(amountPaid) || 0;   // Default to 0 if amountPaid is not a number
+    let balance = total - paid;
+    
+    if (paid > total) {
+        balance = 0; 
+        setErrorMessage
+    } else {
+        setErrorMessage(''); 
+    }
+
+    setBalanceAmount(balance.toFixed(2)); 
+    }, [amountPaid, totalAmount]);
+   
+
+  const handlePaymentMethodSelect = (paymentMethod) => {
+    setSelectedPaymentMethod(paymentMethod.name_vernacular)
+    setSelectedPaymentId(paymentMethod.id);
+    console.log(paymentMethod.id)
+    console.log(paymentMethod.name_vernacular)
+  };
 
    useEffect(() => {
     // Check if summaryData is provided when navigated to this screen
     if (route.params?.summaryData) {
       const { summaryData } = route.params;
-  
-      // Assuming setPlots, setTotalAmount, etc., are your state setters
-      setPlots(summaryData.plots);
+      setPlot(previousPlot => ({ ...previousPlot, ...summaryData.plot }));
       setReferenceNumber(summaryData.referenceNumber);
       setTotalAmount(summaryData.totalAmount);
       setAmountPaid(summaryData.amountPaid);
-      setPaymentMethod(summaryData.paymentMethod);
+      setSelectedPaymentMethod(summaryData.paymentMethod);
       setBalanceAmount(summaryData.balanceAmount);
   
       // Set current view to 'summary'
@@ -75,21 +103,39 @@ const CustomerTokenAdvance = ({route, navigation}) => {
     }
   }, [route.params]);
 
+  useEffect(() => {
+    const fetchPaymentsData = async () => {
+        try {
+          const fetchedPaymentMethods = await fetchPaymentTypes(null);
+          console.log("payment details", fetchedPaymentMethods)
+          setPaymentMethods(fetchedPaymentMethods)
+        } catch (error) {
+          console.error('Failed to fetch plots data:', error);
+        }
+    };
+   
+    fetchPaymentsData();
+  }, []); 
+
+
   const validatePlots = () => {
-    // Check if any plot has an empty field
-    return plots.every(plot => 
-      plot.propertyName && plot.propertyType && plot.phaseNumber && 
+    console.log(plot.plotNumber)
+    return  plot.propertyName && plot.propertyType && plot.phaseNumber && 
       plot.plotNumber && plot.sqft
-    );
   };
 
   const validatePaymentDetails = () => {
-    return totalAmount && amountPaid && paymentMethod && referenceNumber && balanceAmount;
+    // Ensure all required fields are filled and the paid amount does not exceed the total amount
+    const total = parseFloat(totalAmount) || 0;
+    const paid = parseFloat(amountPaid) || 0;
+    if (total < paid) {
+        setErrorMessage('Your paid amount exceeds the total amount. Please adjust the amount paid.');
+        return false;
+    }
+    return totalAmount && amountPaid && selectedPaymentMethod && balanceAmount;
   };
 
-   const addNewPlot = () => {
-    setPlots([...plots, initialPlot()]);
-  };
+
 
   const handleNextFromForm = () => {
     if (validatePlots()) {
@@ -107,37 +153,18 @@ const CustomerTokenAdvance = ({route, navigation}) => {
   // Function to handle "Next" click from the summary view to the payment summary
   const handleNextFromSummary = () => {
     if (validatePaymentDetails()) {
-      setCurrentView('paymentSummary')
-      setErrorMessage('')
+        setCurrentView('paymentSummary');
+        setErrorMessage(''); 
     } else {
-      // Not all payment details are filled, set an error message state
-      setErrorMessage("Please fill all the payment details.");
-    }
-  };
-
-  const deletePlot = (plotId) => {
-    console.log('Attempting to delete plot with ID:', plotId);
-    const filteredPlots = plots.filter(plot => plot.id !== plotId);
-    console.log('Remaining plots after deletion:', filteredPlots);
-    setPlots(filteredPlots);
-  };
-
-  const setPlotProperty = (plotId, property, value) => {
-    const newPlots = plots.map(plot =>
-      plot.id === plotId ? { ...plot, [property]: value } : plot
-    );
-    setPlots(newPlots);
-  };
-
+        if (!errorMessage) {
+            setErrorMessage("Please fill all the payment details correctly.");
+        }
+     }
+ };
   const handleCancel = ()=>{
     navigation.navigate("SO Client", { screen: "SO Customer Details"})
   }
 
-
-  const handleEdit = () => {
-    // Toggle the editable state for the inputs
-    setEditable(!editable);
-  };
 
   const InfoRow = ({ label, value }) => {
     return (
@@ -149,43 +176,33 @@ const CustomerTokenAdvance = ({route, navigation}) => {
   };
 
   const handleDone = async () => {
-    // Get the current date
-    const currentDate = new Date();
-    
-    // Format the date as "dd MMM yyyy"
-    const formattedDate = currentDate.toLocaleDateString('en-GB', {
-      day: '2-digit', month: 'short', year: 'numeric'
-    }).replace(/ /g, ' ');
-  
-    // Prepare payment details object
     const paymentDetails = {
-      plots, // Assuming this is your array of plot details
-      date: formattedDate,
-      amountPaid: amountPaid, 
-      paymentMethod: paymentMethod,
-      totalAmount,
-      referenceNumber: referenceNumber,
-      balanceAmount: balanceAmount,
-      // Any other details you wish to store and pass
+        crm_lead_id: customerDetails.id, 
+        amount: parseFloat(amountPaid),
+        payment_method: selectedPaymentId,
+        payment_for: 1,
     };
-  
+
+    if (selectedPaymentMethod !== 'Cash Payment' && selectedPaymentMethod !== 'Loan') {
+        paymentDetails.reference_number = referenceNumber;
+    }
+
     try {
-      // Store the payment details in AsyncStorage
-      await AsyncStorage.setItem('paymentDetails', JSON.stringify(paymentDetails));
-  
-      // Navigate to the "SO Customer Details" screen with necessary params
-      navigation.navigate('SO Client', {
-        screen: 'SO Customer Details',
-        params: {
-          paymentCompleted: true,
-          ...paymentDetails, // Spread the paymentDetails object
-        },
-      });
+        await createPayment(paymentDetails);
+        setSuccessMessage('Token Advance Completed Successfully');
+        setTimeout(() => {
+            triggerDataRefresh();
+            setSuccessMessage('');  // Clear the success message
+            navigation.navigate("SO Client", { 
+              screen: "SO Customer Details",
+              params: { tokenAdvanceCompleted: true }
+          }); // Navigate after success
+        }, 2000);  // Delay of 2 seconds
     } catch (error) {
-      console.error('Failed to save payment details or navigate.', error);
+        console.error('Failed to process payment details:', error);
+        setErrorMessage('Failed to update details. Please try again.');
     }
   };
-  
 
     
   return (
@@ -196,136 +213,111 @@ const CustomerTokenAdvance = ({route, navigation}) => {
       onPress={()=>{navigation.goBack()}}/>
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {currentView === 'form' && (
-       plots.map((plot, index) => (
-        <View key={plot.id} style={styles.plotContainer}>
+        <View  style={styles.plotContainer}>
           <View style={styles.inputContainer}>
-          <Text style={styles.plotText}>Plot-{index + 1}</Text>
+          <Text style={styles.plotText}>Plot-1</Text>
             <FloatingLabelInput
                 label="Property Name"
                 value={plot.propertyName}
-                onChangeText={(value) => setPlotProperty(plot.id, 'propertyName', value)}
             />
             <FloatingLabelInput
                 label="Property Type"
                 value={plot.propertyType}
-                onChangeText={(value) => setPlotProperty(plot.id, 'propertyType', value)}
             />
             <FloatingLabelInput
                 label="Phase Number"
                 value={plot.phaseNumber}
-                onChangeText={(value) => setPlotProperty(plot.id, 'phaseNumber', value)}
             />
             <FloatingLabelInput
                 label="Plot Number"
-                value={plot.plotNumber}
-                onChangeText={(value) => setPlotProperty(plot.id, 'plotNumber', value)}
+                value={plot.plotNumber.toString()}
             />
             <FloatingLabelInput
                 label="Sq.ft"
                 value={plot.sqft}
-                onChangeText={(value) => setPlotProperty(plot.id, 'sqft', value)}
             />
           <View style={styles.radioButtonContainer}>
-          <RadioButton 
-            isSelected={plot.isSelected}
-            onPress={() => setPlotProperty(plot.id, 'isSelected', !plot.isSelected)} 
-          />
-          <Text style={styles.radioButtonText}>Click here if your plot is in corner</Text>
+          <Text style={styles.radioButtonText}>Is plot in corner: {plot.is_corner_site ? "YES": "NO"}</Text>
         </View>
         </View>
-        <View style={styles.buttonContainer}>
-          {plots.length > 1 ? (
-            <TouchableOpacity style={styles.deleteButton} onPress={() => deletePlot(plot.id)}>
-              <Image source={require('../../../assets/images/deletebtn.png')} style={{resizeMode: 'cover'}}/>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.placeholderButton} /> // Invisible placeholder to push add new button to the right
-          )}
-          {index === plots.length - 1 && (
-            <TouchableOpacity style={styles.addNewButton} onPress={addNewPlot}>
-              <Text style={styles.addNewText}>+add New</Text>
-            </TouchableOpacity>
-          )}
         </View>
-        </View>
-    ))
       )}
 
       {currentView === 'summary' && (
         <>
-        {plots.map((plot, index) => (
-          <View key={plot.id} style={styles.summaryContainer}>
-            <View style={styles.pnContainer}>
-             <Text style={[styles.plotText, {marginLeft: 0}]}>Plot-{index + 1}</Text>
-             <TouchableOpacity style={styles.pnButton} onPress={handleEdit}>
-              <Image source={require('../../../assets/images/edit.png')} style={{resizeMode: 'cover'}}/>
-             </TouchableOpacity>
-            </View>
-            <FloatingLabelInput
-              label={`Plot-${index + 1} Property Name`}
-              value={plot.propertyName}
-              isEditable={editable}
-              onChangeText={(value) => setPlotProperty(plot.id, 'propertyName', value)}
-            />
-             <FloatingLabelInput
-                label={`Plot-${index + 1} Property Type`}
-                value={plot.propertyType}
-                isEditable={editable}
-                onChangeText={(value) => setPlotProperty(plot.id, 'propertyType', value)}
-            />
-            <FloatingLabelInput
-                label={`Plot-${index + 1} Phase Number`}
-                value={plot.phaseNumber}
-                isEditable={editable}
-                onChangeText={(value) => setPlotProperty(plot.id, 'phaseNumber', value)}
-            />
-            <FloatingLabelInput
-                label={`Plot-${index + 1} Plot Number`}
-                value={plot.plotNumber}
-                isEditable={editable}
-                onChangeText={(value) => setPlotProperty(plot.id, 'plotNumber', value)}
-            />
-            <FloatingLabelInput
-                label={`Plot-${index + 1} Sq.Ft`}
-                value={plot.sqft}
-                isEditable={editable}
-                onChangeText={(value) => setPlotProperty(plot.id, 'sqft', value)}
-            />
-            <View style={styles.radioButtonContainer}>
-              <RadioButton 
-                isSelected={plot.isSelected}
-                onPress={() => setPlotProperty(plot.id, 'isSelected', !plot.isSelected)} 
-              />
-              <Text style={styles.radioButtonText}>Click here if your plot is in corner</Text>
-            </View>
+         <View style={styles.summaryContainer}>
+          <View style={styles.pnContainer}>
+            <Text style={[styles.plotText, {marginLeft: 0}]}>Plot Details</Text>
           </View>
-         ))}
+            <FloatingLabelInput
+                label="Property Name"
+                value={plot.propertyName}
+            />
+            <FloatingLabelInput
+                label="Property Type"
+                value={plot.propertyType}
+            />
+            <FloatingLabelInput
+                label="Phase Number"
+                value={plot.phaseNumber}
+            />
+            <FloatingLabelInput
+                label="Plot Number"
+                value={plot.plotNumber.toString()}
+            />
+            <FloatingLabelInput
+                label="Sq.ft"
+                value={plot.sqft}
+            />
+          <View style={styles.radioButtonContainer}>
+          <Text style={styles.radioButtonText}>Is plot in corner: {plot.is_corner_site ? "YES": "NO"}</Text>
+          </View>
+        </View>
           <View style={styles.paymentDetailsContainer}>
           <Text style={[styles.plotText]}>Payment Details</Text>
           <FloatingLabelInput
             label="Total Amount"
             value={totalAmount}
-            onChangeText={setTotalAmount}
+            editable = {false}
           />
           <FloatingLabelInput
             label="Amount Paid"
             value={amountPaid}
             onChangeText={setAmountPaid}
+            editable = {true}
           />
-          <FloatingLabelInput
-            label="Payment Method"
-            value={paymentMethod}
-            onChangeText={setPaymentMethod}
-          />
-          <FloatingLabelInput
-            label="Reference Number"
-            value={referenceNumber}
-            onChangeText={setReferenceNumber}
-          />
+          <View style={{width: '90%'}}>
+            <CustomTokenDropdown
+                label="Payment Method"
+                selectedValue={selectedPaymentMethod}
+                onSelect={handlePaymentMethodSelect}
+                options={paymentMethods}
+                visible={paymentDropDownVisible}
+                setVisible={setPaymentDropdownVisible}
+                paymentMethod={true} 
+                customInputStyle={{
+                  flex: 1,
+                  height: 34, // Set the height
+                  backgroundColor: 'white', // Set the background color
+                  marginVertical: 2,
+                  marginRight: 10,
+                  borderColor: '#1D9BF0',
+                  borderRadius: 4,
+              }}// Pass the fetched plots data as options
+              />
+          </View>
+          {selectedPaymentMethod !== 'Cash Payment' && selectedPaymentMethod !== 'Loan' && (
+              <FloatingLabelInput
+                label="Reference Number"
+                value={referenceNumber}
+                onChangeText={setReferenceNumber}
+                editable={true}
+              />
+            )}
            <FloatingLabelInput
             label="Balance Amount"
             value={balanceAmount}
-            onChangeText={setBalanceAmount}
+            editable = {false}
           />
         </View>
         </>
@@ -347,31 +339,34 @@ const CustomerTokenAdvance = ({route, navigation}) => {
 
       {currentView === 'paymentSummary' && (
         <View style={styles.paymentSummaryContainer}>
-       
-        {plots.map((plot, index) => (
-          <React.Fragment key={index}>
-            <Text style={[styles.plotText, {marginLeft: 20}]}>Plot-{index + 1}</Text>
+          <React.Fragment>
+            <Text style={[styles.plotText, {marginLeft: 20}]}>Plot- 1</Text>
             <InfoRow label="Property Name" value={plot.propertyName} />
-            <InfoRow label="Phase Name" value={plot.phaseNumber} />
+            <InfoRow label="Phase Number" value={plot.phaseNumber} />
             <InfoRow label="Plot Number" value={plot.plotNumber} />
             <InfoRow label="Sq.Ft" value={plot.sqft} />
-            <InfoRow label="Dir Name" value="Director's Name" />
-            <InfoRow label="SO Name" value="Sales Officer's Name" />
-            <InfoRow label="Payment Ref No" value={referenceNumber} />
+            <InfoRow label="Dir Name" value={customerDetails?.assigned_so?.director?.name || ''} />
+            <InfoRow label="SO Name" value={customerDetails?.assigned_so?.name} />
+            {selectedPaymentMethod !== 'Cash Payment' && selectedPaymentMethod !== 'Loan' && (
+                <InfoRow label="Payment Ref No" value={referenceNumber} />
+              )}
             <InfoRow label="Total Amount" value={totalAmount} />
             <InfoRow label="Amount Paid" value={amountPaid} />
-            <InfoRow label="Mode of Payment" value={paymentMethod} />
-            <InfoRow label="Receipt Number" value="Receipt's Number" />
-            <InfoRow label="Corner Site" value={plot.isSelected ? 'Yes' : 'No'} />
+            <InfoRow label="Mode of Payment" value={selectedPaymentMethod || ''} />
+            <InfoRow label="Corner Site" value={plot.is_corner_site ? 'Yes' : 'No'} />
           </React.Fragment>
-        ))}
         <View style={styles.doneBtnContainer}>
             <TouchableOpacity style={styles.doneButton} onPress={handleDone}> 
               <Text style={styles.doneText}>Done</Text>
             </TouchableOpacity>
-          </View>
+         </View>
+          <>
+          {errorMessage && <Text style={styles.errorMessage}>{errorMessage}</Text>} 
+          {successMessage && <Text style={styles.successMessage}>{successMessage}</Text>} 
+          </>
       </View>
       )}
+     
        {currentView === 'form' && (
         <>
         {errorMessage && <Text style={styles.errorMessage}>{errorMessage}</Text>} 

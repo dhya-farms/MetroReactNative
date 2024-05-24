@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, ScrollView, StyleSheet, StatusBar} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, ScrollView, StyleSheet, StatusBar, ActivityIndicator} from 'react-native';
 import CardScrollView from '../../components/CarousalCardView';
 import ShowAllButton from '../../components/ShowAllButton';
 import HeaderContainer from '../../components/HeaderContainer';
@@ -7,32 +7,10 @@ import ReportsScrollView from '../../components/ReportCard';
 import SOcards from '../../components/SOcard';
 import { SECONDARY_COLOR } from '../../constants/constantstyles/colors';
 import { useSoUsers } from '../../contexts/useSoData';
+import { fetchStatusRequests } from '../../apifunctions/fetchStatusRequests';
 
 
 
-const data = [
-    {
-      name: 'Hari Kowshick (SO)',
-      customer: 'Suraj',
-      property: 'Metro Shiva Shakthi Residency',
-      requestDate: '12/12/2022',
-    },
-    {
-        name: 'Hari Kowshick (SO)',
-        customer: 'Suraj',
-        property: 'Metro Shiva Shakthi Residency',
-        requestDate: '12/12/2022',
-        requestType: 'Site visit',
-    },
-    {
-        name: 'Hari Kowshick (SO)',
-        customer: 'Suraj',
-        property: 'Metro Shiva Shakthi Residency',
-        requestDate: '12/12/2022',
-        requestType: 'Site visit',
-    },
-    // ... other card data
-  ];
   const reportData = [
     {
         name: 'Daily Report',
@@ -52,41 +30,35 @@ const data = [
     }
   ]
 
-  const SOdata  = [
-    {
-        id: 1,
-        name: 'Hari Kowshick',
-        number: '+91-9486077810',
-        mailId: 'hari@gmail.com',
-        points: '7Metro Points',
-        clients: '3 Clients',
-        source: require('../../../assets/images/soperson.png')
-    },
-    {
-        id: 2,
-        name: 'Ranjith',
-        number: '+91-9486077810',
-        mailId: 'ranjith@gmail.com',
-        points: '6Metro Points',
-        clients: '2 Clients',
-        source: require('../../../assets/images/soperson.png')
-    },
-    {
-        id: 3,
-        name: 'Dinesh',
-        number: '+91-9486077810',
-        mailId: 'dinesh@gmail.com',
-        points: '10Metro Points',
-        clients: '5 Clients',
-        source: require('../../../assets/images/soperson.png')
-    }
-  ]
+ const SOManager = ({route, navigation}) => {
 
+  const {soUsers} = useSoUsers();
+  const {nextSoPageUrl} = useSoUsers();
+  const [soRequests, setSoRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [nextPageUrl, setNextPageUrl] = useState(null);
 
+  useEffect(() => {
+    const paramsToken= route.Params?.token
+    const fetchRequests = async () => {
+      setLoading(true);
+      try {
+        const response = await fetchStatusRequests(paramsToken);
+        setSoRequests(response.soRequests);
+        setNextPageUrl(response.nextPageUrl);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch status requests:", error);
+        setLoading(false);
+      }
+    };
 
-const SOManager = ({navigation}) => {
+    fetchRequests();
+  }, []);
 
-  const soUsers = useSoUsers();
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
 
   return (
     <View style={styles.mainContainer}>
@@ -96,11 +68,17 @@ const SOManager = ({navigation}) => {
             ImageRight={require('../../../assets/images/belliconblue.png')}
             onPress={()=>{navigation.navigate("Admin home")}}/>
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <ShowAllButton text="Approval" onPress={()=> navigation.navigate("SO Approvals")}/>
+        <ShowAllButton text="Approval" onPress={()=> navigation.navigate("SO", { 
+      screen: "SO Approvals" ,
+      params: { soRequests: soRequests, nextPage: nextPageUrl}
+    })}/>
         <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-        <CardScrollView data={data} onCardPress={() => {
-           navigation.navigate("Client", { screen: "List Customer Details"});
-        }}/>
+        <CardScrollView data={soRequests} onCardPress={(customerId) => {
+              navigation.navigate("Client", { 
+                screen: "List Customer Details",
+                params: { customerId: customerId, backScreen: "soManager"} // Pass customerId to the detail screen
+            });
+          }}/>
         </View>
         <ShowAllButton text="Reports"/>
         <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
@@ -110,7 +88,7 @@ const SOManager = ({navigation}) => {
         <ShowAllButton text="SO List" onPress={()=> 
          navigation.navigate("SO", { 
           screen: "SO Officers List" ,
-          params: { soUsers: soUsers, backScreen: 'SOManager' }
+          params: { soUsers: soUsers, nextPage: nextSoPageUrl, backScreen: 'SOManager' }
         })}/>
         <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
         <SOcards data={soUsers}  onCardPress={(SoId) => {

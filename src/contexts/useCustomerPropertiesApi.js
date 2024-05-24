@@ -7,12 +7,14 @@ const CustomerPropertiesContext = createContext();
 // Provider component for customer properties
 export const CustomerPropertiesProvider = ({ children}) => {
   const [customerProperties, setCustomerProperties] = useState([]);
+  const [nextCustomerPageUrl, setNextCustomerPageUrl] = useState(null)
 
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const propertiesResponse = await fetchCustomerProperties();
+        const {properties: propertiesResponse, nextPageUrl: nextPage} = await fetchCustomerProperties();
         setCustomerProperties(propertiesResponse || []);
+        setNextCustomerPageUrl(nextPage)
         console.log(propertiesResponse);
       } catch (error) {
         console.error('Failed to fetch customer properties:', error);
@@ -23,7 +25,7 @@ export const CustomerPropertiesProvider = ({ children}) => {
   }, []);
 
   return (
-    <CustomerPropertiesContext.Provider value={{ customerProperties, setCustomerProperties }}>
+    <CustomerPropertiesContext.Provider value={{ customerProperties, setCustomerProperties , nextCustomerPageUrl, setNextCustomerPageUrl}}>
       {children}
     </CustomerPropertiesContext.Provider>
   );

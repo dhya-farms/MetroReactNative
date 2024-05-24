@@ -3,6 +3,7 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { PRIMARY_COLOR } from '../constants/constantstyles/colors';
+import CustomTokenDropdown from '../components/CustomTokenDropdown';
 
 const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
     return (
@@ -19,7 +20,8 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
     );
   };
 
-const PaymentModal = ({ modalVisible, setModalVisible, onDone}) => {
+const PaymentModal = ({ modalVisible, setModalVisible, onDone, selectedPaymentMethod, handlePaymentMethodSelect, paymentMethods,
+  paymentDropDownVisible, setPaymentDropdownVisible}) => {
   // State for input fields
   const [payAmount, setPayAmount] = useState('');
   const [desc, setDesc] = useState('');
@@ -28,24 +30,23 @@ const PaymentModal = ({ modalVisible, setModalVisible, onDone}) => {
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleDonePress = () => {
-    // Reset error message at each attempt
     setErrorMessage('');
 
-    // Validate inputs
-    if (!payAmount || !desc || !payType || !refno) {
-      setErrorMessage('Please fill all the details.'); // Update error message state
+    // Check if all necessary inputs are filled
+    if (!payAmount || !desc || !selectedPaymentMethod || (selectedPaymentMethod !== 'Cash Payment' && selectedPaymentMethod !== 'Loan' && !refno)) {
+      setErrorMessage('Please fill all the details.');
       return;
     }
 
-    // If validation passes, proceed to call the onDone callback
-    onDone({
+    // Prepare the data object to send to onDone callback
+    const paymentDetails = {
       payAmount,
       desc,
-      payType,
-      refno,
-    });
+      payType: selectedPaymentMethod,
+      ...(selectedPaymentMethod !== 'Cash Payment' && selectedPaymentMethod !== 'Loan' && { refno })
+    };
 
-    // Close the modal
+    onDone(paymentDetails);
     setModalVisible(false);
   };
 
@@ -72,24 +73,36 @@ const PaymentModal = ({ modalVisible, setModalVisible, onDone}) => {
             value={desc}
             onChangeText={setDesc}
           />
-          <FloatingLabelInput
-            label="Payment Type"
-            value={payType}
-            onChangeText={setPayType}
-          />
-          <FloatingLabelInput
-            label="Reference Number"
-            value={refno}
-            onChangeText={setRefNo}
-          />
+          <View style={{width: '100%'}}>
+            <CustomTokenDropdown
+                label="Payment Type"
+                selectedValue={selectedPaymentMethod}
+                onSelect={handlePaymentMethodSelect}
+                options={paymentMethods}
+                visible={paymentDropDownVisible}
+                setVisible={setPaymentDropdownVisible}
+                paymentMethod={true}
+                customInputStyle={{
+                  width: '100%',
+                  height: 50, // Specific height for this context
+                  backgroundColor: 'white',
+                  marginRight: 0,
+                  marginVertical: 2, // Specific background color for this context 
+                }}
+            />
+          </View>
+          {(selectedPaymentMethod !== 'Cash Payment' && selectedPaymentMethod !== 'Loan') && (
+            <FloatingLabelInput
+              label="Reference Number"
+              value={refno}
+              onChangeText={setRefNo}
+            />
+          )}
            {errorMessage !== '' && (
             <Text style={styles.errorText}>{errorMessage}</Text> // Display the error message
           )}
           <TouchableOpacity style={styles.doneButton} onPress={handleDonePress}>
             <Text style={styles.doneButtonText}>Sumbit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.doneButton} onPress={()=> setModalVisible(false)}>
-            <Text style={styles.doneButtonText}>Pay</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -102,7 +115,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 22
+    marginTop: 22,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)'
   },
   modalView: {
     width: '85%',

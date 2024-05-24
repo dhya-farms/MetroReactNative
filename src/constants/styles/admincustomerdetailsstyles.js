@@ -104,13 +104,28 @@ const styles = StyleSheet.create({
       width: '90%', // Ensure the row takes full width
       padding: 10,
       borderWidth: 1,
-      borderColor: '#1D9BF0',
+      borderColor: '#C4C4C4',
       borderRadius: 6,
       marginRight: 8,
       // ... (your existing styles)
     },
     completedStatusItem: {
       borderColor: '#80FF00', // Green border color for completed status
+    },
+    approvedStatusItem:{
+      borderColor: '#1D9BF0',
+    },
+    pendingStatusItem: {
+      borderColor: '#FDF525', // Yellow for pending
+    },
+    rejectedStatusItem: {
+      borderColor: '#FF0000', // Red for rejected
+    },
+    progressStatusItem:{
+      borderColor: '#1D9BF0',
+    },
+    defaultStatusItem:{
+      borderColor: '#C4C4C4'
     },
     completedStatusCheck:{
       backgroundColor: '#80FF00'
@@ -145,24 +160,31 @@ const styles = StyleSheet.create({
     },
     infoRow: {
       flexDirection: 'row',
+      justifyContent: 'flex-start',
       alignItems: 'center',
-      marginBottom: 5,
-      marginLeft: 20, // Add space between rows
-    },
-    contextText: {
-      fontFamily: 'Poppins'
+      marginBottom: 4,
+      marginHorizontal: 10,
+      flexWrap: 'wrap', // Align items to the start of the cross axis
     },
     labelText: {
+      flex: 0,  // Flex set to 0 to maintain width only to content
+      minWidth: 100, // Minimum width for label
+      fontFamily: 'Poppins',
       fontWeight: '400',
+      color: '#424242',
       fontSize: 10,
+      marginRight: 10, // Give some space between the label and content
     },
     colonText: {
-      marginRight: 4, // Space after the colon before the value
-      // Colon styles if any
+      marginRight: 4,
     },
+  
     valueText: {
+      flex: 1, 
+      fontFamily: 'Poppins',
       fontWeight: '600',
-      fontSize: 12,
+      color: '#424242',
+      fontSize: 12, // Space after the colon before the value
     },
     pcText:{
       fontFamily: 'Poppins',
@@ -172,6 +194,23 @@ const styles = StyleSheet.create({
     completedStatusItem: {
       borderColor: '#80FF00', // Green border color for completed status
     },
+    documentItem: {
+      width: '80%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: 4,
+      borderBottomWidth: 1,
+      borderBottomColor: '#ccc',
+      marginLeft: 10,
+    },
+    docDetailText:{
+        flex: 1,
+        fontFamily: 'Poppins',
+        fontWeight: '500',
+        fontSize: 10,
+        marginVertical: 5,
+      },
   
   });
 

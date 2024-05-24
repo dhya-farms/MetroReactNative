@@ -38,7 +38,7 @@ const Card = ({ property={}, displayText, imageUrls = [], onPress, paramsToken }
             </View>
           </View>
           <Text style={styles.cardDescription}>{displayText}</Text>
-          <View style={{flexDirection: 'row',alignItems: 'center',}}>
+          <View style={{width: '100%', flexDirection: 'row', alignItems: 'center', marginVertical: 5,}}>
             <MaterialIcons name="location-on" size={16} color="#424242" />
             <Text style={styles.cardAddress}>{property.location}</Text>
           </View>
@@ -147,8 +147,6 @@ const styles = StyleSheet.create({
       fontFamily: 'Poppins',
       fontWeight: '500',
       fontSize: 12,
-      marginLeft: 5,
-      marginVertical: 5,
       color: '#424242'
     },
     paginationContainer: {

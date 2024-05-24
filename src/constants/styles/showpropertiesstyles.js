@@ -50,8 +50,6 @@ const styles = StyleSheet.create({
     },
     slidingContainer:{
       width: '100%',
-      alignItems: 'center',
-      justifyContent: 'center',
     },
     cityConatiner:{
       marginVertical: 20,
@@ -117,7 +115,7 @@ const styles = StyleSheet.create({
     },
     plotContainer: {
       width: '90%',
-       // Assuming a white background
+      backgroundColor: '#fff', 
     },
     plotHeader: {
       fontFamily: 'Poppins',
@@ -128,26 +126,25 @@ const styles = StyleSheet.create({
     },
     infoContainer: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-start',
       marginBottom: 4,
       marginHorizontal: 10,
-      alignItems: 'flex-start', // Align items to the start of the cross axis
+      flexWrap: 'wrap', // Align items to the start of the cross axis
     },
     infoLabel: {
+      flex: 1,
       fontFamily: 'Poppins',
       fontWeight: '600',
       color: '#424242',
       fontSize: 12,
-      minWidth: 100, // Set a minimum width for labels
-      textAlign: 'left',
+      marginRight: 10, // Give some space between the label and content
     },
     infoContent: {
+      flex: 1, 
       fontFamily: 'Poppins',
       fontWeight: '400',
       color: '#424242',
       fontSize: 12,
-      textAlign: 'left',
-      width: '100%'
     },
     amContainer:{
       width: '90%',

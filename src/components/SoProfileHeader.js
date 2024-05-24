@@ -26,8 +26,8 @@ const SoProfileHeader = ({ soDetails }) => {
         <InfoRow label="Email Id:" value={soDetails.email || ""} />
         <InfoRow label="Mobile No:" value={soDetails.mobile_no || ""} />
         <InfoRow label="Address:" value="123 Main St, Anytown" />  
-        <InfoRow label="Metro Points:" value="350 Points" />  
-        <InfoRow label="Customers:" value="25 Customers" /> 
+        <InfoRow label="Metro Points:" value={soDetails.points}/>  
+        <InfoRow label="Customers:" value={soDetails.clients} /> 
       </View>
     </View>
   );

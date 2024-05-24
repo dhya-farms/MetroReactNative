@@ -57,7 +57,7 @@ const AddClientModal = ({ label, modalVisible, setModalVisible, selectedValue, s
               <Icon name="times" size={20} color={PRIMARY_COLOR} />
         </TouchableOpacity>
         <Text style={styles.modalTitle}>Add Client</Text>
-        <Text style={[styles.modalTitle, {marginVertical: 10, fontSize: '14', fontWeight: 400}]}>Adding customer to the property</Text>
+        <Text style={[styles.modalTitle, {marginVertical: 10, fontSize: 14, fontWeight: '400'}]}>Adding customer to the property</Text>
         <View style={styles.inputContainer}>
             <TouchableOpacity style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}} onPress={toggleDropdown}>
             <TextInput

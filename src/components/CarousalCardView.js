@@ -1,75 +1,80 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-
 const requestTypes = {
-  SV: 'Site visit',
-  AP: 'Amount payment',
-  DOC: 'Document verification',
+  SV: 'Site Visit',
+  AP: 'Token Advance',
+  DOC: 'Documentation',
   PAY: 'Payment',
-  DD: 'Due diligence',
+  DD: 'Document Delivery',
 };
 
-const Card = ({ name, customer, property, requestDate, onPress }) => {
+const Card = ({ name, customer, property, requestDate, initialRequestType, onPress }) => {
   const [selectedRequestIndex, setSelectedRequestIndex] = useState(null);
   const [requestType, setRequestType] = useState('Select a request');
 
-
-  const handleRequestPress = (type, index) => {
-    setSelectedRequestIndex(index); // Store the index of the selected request
-    setRequestType(requestTypes[type]);
-  };
+  // Set the initial selected state based on the initialRequestType prop
+  useEffect(() => {
+    if (initialRequestType) {
+      const typeKey = Object.keys(requestTypes).find(key => requestTypes[key] === initialRequestType);
+      if (typeKey) {
+        const index = Object.keys(requestTypes).indexOf(typeKey);
+        setSelectedRequestIndex(index); // Store the index of the selected request
+        setRequestType(typeKey); // Use abbreviation as display
+      }
+    }
+  }, [initialRequestType]);
 
   const RequestButton = ({ type, index }) => {
-    // Determine if the button should have the selected style
-    const isSelected = index <= selectedRequestIndex;
+    const isSelected = index === selectedRequestIndex; // Check if this button is selected
 
     return (
-      <TouchableOpacity
-        style={[
-          styles.requestButton,
-          isSelected && styles.selectedRequestButton // Apply selected style based on index
-        ]}
-        onPress={() => handleRequestPress(type, index)}
-      >
-         <Text style={[styles.ButtonText, isSelected && styles.requestButtonText]}>{type}</Text>
-      </TouchableOpacity>
+      <View
+      style={[
+        styles.requestButton,
+        isSelected && styles.selectedRequestButton
+      ]}
+    >
+       <Text style={[styles.buttonText, isSelected && styles.selectedButtonText]}>{type}</Text>
+    </View>
     );
   };
+
+  // Determine if the currently displayed request type is selected
+  const isSelectedRequest = selectedRequestIndex !== null;
 
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
-    <View>
-      <Text style={styles.name}>{name}</Text>
-      <View style={styles.detailRow}>
-        <Text style={styles.label}>Customer: </Text>
-        <Text style={styles.value}>{customer}</Text>
-      </View>
-      <View style={styles.detailRow}>
-        <Text style={styles.label}>Property: </Text>
-        <Text style={styles.value}>{property}</Text>
-      </View>
-      <View style={styles.detailRow}>
-        <Text style={styles.label}>Requested On: </Text>
-        <Text style={styles.value}>{requestDate}</Text>
-      </View>
-      <View style={styles.requestButtonsContainer}>
+      <View>
+        <Text style={styles.name}>{name}(SO)</Text>
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Customer: </Text>
+          <Text style={styles.value}>{customer}</Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Property: </Text>
+          <Text style={styles.value}>{property}</Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Requested On: </Text>
+          <Text style={styles.value}>{requestDate}</Text>
+        </View>
+        <View style={styles.requestButtonsContainer}>
           {Object.keys(requestTypes).map((type, index) => (
-            // Pass the index to each RequestButton
             <RequestButton key={type} type={type} index={index} />
           ))}
         </View>
-      <View style={styles.separator} />
-      <View style={styles.requestTypeContainer}>
-        <Text style={styles.label}>Requested For: </Text>
-        <View style={{ flex: 1 }}>
-        <Text style={styles.value}>{requestType}</Text>
+        <View style={styles.separator} />
+        <View style={styles.requestTypeContainer}>
+          <Text style={styles.requestedLabel}>Requested For: </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.requestedValue}>{initialRequestType}</Text>
+          </View>
+          <Icon name="check" size={21} color={isSelectedRequest ? "#FFA500" : "grey"} />
         </View>
-        <Icon name="check" size={21} color="orange" />
       </View>
-    </View>
     </TouchableOpacity>
   );
 };
@@ -84,8 +89,8 @@ const CardScrollView = ({ data, isHorizontal= true, onCardPress }) => (
         customer={item.customer}
         property={item.property}
         requestDate={item.requestDate}
-        requestType={item.requestType}
-        onPress={() => onCardPress()}
+        initialRequestType={item.requestType}
+        onPress={() => onCardPress(item.id)}
       />
     ))}
   </ScrollView>
@@ -144,6 +149,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 12,
   },
+  requestedLabel:{
+    fontFamily: 'Poppins',
+    fontWeight: '500',
+    fontSize: 12,
+    marginRight: 4
+  },
+  requestedValue:{
+    fontFamily: 'Poppins',
+    fontWeight: '600',
+    fontSize: 16,
+    color: '#5C5C5C'
+  },
   separator: {
     height: 2,
     backgroundColor: '#C4C4C4',
@@ -162,16 +179,19 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#E0E0E0',
+    backgroundColor: '#D9D9D9',
   },
   selectedRequestButton: {
     backgroundColor: '#1D9BF0',
   },
-  ButtonText:{
+  buttonText:{
     fontFamily: 'Poppins',
     fontWeight: '600',
     fontSize: 10,
     color: '#000'
+  },
+  selectedButtonText:{
+    color: '#fff'
   },
   requestButtonText: {
     fontFamily: 'Poppins',

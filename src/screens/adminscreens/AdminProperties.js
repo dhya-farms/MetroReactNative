@@ -1,25 +1,79 @@
-import React from 'react';
-import { ScrollView, StyleSheet,  StatusBar, View, Text} 
+import React, { useCallback, useEffect, useState } from 'react';
+import { ScrollView, StyleSheet,  StatusBar, View, Text, FlatList, ActivityIndicator} 
 from 'react-native';
 import SortHeader from '../../components/SortHeader';
 import Carousel from '../../components/Carousel';
 import HeaderContainer from '../../components/HeaderContainer';
 import { useAdminProperties } from '../../contexts/useAdminProperties';
+import { fetchAdminProperties } from '../../apifunctions/fetchAdminPropertiesApi';
+import _ from 'lodash'; 
 
 
 
 
 const AdminProperties = ({route, navigation}) => {
+  const [properties, setProperties] = useState([]);
   const { adminProperties } = useAdminProperties();
+  const { nextGlobalPageUrl } = useAdminProperties();
   const routeProperties = route.params?.properties;
-  console.log('route',routeProperties)
+  const routeNextPage = route.params?.nextPage;
   const propertiesData = routeProperties || adminProperties
+  const nextPageData = routeNextPage || nextGlobalPageUrl
+  const [nextPageUrl, setNextPageUrl] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleGeneralPropertyPress = (propertyId) => {
-    navigation.navigate("Admin Properties Details", {params: {
-      propertyId: propertyId,
-      backScreen: "Properties"  // Indicating that the navigation originated from the Properties screen
+  useEffect(() => {
+    setProperties(propertiesData);
+    setNextPageUrl(nextPageData)
+  }, [propertiesData, nextPageData]);
+
+  const handleGeneralPropertyPress = (propertyId, phaseId) => {
+    navigation.navigate("Admin Properties Details", {
+      params: { 
+        propertyId: propertyId, 
+        phaseId: phaseId, 
+        backScreen: "Properties" 
     }});
+  };
+
+  const fetchMoreProperties = useCallback(_.debounce(async () => {
+    if (!nextPageUrl || loading) {
+      console.log('Fetch more halted:', { nextPageUrl, loading });
+      return;
+    }
+  
+    console.log('Fetching more properties from:', nextPageUrl);
+    console.log('Setting loading true');
+    setLoading(true);
+    try {
+      const { properties: newProperties, nextPageUrl: newNextPageUrl } = await fetchAdminProperties(null, null, nextPageUrl);
+      console.log('New properties fetched:', newProperties.length);
+      setProperties(prevProperties => [...prevProperties, ...newProperties]);
+      setNextPageUrl(newNextPageUrl);
+    } catch (error) {
+      console.error('Failed to fetch more properties:', error);
+    } finally {
+      console.log('Setting loading false');
+      setLoading(false);
+    }
+  }, 300), [nextPageUrl, loading]);
+
+  const renderItem = ({ item }) => {
+    return (
+      <View style={{width: '100%'}}>
+        <Carousel
+          data={item}
+          onCardPress={handleGeneralPropertyPress}
+          isHeartVisible={false}
+          keyExtractor={(item) => `property-${item.id}`}
+        />
+      </View>
+    );
+  };
+
+  const renderFooter = () => {
+    console.log('Render footer, loading:', loading);  // Check if this logs
+    return loading ? <ActivityIndicator size="large" color="#0000ff" /> : null;
   };
 
   
@@ -32,21 +86,17 @@ const AdminProperties = ({route, navigation}) => {
       onPress={()=>{ navigation.navigate("Home", {
         screen: "Admin Home",
       })}}/>
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-     <SortHeader title="Properties"  isSortVisible={false} />
-     {propertiesData.length > 0 ? (
-        <Carousel
-          data={propertiesData}
-          onCardPress={handleGeneralPropertyPress}
-          isHeartVisible={false}
-          keyExtractor={(item) => `property-${item.id}`}
-        />
-      ) : (
-      <View style={styles.npContainer}>
-        <Text style={styles.nopText}>Loading Data...</Text>
-      </View>
-      )}
-    </ScrollView>
+      <FlatList
+        data={[properties]} // Wrap properties in an array since FlatList expects an array
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+        ListHeaderComponent={<SortHeader title="Properties" isSortVisible={false} />}
+        ListFooterComponent={renderFooter}
+        onEndReached={fetchMoreProperties}
+        onEndReachedThreshold={0.02}
+        extraData={loading}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 };
@@ -54,7 +104,7 @@ const AdminProperties = ({route, navigation}) => {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,  // Use flex to take up the whole screen
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   },
   container: {
     width: '100%',  // Ensures the ScrollView takes the full width

@@ -1,19 +1,29 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, Image, StyleSheet } from 'react-native';
+import { SECONDARY_COLOR } from '../constants/constantstyles/colors';
 
-const ApproveButton = ({onApprovePress, onRejectPress}) => {
+const ApproveButton = ({onApprovePress, onRejectPress, disabled, handleEdit}) => {
   // The iconSource prop would be something like require('./path-to-your-icon.png')
 
   return (
     <View style={styles.approveRejectContainer}>
-    <TouchableOpacity onPress={onApprovePress} style={[styles.button]}>
-     <Text style={styles.arText}>Approve</Text>
-    </TouchableOpacity>
-    <TouchableOpacity onPress={onRejectPress} style={[styles.button, {borderWidth: 1, borderColor: '#1D9BF0',
-    backgroundColor: 'white'}]}>
-     <Text style={[styles.arText, {color: '#1D9BF0'}]}>Reject</Text>
-    </TouchableOpacity>
-    <Text style={styles.editText}>Edit</Text>
+    <TouchableOpacity 
+        onPress={onApprovePress} 
+        style={[styles.button, disabled ? styles.disabledButton : null]} // Apply disabled style conditionally
+        disabled={disabled}
+      >
+        <Text style={[styles.arText, {color: disabled ? '#C4C4C4' : 'white'}]}>Approve</Text>
+      </TouchableOpacity>
+      <TouchableOpacity 
+        onPress={onRejectPress} 
+        style={[styles.button, styles.rejectButton, disabled ? styles.disabledButton : null]} // Apply disabled style conditionally
+        disabled={disabled}
+      >
+        <Text style={[styles.arText, {color: disabled ? '#C4C4C4' : 'white'}]}>Reject</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={handleEdit}>
+      <Text style={[styles.arText, {color: 'black'}]}>Edit</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -47,11 +57,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '400',
   },
-  editText:{
-    fontFamily: 'Poppins',
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#1D9BF0',
+  disabledButton: {
+    opacity: 0.5, 
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: SECONDARY_COLOR // Reduced opacity for disabled appearance
   }
 });
 

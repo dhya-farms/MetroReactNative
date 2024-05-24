@@ -49,8 +49,6 @@ const styles = StyleSheet.create({
     },
     slidingContainer:{
       width: '100%',
-      alignItems: 'center',
-      justifyContent: 'center',
     },
     cityConatiner:{
       marginVertical: 20,
@@ -78,7 +76,6 @@ const styles = StyleSheet.create({
     desContainer:{
       width: '90%',
       alignItems: 'flex-start',
-      marginLeft: 10,
     },
     desHeader:{
       fontFamily: 'Poppins',
@@ -100,25 +97,9 @@ const styles = StyleSheet.create({
       fontSize: 12,
       marginVertical: 5
     },
-    LocationImageContainer:{
-      width: '100%',
-      justifyContent: 'center',
-      alignItems: 'center',
-      alignSelf: 'center',
-      marginVertical: 20
-    },
-    LocationImage:{
-      width: 320,
-      height: 128,
-      justifyContent: 'flex-start',
-      alignItems: 'center',
-      alignSelf: 'center',
-      backgroundColor: '#D9D9D9',
-      borderRadius: 15
-    },
     plotContainer: {
       width: '90%',
-      // Assuming a white background
+      backgroundColor: '#fff', 
     },
     plotHeader: {
       fontFamily: 'Poppins',
@@ -129,26 +110,25 @@ const styles = StyleSheet.create({
     },
     infoContainer: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-start',
       marginBottom: 4,
-      marginHorizontal: 10,
-      alignItems: 'flex-start', // Align items to the start of the cross axis
+      marginHorizontal: 8,
+      flexWrap: 'wrap', // Align items to the start of the cross axis
     },
     infoLabel: {
+      flex: 1,
       fontFamily: 'Poppins',
       fontWeight: '600',
       color: '#424242',
       fontSize: 12,
-      minWidth: 100, // Set a minimum width for labels
-      textAlign: 'left',
+      marginRight: 10, // Give some space between the label and content
     },
     infoContent: {
+      flex: 1, 
       fontFamily: 'Poppins',
       fontWeight: '400',
       color: '#424242',
       fontSize: 12,
-      textAlign: 'left',
-      width: '100%'
     },
     amContainer:{
       width: '90%',

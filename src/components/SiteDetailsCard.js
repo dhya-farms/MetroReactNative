@@ -1,11 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const SdCard = ({ sitename, detailInfo, pricePerSqFt, bgimage, onPress }) => {
+
+const windowWidth = Dimensions.get('window').width;
+const cardWidth = windowWidth - 40; // Assuming 15px margin on each side
+
+const SdCard = ({ sitename, detailInfo, pricePerSqFt, phaseName, bgimage, onPress }) => {
   // Formatting changes here based on the properties
   const formattedSiteName = `${sitename}\n${detailInfo}`;
-  const formattedPrice = `Starts @ \n₹${pricePerSqFt}/sqft`;
+  const formattedPrice = `Starts @ \n₹${pricePerSqFt} ${phaseName}`;
 
   return (
     <TouchableOpacity onPress={onPress} style={styles.cardContainer}>
@@ -27,11 +31,12 @@ const SiteDetailsCard = ({siteData=[], onCardPress})=>{
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
             <SdCard
-              sitename={item.siteName}
+              sitename={item.name}
               detailInfo={item.detailInfo} // pass additional info if necessary
-              pricePerSqFt={item.pricePerSqFt}
+              pricePerSqFt={item.sqFtFrom}
+              phaseName={item.phaseName}
               bgimage={item.bgimage}
-              onPress={() => onCardPress(item.id)}
+              onPress={() => onCardPress(item.propertyId, item.id)}
             />
           )}
           keyExtractor={item => item.id.toString()}
@@ -43,14 +48,17 @@ const SiteDetailsCard = ({siteData=[], onCardPress})=>{
 const styles = StyleSheet.create({
     // ... your previous styles
     flatList: {
-      flexGrow: 0, // Ensure the FlatList doesn't expand beyond its content size
+      flexGrow: 0,
+      width: '100%', // Ensure FlatList takes full width
     },
     cardContainer: {
-        width: 252, // Set your desired card width
-        height: 179, // Set your desired card height
+        width: cardWidth,
+        minHeight: 179, // Minimum height to accommodate content
+        maxHeight: 200,
         position: 'relative',
         marginHorizontal: 15, // Allows absolute positioning within
         borderRadius: 10,
+        overflow: 'hidden',
       },
     cardImage: {
         width: '100%',
@@ -65,7 +73,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: '100%',
         padding: 6, // Adjust to your padding
-        backgroundColor: 'rgba(0, 0, 0, 0.6)'
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        borderBottomLeftRadius: 10, // Round bottom left corner
+        borderBottomRightRadius: 10,
       },
       cardTitle: {
         fontFamily: 'Poppins',

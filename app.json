@@ -32,6 +32,7 @@
       "bundleIdentifier": "com.metrosmart.app"
     },  
     "android":{
+      "permissions": ["WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/Newmetro.jpeg",
         "backgroundColor": "#FFFFFF"

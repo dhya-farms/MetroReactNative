@@ -10,27 +10,8 @@ import styles from '../../constants/styles/adminhomestyles';
 import { fetchCustomers } from '../../apifunctions/fetchCustomerApi';
 import { fetchAdminProperties } from '../../apifunctions/fetchAdminPropertiesApi';
 import { fetchSoUsers } from '../../apifunctions/fetchSoApi';
+import { fetchUpdates } from '../../apifunctions/fetchUpdatesApi';
 
-const cardData = [
-    {
-      id: '1',
-      name: 'Mr. Muralitharan',
-      date: 'Sep 12th, 2022',
-      title: 'METRO SHIVA SHAKTHI RESIDENCY',
-      description: 'Total 190 plots from 720 sqft to 2500 sqft - Kinathukadavu, Arasampalayam',
-      source: require('../../../assets/images/plotimage.png'), 
-      personimage: require('../../../assets/images/ceoimage.png')// Replace with your actual image source
-    },
-    {
-        id: '2',
-        name: 'Mr. Muralitharan',
-        date: 'Sep 12th, 2022',
-        title: 'METRO SHIVA SHAKTHI RESIDENCY',
-        description: 'Total 190 plots from 720 sqft to 2500 sqft - Kinathukadavu, Arasampalayam',
-        source: require('../../../assets/images/plotimage.png'),
-        personimage: require('../../../assets/images/ceoimage.png') // Replace with your actual image source
-    },
-  ]
 
 
 
@@ -38,19 +19,42 @@ const AdminHome = ({ route, navigation }) => {
   const [customers, setCustomers] = useState([]);
   const [properties, setProperties] = useState([]);
   const [soUsers, setSoUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [nextPageUrl, setNextPageUrl] = useState(null);
+  const [nextCustomerPageUrl, setNextCustomerPageUrl] = useState(null)
+  const [nextSoPageUrl, setNextSoPageUrl] = useState(null)
+  const [updates, setUpdates] = useState([])
+  const [nextUpdatesPageUrl, setNextUpdatesPageUrl] = useState(null)
+  const [loadingUpdates, setLoadingUpdates] = useState(true);
+  const [loadingCustomers, setLoadingCustomers] = useState(true);
+  const [loadingAdminProperties, setLoadingAdminProperties] = useState(true); 
+  const [loadingSoUsers, setLoadingSoUsers]= useState(true)
 
 
   const fetchData = async () => {
-    setLoading(true);
     const paramsToken = route.params?.token;
     // Fetch customers
     try {
-      const fetchedCustomers = await fetchCustomers(paramsToken);
+      const {customers: fetchedCustomers, nextPageUrl: nextPage} = await fetchCustomers(paramsToken);
       if (!fetchedCustomers.error) {
         setCustomers(fetchedCustomers);
+        setNextCustomerPageUrl(nextPage)
+        setLoadingCustomers(false)
       } else {
         console.error('Error fetching customers:', fetchedCustomers.error);
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    }
+
+    try {
+      const {updates: fetchedUpdates, nextPageUrl: nextPage} = await fetchUpdates(paramsToken);
+      if (!fetchedUpdates.error) {
+        setUpdates(fetchedUpdates);
+        setNextUpdatesPageUrl(nextPage)
+        console.log(fetchedUpdates)
+        setLoadingUpdates(false)
+      } else {
+        console.error('Error fetching customers:', fetchedUpdates.error);
       }
     } catch (error) {
       console.error('Error fetching customers:', error);
@@ -59,54 +63,54 @@ const AdminHome = ({ route, navigation }) => {
     // Fetch properties
     try {
       const paramsDirectorId = route.params?.userId;
-      const adminProperties = await fetchAdminProperties(paramsToken, paramsDirectorId);
-      if (!adminProperties.error) {
-        setProperties(adminProperties);
+      const { properties: fetchedProperties, nextPageUrl: nextPage } = await fetchAdminProperties(paramsToken, paramsDirectorId);
+      if (fetchedProperties.length > 0) {
+        setProperties(fetchedProperties);
+        setNextPageUrl(nextPage)
+        console.log("fp", fetchedProperties)
+        setLoadingAdminProperties(false)
+
       } else {
-        console.error('Error fetching properties:', adminProperties.error);
+        console.log('No properties fetched, array is empty');
       }
     } catch (error) {
       console.error('Error fetching admin properties:', error);
     }
     // Fetch SO Users
     try {
-      const fetchedSOData = await fetchSoUsers(paramsToken);
+      const {data: fetchedSOData, nextPageUrl: nextPage} = await fetchSoUsers(paramsToken);
       if (fetchedSOData.error) {
         console.error(fetchedSOData.error);
       } else {
-        const transformedData = fetchedSOData.details.results.map(user => ({
+        console.log(fetchedSOData)
+        const transformedData = fetchedSOData.results.map(user => ({
           id: user.id,
           name: user.name,
           number: user.mobile_no,
           mailId: user.email,
-          points: '10Metro Points',  // Dummy data
-          clients: '5 Clients',  // Dummy data
+          created_at: user.created_at,
+          points: `${user.points} Metro Points`,  // Dummy data
+          clients: `${user.clients} Clients`,  // Dummy data
           source: require('../../../assets/images/soperson.png')  // Assuming a placeholder image
         }));
         setSoUsers(transformedData);
+        setNextSoPageUrl(nextPage)
+        setLoadingSoUsers(false)
       }
     } catch (error) {
       console.error('Error fetching SO users:', error);
+      setLoadingCustomers(false)
+      setLoadingSoUsers(false)
+      setLoadingUpdates(false)
+      setLoadingAdminProperties(false)
     }
-
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchData();
   }, [route.params?.token]);
 
-  if (loading) {
-    // Return a loader or indicate loading state
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
 
-
-  // Rest of your component code goes here...
 
   
 
@@ -123,15 +127,28 @@ const AdminHome = ({ route, navigation }) => {
         </TouchableOpacity>
       </View>
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <ShowAllButton text="Office Updates"/>
+      <ShowAllButton text="Office Updates" onPress={() => {
+            navigation.navigate("Home", { screen: "Admin Office Updates", params: { updates: updates, nextPage: nextUpdatesPageUrl}});
+        }}/>
+      {loadingUpdates ? (
+        <ActivityIndicator size="large" color="#1D9BF0" style={styles.loadingIndicator} />
+      ): updates.length ? (
       <View style={{width: '100%'}}>
-        <OfficeUpdateView cardData={cardData}/>
+        <OfficeUpdateView cardData={updates} textContainerStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}/>
       </View>
+      ) : (
+        <View style={styles.npContainer}>
+            <Text style={styles.nopText}>No New Updates for now</Text>
+        </View>
+     )}
       <View style={styles.separator} />
       <ShowAllButton text="Customers" onPress={()=> navigation.navigate("Client", { 
       screen: "Customer List" ,
-      params: { allCustomers: customers, backScreen: 'Home' }
+      params: { allCustomers: customers, nextPage: nextCustomerPageUrl, backScreen: 'Home' }
     })}/>
+    {loadingCustomers ? (
+        <ActivityIndicator size="large" color="#1D9BF0" style={styles.loadingIndicator} />
+    ): customers.length > 0 ? (
       <View style={{width: '100%'}}>
           <CustomerCard customerData={customers.slice(0, 3)} onCardPress={(customerId) => {
               navigation.navigate("Client", { 
@@ -141,30 +158,47 @@ const AdminHome = ({ route, navigation }) => {
 
           }}/>
       </View>
+    ) : (
+      <View style={styles.npContainer}>
+        <Text style={styles.nopText}>Error Occurred. Please Try Again</Text>
+      </View>
+    )}
       <ShowAllButton text="Site Details" onPress={()=> 
       navigation.navigate("Sites", { screen: "Admin Properties", 
-            params: { properties: properties}
+            params: { properties: properties, nextPage: nextPageUrl}
     })}/>
+    {loadingAdminProperties ? (
+        <ActivityIndicator size="large" color="#1D9BF0" style={styles.loadingIndicator} />
+    ): properties.length > 0 ? (
       <View style={{width: '100%'}}>
       <SiteDetailsCard
         siteData={properties}
-        onCardPress={(propertyId) => {
+        onCardPress={(propertyId, phaseId) => {
           navigation.navigate("Sites", {
             screen: "Admin Properties Details",
             params: {
               propertyId: propertyId,
+              phaseId: phaseId,
               backScreen: "Home"  // Indicating that the navigation originated from the Properties screen
             }
           });
         }}
       />
     </View>
+     ) : (
+      <View style={styles.npContainer}>
+        <Text style={styles.nopText}>No New Projects For Now</Text>
+      </View>
+    )}
 
     <ShowAllButton text="SO List" onPress={()=> 
          navigation.navigate("SO", { 
           screen: "SO Officers List" ,
-          params: { soUsers: soUsers, backScreen: 'Home'}
+          params: { soUsers: soUsers, nextPage: nextSoPageUrl, backScreen: 'Home'}
         })}/>
+    {loadingSoUsers ? (
+        <ActivityIndicator size="large" color="#1D9BF0" style={styles.loadingIndicator} />
+    ): soUsers.length > 0 ? (
       <View style={{width: '100%', justifyContent: 'center', alignItems: 'center', marginHorizontal: 20}}>
         <SOcards data={soUsers} onCardPress={(SoId) => {
            navigation.navigate("SO", {
@@ -173,6 +207,11 @@ const AdminHome = ({ route, navigation }) => {
           });
         }}/>
       </View>
+      ) : (
+        <View style={styles.npContainer}>
+          <Text style={styles.nopText}>No SO Officers Assigned Yet</Text>
+        </View>
+      )}
     </ScrollView>
     </View>
   );

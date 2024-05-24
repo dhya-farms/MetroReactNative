@@ -1,21 +1,24 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, StatusBar, View, Text, ActivityIndicator} from 'react-native';
+import { StyleSheet, StatusBar, View, Text, ActivityIndicator, FlatList} from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import Carousel from '../../components/Carousel';
 import { useFocusEffect } from '@react-navigation/native';
 import { fetchMyFavourites } from '../../apifunctions/fetchMyFavouritesApi';
-import { ScrollView } from 'react-native-virtualized-view';
+import _ from 'lodash';
+import SortHeader from '../../components/SortHeader';
 
 const FavProperties = ({ route, navigation }) => {
   const [favourites, setFavourites] = useState([]);
+  const [nextPageUrl, setNextPageUrl] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const loadFavourites = async (paramsToken) => {
+  const loadFavourites = async (paramsToken, url) => {
     setLoading(true);
     try {
-      const favouritesResponse = await fetchMyFavourites(paramsToken);
-      setFavourites(favouritesResponse);
-      console.log('Favourites fetched:', favouritesResponse);
+      const { properties, nextPageUrl } = await fetchMyFavourites(paramsToken, url);
+      setFavourites(prev => url ? [...prev, ...properties] : properties); // Append properties if paginating
+      setNextPageUrl(nextPageUrl);
+      console.log('Favourites fetched:', properties);
     } catch (error) {
       console.error('Failed to fetch favourites:', error);
     } finally {
@@ -27,21 +30,57 @@ const FavProperties = ({ route, navigation }) => {
     useCallback(() => {
       const paramsToken = route.params?.token;
       loadFavourites(paramsToken);
-      return () => {};
     }, [route.params?.token])
   );
 
-  const handleFavoriteStatusChange = (propertyId, isFavorite) => {
+  const fetchMoreFavourites = useCallback(() => {
+    if (nextPageUrl && !loading) {
+      console.log('Fetching more properties from:', nextPageUrl);
+      loadFavourites(null, nextPageUrl);
+    }
+  }, [nextPageUrl, loading]);
+
+  const renderItem = ({ item }) => {
+    return (
+      <View style={{width: '100%'}}>
+        {item.length > 0 ? (
+        <Carousel
+          data={item}
+          onCardPress={handleGeneralPropertyPress}
+          isHeartVisible={true}
+          paramsToken={route.params?.token}
+          keyExtractor={(item, index) => `property-${item.id}-${index}`}
+          onFavoriteStatusChange={handleFavoriteStatusChange}
+        />
+      ) : (
+        <View style={styles.noFavouritesContainer}>
+          <Text style={styles.noFavouritesText}>No Properties are chosen as Favourites</Text>
+        </View>
+      )}
+      </View>
+    );
+  };
+
+  const renderFooter = () => {
+    console.log('Render footer, loading:', loading);  // Check if this logs
+    return loading ? <ActivityIndicator size="large" color="#0000ff" /> : null;
+  };
+
+  const handleFavoriteStatusChange = (phaseId, isFavorite) => {
     if (!isFavorite) {
-      setFavourites(current => current.filter(item => item.id !== propertyId));
+      setFavourites(current => current.filter(item => item.id !== phaseId));
     }
   };
 
 
-  const handleGeneralPropertyPress = (propertyId) => {
-    navigation.navigate("properties", { screen: "Show Properties", 
-    params: { propertyId: propertyId,
-      backScreen: "Favorites"}});
+  const handleGeneralPropertyPress = (propertyId, phaseId) => {
+    navigation.navigate("properties", {
+      screen: "Show Properties", 
+      params: { 
+        propertyId: propertyId, 
+        phaseId: phaseId, 
+        backScreen: "Favorites" 
+    }});
   };
 
   if (loading) {
@@ -59,22 +98,20 @@ const FavProperties = ({ route, navigation }) => {
         ImageLeft={require('../../../assets/images/back arrow icon.png')}
         ImageRight={require('../../../assets/images/belliconblue.png')}
         onPress={() => navigation.goBack()} />
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      {favourites.length > 0 ? (
-        <Carousel
-          data={favourites}
-          onCardPress={handleGeneralPropertyPress}
-          isHeartVisible={true}
-          paramsToken={route.params?.token}
-          keyExtractor={(item, index) => `property-${item.id}-${index}`}
-          onFavoriteStatusChange={handleFavoriteStatusChange}
-        />
-      ) : (
-        <View style={styles.noFavouritesContainer}>
-          <Text style={styles.noFavouritesText}>No Properties are chosen as Favourites</Text>
-        </View>
-      )}
-    </ScrollView>
+        
+         <FlatList
+        data={[favourites]} // Wrap properties in an array since FlatList expects an array
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+        ListHeaderComponent={<SortHeader title="Favourites" isSortVisible={false} />}
+        ListFooterComponent={renderFooter}
+        onEndReached={fetchMoreFavourites}
+        onEndReachedThreshold={0.01}
+        extraData={loading}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}  
+        style={{ flex: 1 , paddingBottom: 70 }} 
+      />
     </View>
   );
 };
@@ -82,7 +119,8 @@ const FavProperties = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,  // Use flex to take up the whole screen
-    backgroundColor: 'white'
+    backgroundColor: 'white',
+    paddingBottom: 50,
   },
   container: {
     width: '100%',  // Ensures the ScrollView takes the full width
@@ -91,7 +129,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingBottom: 50,
+    
   },
   loadingContainer: {
     flex: 1,

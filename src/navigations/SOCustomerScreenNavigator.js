@@ -9,6 +9,8 @@ import CustomerDocumentation from '../screens/soscreens/CustomerDocumentation';
 import CustomerPaymentMethod from '../screens/soscreens/CustomerPaymentMethod';
 import CustomerDocumentDelivery from '../screens/soscreens/CustomerDocumentDelivery';
 import { SoCustomerProvider } from '../contexts/useSoCustomersData';
+import { CustomerProvider } from '../contexts/useCustomerContext';
+import { RefreshProvider } from '../contexts/useRefreshContext';
 
 const SOCustomerScreen = createNativeStackNavigator();
 
@@ -28,16 +30,20 @@ const SOCustomerScreenNavigator = ({navigation}) => {
     return unsubscribe;
   }, [navigation]);
   return (
-    <SoCustomerProvider>
-    <SOCustomerScreen.Navigator screenOptions={{ headerShown: false }}>
-      <SOCustomerScreen.Screen name="Customer Contact Screen" component={CustomerContactScreen} />
-      <SOCustomerScreen.Screen name="SO Customer Details" component={SoCustomerDetails} />
-      <SOCustomerScreen.Screen name="Token Advance" component={CustomerTokenAdvance} />
-      <SOCustomerScreen.Screen name="Documentation" component={CustomerDocumentation} />
-      <SOCustomerScreen.Screen name="Payment Method" component={CustomerPaymentMethod} />
-      <SOCustomerScreen.Screen name="Document Delivery" component={CustomerDocumentDelivery} />
-    </SOCustomerScreen.Navigator>
-    </SoCustomerProvider>
+    <RefreshProvider>
+    <CustomerProvider>
+      <SoCustomerProvider>
+      <SOCustomerScreen.Navigator screenOptions={{ headerShown: false }}>
+        <SOCustomerScreen.Screen name="Customer Contact Screen" component={CustomerContactScreen} />
+        <SOCustomerScreen.Screen name="SO Customer Details" component={SoCustomerDetails} />
+        <SOCustomerScreen.Screen name="Token Advance" component={CustomerTokenAdvance} />
+        <SOCustomerScreen.Screen name="Documentation" component={CustomerDocumentation} />
+        <SOCustomerScreen.Screen name="Payment Method" component={CustomerPaymentMethod} />
+        <SOCustomerScreen.Screen name="Document Delivery" component={CustomerDocumentDelivery} />
+      </SOCustomerScreen.Navigator>
+      </SoCustomerProvider>
+    </CustomerProvider>
+    </RefreshProvider>
   );
 };
 

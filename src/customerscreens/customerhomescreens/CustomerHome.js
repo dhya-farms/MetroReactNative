@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, FlatList, ActivityIndicator} 
 from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -12,6 +12,7 @@ import ImageScrollView from '../../components/ImageScrollView';
 import { fetchCustomerProperties } from '../../apifunctions/fetchCustomerPropertiesApi';
 import { fetchProperties } from '../../apifunctions/fetchPropertiesApi';
 import { fetchSoDetails } from '../../apifunctions/fetchSoDetailsApi';
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 
 
@@ -27,6 +28,9 @@ const CustomerHome = ({route, navigation}) => {
   const [loadingProperties, setLoadingProperties] = useState(true);
   const [loadingCustomerProperties, setLoadingCustomerProperties] = useState(true);
   const [loadingAdvisor, setLoadingAdvisor] = useState(true); 
+  const [nextCustomerPageUrl, setNextCustomerPageUrl] = useState(null)
+  const [nextPropertyPageUrl, setNextPropertyPageUrl]= useState(null)
+  const [searchTerm, setSearchTerm] = useState('');
   const flatListRef = useRef();
   
   
@@ -42,12 +46,16 @@ const CustomerHome = ({route, navigation}) => {
         setCategories([{ key: 'filter', name: 'Filter' }, ...fetchedCategories]);
 
         // Fetch properties
-        const propertiesResponse = await fetchCustomerProperties(paramsToken, paramsUserId);
+        const {properties: propertiesResponse, nextPageUrl: nextPage} = await fetchCustomerProperties(paramsToken, paramsUserId);
         setCustomerProperties(propertiesResponse);
+        console.log("customer properties", propertiesResponse)
+        setNextCustomerPageUrl(nextPage)
         setLoadingCustomerProperties(false);
 
-        const fetchedProperties = await fetchProperties(paramsToken);
-        setProperties(fetchedProperties);
+        const {properties: commonProperties, nextPageUrl: nextPropertyPage} = await fetchProperties(paramsToken);
+        setProperties(commonProperties);
+        console.log("images",commonProperties)
+        setNextPropertyPageUrl(nextPropertyPage)
         setLoadingProperties(false); // Data fetched for general properties
 
         // Fetch advisor details
@@ -94,14 +102,9 @@ const CustomerHome = ({route, navigation}) => {
     );
   };
 
-  if (properties.length > 0) {
-    console.log("Rendering properties:", customerProperties);
-  }
-
   const filteredProperties = properties.filter(property =>
     !customerProperties.some(customerProperty =>
-      customerProperty.property.id === property.id
-
+      customerProperty.id === property.id
     )
   );
   
@@ -111,6 +114,61 @@ const CustomerHome = ({route, navigation}) => {
 
   const finalCustomerProperties = selectedCategoryKey && selectedCategoryKey !== 'filter'
   ? filterCustomerPropertiesByCategory(customerProperties, selectedCategoryKey): customerProperties
+
+  const filterPropertiesByName = (properties, searchTerm) => {
+    return properties.filter(property => 
+      property.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+
+  const finalPropertiesFiltered = useMemo(() => {
+    return searchTerm
+      ? filterPropertiesByName(finalProperties, searchTerm)
+      : finalProperties;
+  }, [finalProperties, searchTerm]);
+
+
+  const finalCustomerPropertiesFiltered = useMemo(()=>{
+    return searchTerm
+      ? filterPropertiesByName(finalCustomerProperties, searchTerm)
+      : finalCustomerProperties;
+  }, [finalCustomerProperties, searchTerm]);
+
+  const calculateProgress = (property) => {
+    let stagesCompleted = 1; // Start with 1 to always fill the first stage
+    let progressText = "Site Visit in Progress";
+
+    if (property.is_site_visit_done) {
+        stagesCompleted += 1;
+        progressText = "Token Advance in Progress";
+    }
+    if (property.is_token_advance_done) {
+        stagesCompleted += 1;
+        progressText = "Documentation in Progress";
+    }
+    if (property.is_documentation_done) {
+        stagesCompleted += 1;
+        progressText = "Payment in Progress";
+    }
+    if (property.is_payment_done) {
+        stagesCompleted += 1;
+        progressText = "Document Delivery in Progress";
+    }
+    if (property.is_document_delivery_done) {
+        stagesCompleted += 1;
+        progressText = "All stages completed";
+    }
+
+    return {
+        progress: stagesCompleted / 5,
+        progressText
+    };
+  };
+
+
+
+
 
 
   return (
@@ -128,7 +186,10 @@ const CustomerHome = ({route, navigation}) => {
           style={styles.searchInput}
           placeholder="Search here"
           placeholderTextColor="#C4C4C4"
+          onChangeText={text => setSearchTerm(text)}
+          value={searchTerm}
         />
+
       </View>
 
       <View style={{width: '100%', marginVertical: 20, marginHorizontal: 2, paddingHorizontal: 12,}}>
@@ -143,20 +204,32 @@ const CustomerHome = ({route, navigation}) => {
       </View>
       <View style={{width: '100%', alignItems: 'center', justifyContent: 'center'}}>
       {loadingProperties ? (
-        <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />
-      ) : finalProperties.length ? (
-        <ImageScrollView properties={finalProperties} navigation={navigation} />
+        <ActivityIndicator size="large" color={PRIMARY_COLOR} style={styles.loadingIndicator} />
+      ) : finalPropertiesFiltered.length ? (
+        <ImageScrollView properties={finalPropertiesFiltered} navigation={navigation} />
       ) : (
       <View style={styles.npContainer}>
           <Text style={styles.nopText}>No New Projects for now</Text>
       </View>
       )}
       </View>
-      <ShowAllButton text="Updates"  onPress={() => {}}/>
-      <ProgressBar progress={0.2} />
+      <ShowAllButton text="Updates"  onPress={() => {
+            navigation.navigate("properties", { screen: "Customer Properties", 
+            params: { customerProperties: customerProperties, source: "myProperties", nextPage: nextCustomerPageUrl, token: token}});
+          }}/>
+      {loadingCustomerProperties ? (
+    <ActivityIndicator size="large" color={PRIMARY_COLOR} style={styles.loadingIndicator} />
+      ) : customerProperties.map(property => {
+          const { progress, progressText } = calculateProgress(property);
+          return (
+              <View key={property.id} style={{ width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                  <ProgressBar progress={progress} propertyName={property.name} progressText={progressText} />
+              </View>
+          );
+      })}
       <ShowAllButton text="My properties"  onPress={() => {
             navigation.navigate("properties", { screen: "Customer Properties", 
-            params: { customerProperties: customerProperties, source: "myProperties", token: token}});
+            params: { customerProperties: customerProperties, source: "myProperties", nextPage: nextCustomerPageUrl, token: token}});
           }}/>
 
       <ScrollView
@@ -166,22 +239,23 @@ const CustomerHome = ({route, navigation}) => {
       contentContainerStyle={styles.contentContainer}
     >
      {loadingCustomerProperties ? (
-        <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />
-      ) : finalCustomerProperties.length ? (
-        finalCustomerProperties.slice(0, 2).map((property, index) => {
+        <ActivityIndicator size="large" color={PRIMARY_COLOR} style={styles.loadingIndicator} />
+      ) : finalCustomerPropertiesFiltered.length ? (
+        finalCustomerPropertiesFiltered.map((property, index) => {
           const imageUrls = property.property.images.map(img => img.image);
           return (
             <Card
               key={property.id}
-              property={property.property}
+              property={property}
               displayText={property.displayText}
               imageUrls={imageUrls}
               onPress={() => {
                 navigation.navigate("properties", {
                   screen: "Property Details",
                   params: {
-                    propertyId: property.id,
-                    backScreen: "Home"  // Indicating that the navigation originated from the Properties screen
+                    propertyId: property.propertyId,
+                    phaseId: property.id,
+                    backScreen: "Home" // Indicating that the navigation originated from the Properties screen
                   }
                 });
               }}
@@ -196,7 +270,7 @@ const CustomerHome = ({route, navigation}) => {
     </ScrollView>
     <ShowAllButton text="New Projects"  onPress={() => {
             navigation.navigate("properties", { screen: "Customer Properties", 
-            params: { properties: filteredProperties, source: "properties",  token: token}});
+            params: { properties: properties, source: "properties", nextPropertyPage: nextPropertyPageUrl, token: token}});
           }}/>
         <ScrollView
       style={{width: '100%'}}
@@ -205,9 +279,9 @@ const CustomerHome = ({route, navigation}) => {
       contentContainerStyle={styles.contentContainer}
     >
     {loadingProperties ? (
-       <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />
-      ) : finalProperties.length ? (
-        finalProperties.slice(0, 2).map((property, index) => {
+       <ActivityIndicator size="large" color={PRIMARY_COLOR} style={styles.loadingIndicator} />
+      ) : finalPropertiesFiltered.length ? (
+        finalPropertiesFiltered.slice(0, 2).map((property, index) => {
     // Extract image URLs from the property's images array
     const imageUrls = property.images.map(img => img.image);
     return (
@@ -220,7 +294,8 @@ const CustomerHome = ({route, navigation}) => {
           navigation.navigate("properties", {
             screen: "Show Properties",
             params: {
-              propertyId: property.id,
+              propertyId: property.propertyId,
+              phaseId: property.id,
               backScreen: "Home"  // Indicating that the navigation originated from the Properties screen
             }
           });
@@ -236,7 +311,7 @@ const CustomerHome = ({route, navigation}) => {
     )}
     </ScrollView>
     {loadingAdvisor ? (
-        <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />
+        <ActivityIndicator size="large" color={PRIMARY_COLOR} style={styles.loadingIndicator} />
       ) : (
         <AdvisorCard advisor={advisor} />
       )}

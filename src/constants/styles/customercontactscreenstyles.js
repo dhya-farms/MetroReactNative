@@ -16,7 +16,18 @@ const styles = StyleSheet.create({
     },
     filterText: {
       color: '#ffffff',
-    }
+    },
+    npContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    nopText: {
+      fontSize: 14,
+      color: '#757575',
+      fontFamily: 'Poppins'
+    },
     
   });
 

@@ -1,11 +1,11 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { SECONDARY_COLOR } from '../constants/constantstyles/colors';
 
 
 const Card = ({ name, number, mailId, points, clients, source }) => {
+  const [showFullDetails, setShowFullDetails] = useState(false);
     return (
       <View style={styles.card}>
         <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -20,18 +20,24 @@ const Card = ({ name, number, mailId, points, clients, source }) => {
           <Icon name="envelope" size={14} color="#1D9BF0" style={styles.icon}/>
           <Text style={styles.infoText}>{mailId}</Text>
         </View>
-        <View style={styles.infoContainer}>
-          <Icon name="star" size={14} color="#1D9BF0" style={styles.icon}/>
-          <Text style={styles.infoText}>{points}</Text>
-        </View>
+        {showFullDetails && (
+          <>
+            <View style={styles.infoContainer}>
+              <Icon name="star" size={14} color="#1D9BF0" style={styles.icon}/>
+              <Text style={styles.infoText}>{points}</Text>
+            </View>
+            <View style={[styles.infoContainer, {justifyContent: 'space-between'}]}>
+              <Icon name="users" size={14} color="#1D9BF0" style={styles.icon}/>
+              <Text style={styles.infoText}>{clients}</Text>
+            </View>
+          </>
+        )}
         <View style={[styles.infoContainer, {justifyContent: 'space-between'}]}>
-          <Icon name="users" size={14} color="#1D9BF0" style={styles.icon}/>
           <View style={{flex: 1}}>
-          <Text style={styles.infoText}>{clients}</Text>
           </View>
-          <View>
-          <Text style={styles.showMore}>Show more {'>>>'}</Text>
-        </View>
+          <TouchableOpacity onPress={() => setShowFullDetails(!showFullDetails)}>
+          <Text style={styles.showMore}>{showFullDetails ? 'Show less <<<' : 'Show more >>>'}</Text>
+        </TouchableOpacity>
         </View>
         
       </View>

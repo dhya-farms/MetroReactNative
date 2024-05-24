@@ -1,8 +1,52 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Linking } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
-const Card = ({ name, number, mail, personimage, propertyName }) => {
+
+
+
+
+const formatPropertyName = (name) => {
+  const phaseIndex = name.indexOf('Phase');
+  if (phaseIndex !== -1) {
+    return `${name.substring(0, 6)}... ${name.substring(phaseIndex)}`;
+  }
+  return name;
+};
+
+
+const Card = ({ name, number, mail, personimage, propertyName, currentApprovalStatus, currentCRMStatus }) => {
+
+  const steps = ['SITE_VISIT', 'TOKEN_ADVANCE', 'DOCUMENTATION', 'PAYMENT', 'DOCUMENT_DELIVERY'];
+
+  // Safe access using optional chaining and providing default values if undefined
+  const currentStepIndex = steps.indexOf(currentCRMStatus?.name?.toUpperCase() ?? "");
+  const approvalStatus = currentApprovalStatus?.name?.toUpperCase() ?? "PENDING"; // Default to "PENDING" if undefined
+
+    // Determines the icon for each step based on the current status
+    const stepIcons = steps.map((step, index) => {
+        if (index < currentStepIndex) {
+            // All previous steps are completed
+            return { name: 'check-double', color: '#80FF00' }; // Green check for completed steps
+        } else if (index === currentStepIndex) {
+            // Current step
+            if (approvalStatus === 'COMPLETED') {
+                return { name: 'check-double', color: '#80FF00' }; // Completed current step
+            } else if (approvalStatus === 'APPROVED') {
+                return { name: 'check', color: '#1D9BF0' }; // Approved but not yet completed
+            } else if (approvalStatus === 'PENDING') {
+                return { name: 'hourglass-half', color: '#FFA500' }; // Pending current step
+            } else if (approvalStatus === 'REJECTED') {
+                return { name: 'times', color: '#FF0000' }; // Rejected current step
+            }
+        } else if (index === currentStepIndex + 1 && approvalStatus === 'COMPLETED') {
+            // Next step becomes pending only if the current step is completed
+            return { name: 'hourglass-half', color: '#FFA500' }; // Pending next step
+        }
+        // Future steps remain inactive
+        return { name: 'times', color: '#C4C4C4' }; // Grey times for future steps
+    });
+
 
   const handleWhatsAppPress = () => {
     let whatsappUrl = `https://wa.me/${number}`;
@@ -32,32 +76,20 @@ const Card = ({ name, number, mail, personimage, propertyName }) => {
      </View>
      <View style={styles.prContainer}>
       <Text style={styles.prHeader}>Property Name: </Text>
-      <Text style={styles.prText}>{propertyName}</Text>
+      <Text style={styles.prText}>{formatPropertyName(propertyName)}</Text>
      </View>
      <View style={styles.separator} />
      <Text style={styles.progressTitle}>Progress State:</Text>
      <View style={styles.progressContainer}>
-        <View style={styles.iconContainer}>
-          <Icon name="check-circle" size={30} color="#80FF00" style={{marginBottom: 6}}/>
-          <Text style={styles.progressLabel}>Site Visit</Text>
-        </View>
-        <View style={styles.iconContainer}>
-          <Icon name="times-circle" size={30} color="#C4C4C4" style={{marginBottom: 6}} />
-          <Text style={styles.progressLabel}>Token Adv</Text>
-        </View>
-        <View style={styles.iconContainer}>
-          <Icon name="times-circle" size={30} color="#C4C4C4" style={{marginBottom: 6}} />
-          <Text style={styles.progressLabel}>Documents</Text>
-        </View>
-        <View style={styles.iconContainer}>
-          <Icon name="times-circle" size={30} color="#C4C4C4" style={{marginBottom: 6}} />
-          <Text style={styles.progressLabel}>Payment</Text>
-        </View>
-        <View style={styles.iconContainer}>
-          <Icon name="times-circle" size={30} color="#C4C4C4" style={{marginBottom: 6}} />
-          <Text style={styles.progressLabel}>Delivery</Text>
-        </View>
-      </View>
+                {stepIcons.map((icon, index) => (
+                    <View key={index} style={styles.iconContainer}>
+                        <View style={[styles.checkicon, { backgroundColor: icon.color }]}>
+                            <Icon name={icon.name} size={12} color="white" />
+                        </View>
+                        <Text style={styles.progressLabel}>{['Site Visit', 'Token Adv', 'Documents', 'Payment', 'Delivery'][index]}</Text>
+                    </View>
+                ))}
+            </View>
       <View style={styles.smIconsContainer}>
       <TouchableOpacity onPress={handleWhatsAppPress}>
           <Image source={require("../../assets/images/wpicon.png")} />
@@ -92,6 +124,9 @@ const CustomerCard = ({customerData, isHorizontal = true, onCardPress})=>{
               mail={item.mailId}
               personimage={item.personimage}
               propertyName={item.property}
+              currentApprovalStatus= {item.currentApprovalStatus} 
+              currentCRMStatus= {item.currentCRMStatus}
+
             />
             </TouchableOpacity>
           )}
@@ -198,7 +233,7 @@ const styles = StyleSheet.create({
       marginVertical: 16,
     },
     prContainer:{
-      width: '90%',
+      width: '100%',
       flexDirection: 'row',
       alignItems: 'center',
       marginTop: 10,
@@ -212,7 +247,27 @@ const styles = StyleSheet.create({
       fontFamily: 'Poppins',
       fontWeight: '600',
       fontSize: 16,
-    }
+    },
+    checkicon: {
+      width: 32,
+      height: 32,
+      backgroundColor: '#1D9BF0',
+      borderRadius: 16,
+      justifyContent: 'center', // Center the icon vertically
+      alignItems: 'center', // Center the icon horizontally
+    },
+    completedStatusCheck:{
+      backgroundColor: '#80FF00'
+    },
+    approvedStatusCheck:{
+      backgroundColor: '#1D9BF0',
+    },
+    pendingStatusCheck:{
+      backgroundColor: '#FDF525'
+    },
+    rejectedStatusCheck:{
+      backgroundColor: '#FF0000',
+    },
  });
 
 export default CustomerCard

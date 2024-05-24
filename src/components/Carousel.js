@@ -6,7 +6,7 @@ import { toggleFavorite } from '../apifunctions/toggleFavouritesApi';
 
 
 const { width: screenWidth } = Dimensions.get('window');
-const cardWidth = 320;
+const cardWidth = 330;
 
 const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFavoriteStatusChange }) => {
   
@@ -16,12 +16,12 @@ const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFav
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const imageScrollRef = useRef();
 
+
     const images = item.property ? item.property.images.map(img => ({ uri: img.image })) 
     : item.images.map(img => ({ uri: img.image }));
 
     useEffect(() => {
       if (images.length <= 1) return;
-
       const interval = setInterval(() => {
         setCurrentImageIndex(prevIndex => {
           const nextIndex = prevIndex === images.length - 1 ? 0 : prevIndex + 1;
@@ -70,7 +70,7 @@ const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFav
 
     return (
       <View style={styles.card}>
-        <TouchableOpacity onPress={() => onCardPress(item.id)}>
+        <TouchableOpacity onPress={() => onCardPress(item.propertyId, item.id)}>
           <ScrollView
             horizontal
             pagingEnabled
@@ -106,11 +106,11 @@ const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFav
           </View>
         {renderPagination()}
         <View style={styles.cardContent}>
-          <Text style={styles.title}>{item.property ? item.property.name : item.name}</Text>
+          <Text style={styles.title}>{item.name}</Text>
           <Text style={styles.description}>{item.displayText}</Text>
           <View style={styles.locationContainer}>
-            <MaterialIcons name="place" size={20} color="#757575" />
-            <Text style={styles.location}>{item.property ? item.property.location : item.location}</Text>
+            <MaterialIcons name="place" size={16} color="#757575" />
+            <Text style={styles.location}>{item.location}</Text>
           </View>
         </View>
       </View>
@@ -118,8 +118,9 @@ const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFav
   };
 
   const onPressHandler = () => {
-    const propertyId = item.property ? item.property.id : item.id;
-    onCardPress(propertyId);
+    const propertyId = item.property.id
+    const phaseId = item.id;
+    onCardPress(propertyId, phaseId);
   };
 
   return (
@@ -129,7 +130,7 @@ const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFav
         renderItem={({ item }) => (
           <PropertyCard item={item} onCardPress={onPressHandler} isHeartVisible={isHeartVisible} />
         )}
-        keyExtractor={item => item.id}
+        keyExtractor={item => `${item.propertyId}-${item.id}`}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ alignItems: 'center' }}
       />
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
-    marginVertical: 20,
+    marginVertical: 12,
   },
   image: {
     width: '100%',
@@ -197,15 +198,15 @@ const styles = StyleSheet.create({
    marginVertical: 5,
   },
   locationContainer: {
+    width: '100%',
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 5,
   },
   location: {
     fontFamily: 'Poppins',
     fontWeight: '500',
     fontSize: 12,
-    marginVertical: 5,
   },
   ratingStarContainer:{
     flexDirection: 'row',

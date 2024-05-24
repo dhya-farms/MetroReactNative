@@ -13,8 +13,8 @@ export const toggleFavorite = async (propertyId, shouldLike, paramsToken, onFavo
   };
   const headers = await getAuthHeaders()
   const endpoint = shouldLike
-    ? `https://splashchemicals.in/metro/api/properties/${propertyId}/add-to-favorites/`
-    : `https://splashchemicals.in/metro/api/properties/${propertyId}/remove-from-favorites/`;
+    ? `https://splashchemicals.in/metro/api/phases/${propertyId}/add-to-favorites/`
+    : `https://splashchemicals.in/metro/api/phases/${propertyId}/remove-from-favorites/`;
 
   try {
     const response = await fetch(endpoint, {
@@ -30,12 +30,8 @@ export const toggleFavorite = async (propertyId, shouldLike, paramsToken, onFavo
       Toast.show({
         type: 'success',
         text1: shouldLike ? "Added to favorites" : "Removed from favorites",
-        visibilityTime: 1200,  // Toast will be visible for 2 seconds
-        text1Style: {
-          fontFamily: 'Poppins',
-          fontSize: 12,
-          fontWeight: '400'
-        }
+        visibilityTime: 1200,  
+        
       });
     } else {
       Toast.show({

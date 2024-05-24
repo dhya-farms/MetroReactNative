@@ -8,19 +8,21 @@ export const useSoCustomers = () => useContext(SoCustomerContext);
 
 export const SoCustomerProvider = ({ children }) => {
     const [soCustomers, setSoCustomers] = useState([]);
+    const [nextSoGlobalPageUrl, setSoNextGlobalPageUrl] = useState(null);
 
     useEffect(() => {
         const loadData = async () => {
-            const fetchedCustomers = await fetchSoCustomers(); // Assuming fetchCustomers returns the data directly
+            const { customers: fetchedCustomers, nextPageUrl: nextPage } = await fetchSoCustomers(); // Assuming fetchCustomers returns the data directly
             if (!fetchedCustomers.error) {
                 setSoCustomers(fetchedCustomers);
+                setSoNextGlobalPageUrl(nextPage)
             }
         };
         loadData();
     }, []);
 
     return (
-        <SoCustomerContext.Provider value={soCustomers}>
+        <SoCustomerContext.Provider value={{soCustomers, nextSoGlobalPageUrl, setSoNextGlobalPageUrl}}>
             {children}
         </SoCustomerContext.Provider>
     );

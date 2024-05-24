@@ -3,9 +3,7 @@ import { TouchableOpacity, Text, StyleSheet, View, Linking } from 'react-native'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
-const EnquireContainer = () => {
-    const phoneNumber = '7695941098';
-    const email = 'ktsganeshkumar@gmail.com';
+const EnquireContainer = ({phoneNumber, email}) => {
   
     const handlePhonePress = () => {
       // Use the Linking API to make a phone call

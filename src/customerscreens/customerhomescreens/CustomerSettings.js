@@ -6,6 +6,7 @@ import LogOutModal from '../../modals/LogoutModal';
 import LogOutConfirmModal from '../../modals/LogOutConfirmModel';
 import styles from '../../constants/styles/customersettingsstyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 
 const CustomerSettings = ({navigation}) => {
@@ -101,8 +102,8 @@ const CustomerSettings = ({navigation}) => {
           <TouchableOpacity style={styles.settingsbtn} onPress={showLogoutModal}>
               <Text style={styles.btnText}>Logout</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.settingsbtn} onPress={showDeleteModal}>
-              <Text style={styles.btnText}>Delete Account</Text>
+          <TouchableOpacity style={[styles.settingsbtn, {backgroundColor: 'white', borderWidth: 1, borderColor: "#1D9BF0"}]} onPress={showDeleteModal}>
+              <Text style={[styles.btnText, {color: "#C4C4C4"}]}>Delete Account</Text>
           </TouchableOpacity>
         </View>
     </ScrollView>

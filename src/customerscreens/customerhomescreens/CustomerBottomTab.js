@@ -14,6 +14,7 @@ const Tab = createBottomTabNavigator();
 
 const screenOptions = ({ route }) => ({
   headerShown: false,
+  lazy: true,
   tabBarIcon: ({ focused, color, size }) => {
     let iconName;
     let label;

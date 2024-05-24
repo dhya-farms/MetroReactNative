@@ -10,8 +10,9 @@ import ConfirmationModal from '../modals/ConfirmationModal';
 import PaymentModal from '../modals/PaymentModal';
 
 
-const AllModals = ({ modalVisibility, toggleModalVisibility, handleYesPress, handleNoPress, handleDetailsInputDone, propertyName, dropYesPress, confirmationPress, handleDropAddressDone, sameAddressPress, 
-  dropNoPress, handleConfirmPress, handleDetailsPaymentDone, handleDocVeifyDone, handleDetailsFullPaymentDone }) => {
+const AllModals = ({ modalVisibility, toggleModalVisibility, handleYesPress, handleNoPress, onDone, propertyName, dropYesPress, confirmationPress, handleDropAddressDone, sameAddressPress, 
+  dropNoPress, handleConfirmPress, handleDetailsPaymentDone, handleDocVeifyDone, handleDetailsFullPaymentDone, selectedPaymentMethod, handlePaymentMethodSelect, paymentMethods,
+  paymentDropDownVisible, setPaymentDropdownVisible, effectivePropertyId, status, setStatus, setSiteVisitRefetch, setTokenRefetch, plot}) => {
   return (
     <>
        <PickupModal
@@ -23,7 +24,7 @@ const AllModals = ({ modalVisibility, toggleModalVisibility, handleYesPress, han
           <DetailsInputModal
             modalVisible={modalVisibility.detailsInputModalVisible}
             setModalVisible={(isVisible) => toggleModalVisibility('detailsInputModalVisible', isVisible)}
-            onDone={handleDetailsInputDone}
+            onDone={onDone}
             propertyName={propertyName}
           />
           <DropModal
@@ -52,16 +53,33 @@ const AllModals = ({ modalVisibility, toggleModalVisibility, handleYesPress, han
             modalVisible={modalVisibility.paymentModalVisible}
             setModalVisible={(isVisible) => toggleModalVisibility('paymentModalVisible', isVisible)}
             onDone={handleDetailsPaymentDone}
+            selectedPaymentMethod={selectedPaymentMethod}
+            handlePaymentMethodSelect={handlePaymentMethodSelect}
+            paymentMethods={paymentMethods} 
+            paymentDropDownVisible={paymentDropDownVisible}
+            setPaymentDropdownVisible={setPaymentDropdownVisible} 
         />
         <DocumentVerifyModal
               modalVisible={modalVisibility.docverifyModalVisible}
               setModalVisible={(isVisible) => toggleModalVisibility('docverifyModalVisible', isVisible)}
               onDone={handleDocVeifyDone}
+              effectivePropertyId={effectivePropertyId}
+              status={status}
+              setStatus={setStatus}
+              setSiteVisitRefetch={setSiteVisitRefetch}
+              setTokenRefetch={setTokenRefetch}
+              plot={plot}
         />
         <CompletePaymentModal
             modalVisible={modalVisibility.completePaymentModalVisible}
             setModalVisible={(isVisible) => toggleModalVisibility('completePaymentModalVisible', isVisible)}
             onDone={handleDetailsFullPaymentDone}
+            effectivePropertyId={effectivePropertyId}
+            status={status}
+            setStatus={setStatus}
+            setSiteVisitRefetch={setSiteVisitRefetch}
+            setTokenRefetch={setTokenRefetch}
+            plot={plot}
         />
     </>
   );

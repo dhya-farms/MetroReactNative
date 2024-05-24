@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     },
     inputContainer:{
       borderWidth: 1,
-      borderColor: '#C4C4C4',
+      borderColor: '#1D9BF0',
       borderRadius: 8,
       justifyContent: 'center',
       alignItems: 'center',
@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
     },
     radioButtonText: {
       fontFamily: 'Poppins',
-      fontSize: 12,
-      fontWeight: '500'
+      fontSize: 16,
+      fontWeight: '600'
     },
     separator: {
       height: 1,
@@ -217,7 +217,16 @@ const styles = StyleSheet.create({
       color: 'white'
     },
     errorMessage:{
-      color: 'red'
+      color: 'red',
+      textAlign: 'center',
+      marginVertical: 10,
+      marginHorizontal: 10,
+    },
+    successMessage:{
+      color: 'green',
+      textAlign: 'center',
+      marginVertical: 10,
+      marginHorizontal: 10,
     }
 });
 

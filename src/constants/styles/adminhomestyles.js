@@ -53,11 +53,22 @@ const styles = StyleSheet.create({
       width: '90%',
       marginVertical: 16,
     },
-    loaderContainer: {
+    loadingIndicator:{
+      width: '100%', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      height: '20%',
+    },
+    npContainer: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: 'white'
+      padding: 20,
+    },
+    nopText: {
+      fontSize: 14,
+      color: '#757575',
+      fontFamily: 'Poppins'
     },
   });
 

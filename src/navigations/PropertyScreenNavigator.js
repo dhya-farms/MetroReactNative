@@ -4,6 +4,7 @@ import CustomerProperties from '../customerscreens/customerhomescreens/CustomerP
 import ShowProperties from '../customerscreens/customerhomescreens/ShowProperties';
 import MyPropertiesDetails from '../customerscreens/customerhomescreens/MyPropertiesDetails';
 import { PropertiesProvider } from '../contexts/usePropertiesContext';
+import { RefreshProvider } from '../contexts/useRefreshContext';
 
 const PropertyScreen = createNativeStackNavigator();
 
@@ -27,6 +28,7 @@ const PropertyScreenNavigator = ({navigation}) => {
 
 
   return (
+    <RefreshProvider>
     <PropertiesProvider>
       <PropertyScreen.Navigator screenOptions={{ headerShown: false }}>
         <PropertyScreen.Screen name="Customer Properties" component={CustomerProperties}/>
@@ -34,6 +36,7 @@ const PropertyScreenNavigator = ({navigation}) => {
         <PropertyScreen.Screen name="Property Details" component={MyPropertiesDetails}/>
       </PropertyScreen.Navigator>
     </PropertiesProvider>
+    </RefreshProvider>
   );
 };
 

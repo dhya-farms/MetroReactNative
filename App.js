@@ -1,5 +1,5 @@
 
-import { StyleSheet, useColorScheme, StatusBar } from 'react-native';
+import { StyleSheet, useColorScheme, StatusBar, View, Text } from 'react-native';
 import * as Font from 'expo-font';
 import { useEffect, useState } from 'react';
 import { NavigationContainer} from '@react-navigation/native';
@@ -19,9 +19,23 @@ import { CustomerProvider } from './src/contexts/useCustomerdata';
 import CustomerTabEntry from './src/customerscreens/customerhomescreens/CustomerTabEntry';
 import AdminTabEntry from './src/screens/adminscreens/AdminTabEntry';
 import SoTabEntry from './src/screens/soscreens/SoTabEntry';
+import Toast from 'react-native-toast-message';
 
 
 const Stack = createNativeStackNavigator();
+
+const toastConfig = {
+  success: ({ text1 }) => (
+    <View style={styles.customToast}>
+      <Text style={styles.customText}>{text1}</Text>
+    </View>
+  ),
+  error: ({ text1 }) => (
+    <View style={[styles.customToast, styles.errorToast]}>
+      <Text style={styles.customText}>{text1}</Text>
+    </View>
+  )
+};
 
 
 export default function App() {
@@ -128,6 +142,7 @@ export default function App() {
                 </NavigationContainer>
         </PaperProvider>
       </GestureHandlerRootView>
+      <Toast config={toastConfig} />
     </ThemeProvider>
   );
 }
@@ -139,4 +154,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  customToast: {
+    width: '90%',
+    height: 74,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#1D9BF0' // success color
+  },
+  errorToast: {
+    backgroundColor: 'red',
+    borderColor: '#FF0000' // error color
+  },
+  customText: {
+    fontFamily: 'Poppins',
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#424242',
+  }
 });

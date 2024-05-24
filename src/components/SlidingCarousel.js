@@ -1,32 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, FlatList, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 
-const images = [
-  require('../../assets/images/caro1.webp'),
-  require('../../assets/images/caro.jpg'),
-  require('../../assets/images/caro2.jpeg'),
-];
+
 
 
 const imageWidth = 170;
 const imageHeight = 170; 
 const marginHorizontal = 20;
 
-const Pagination = ({ index, scrollToIndex }) => {
-  return (
-    <View style={styles.paginationWrapper}>
-      {images.map((_, i) => (
-        <TouchableOpacity
-          key={i}
-          style={[styles.dot, index === i && styles.activeDot]}
-          onPress={() => scrollToIndex(i)}
-        />
-      ))}
-    </View>
-  );
-};
 
-export default function SlidingCarousel() {
+
+export default function SlidingCarousel({images}) {
   const [index, setIndex] = useState(0);
   const flatListRef = useRef();
   const indexRef = useRef(0);
@@ -37,10 +21,23 @@ export default function SlidingCarousel() {
   };
 
   const scrollToIndex = (i) => {
-    // Corrected offset calculation to include the margins
     const offset = i * (imageWidth + (marginHorizontal * 2));
     flatListRef.current.scrollToOffset({ animated: true, offset });
     updateIndex(i);
+  };
+
+  const Pagination = ({ index, scrollToIndex }) => {
+    return (
+      <View style={styles.paginationWrapper}>
+        {images.map((_, i) => (
+          <TouchableOpacity
+            key={i}
+            style={[styles.dot, index === i && styles.activeDot]}
+            onPress={() => scrollToIndex(i)}
+          />
+        ))}
+      </View>
+    );
   };
 
 
@@ -51,7 +48,7 @@ export default function SlidingCarousel() {
     }, 2500);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [images.length]);
 
 
   return (
@@ -73,9 +70,11 @@ export default function SlidingCarousel() {
             }
           }}
           renderItem={({ item }) => (
-            <Image source={item} style={styles.image} />
+            item.key.startsWith('dummy-') ?
+              <Image source={item.uri} style={styles.image} /> :
+              <Image source={{ uri: item.uri }} style={styles.image} />
           )}
-          keyExtractor={(_, i) => i.toString()}
+          keyExtractor={(item) => item.key.toString()}
         />
         <Pagination index={index} scrollToIndex={scrollToIndex} />
       </View>
@@ -103,7 +102,6 @@ const styles = StyleSheet.create({
     width: imageWidth, // Set to the fixed width of 170 as requested
     height: imageHeight, // Set to the fixed height of 170 as requested
     borderRadius: 10,
-    // Adjust the margin so that the total width of the item equals to the view size used in onMomentumScrollEnd
     marginHorizontal: marginHorizontal,
   },
   paginationWrapper: {

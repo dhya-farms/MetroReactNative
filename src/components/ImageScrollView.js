@@ -61,7 +61,7 @@ const ImageScrollView = ({ properties, navigation }) => {
           <TouchableOpacity
             onPress={() => navigation.navigate("properties", {
               screen: "Show Properties",
-              params: { propertyId: item.id , backScreen: "Home"},
+              params: { propertyId: item.propertyId, phaseId: item.id, backScreen: "Home"},
             })}
             style={styles.bannerContainer}
           >

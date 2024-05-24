@@ -2,74 +2,46 @@ import React, { useRef, useState , useEffect} from 'react';
 import { View, Text, TouchableOpacity, Image, ScrollView, ActivityIndicator} 
 from 'react-native';
 import SlidingCarousel from '../../components/SlidingCarousel';
-import { SafeAreaView } from 'react-native';
 import LayoutHeader from '../../components/LayoutHeader';
 import { TabBar } from '../../components/TabComponent';
 import EnquireContainer from '../../components/EnquireContainer';
 import HeaderContainer from '../../components/HeaderContainer';
 import styles from '../../constants/styles/commonpropertydetailsstyles';
-import axios from 'axios';
 import AddClientModal from '../../modals/AddClientModal';
 import { postCrmLead } from '../../apifunctions/postCrmLeadApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchSoCustomersList } from '../../apifunctions/fetchSoCustomerList';
+import AmenitiesDisplay from '../../components/AmenitiesDisplay';
+import { fetchPropertyDetails } from '../../apifunctions/fetchPropertyDetailsApi';
+import { DetailItems } from '../../functions/DetailItems';
 
 
 
-const amenityIcons = {
-  'play ground': require('../../../assets/images/playground.png'),
-  'swimming pool': require('../../../assets/images/pool.png'),
-  'market': require('../../../assets/images/market.png'),
-  'kids park': require('../../../assets/images/kidspark.png'),
-  'bus stand': require('../../../assets/images/busstand.png'),
-  'walking area': require('../../../assets/images/walkingarea.png'),
-  'school': require('../../../assets/images/school.png'),
-  'gym': require('../../../assets/images/gym.png'),
-  'private beach': require('../../../assets/images/sunbed.png'),
-  'community pool': require('../../../assets/images/pool.png'),
-  'fitness center': require('../../../assets/images/gym.png'),
-  
-};
 
-const defaultIcon = require('../../../assets/images/amenites.png');
+const dummyImageUri = require('../../../assets/images/Newmetro.jpeg')
+const dummyImageUris = new Array(3).fill(dummyImageUri); 
 
-const getAmenityIcon = (amenityName) => {
-  const lowerCaseAmenityName = amenityName.toLowerCase();
-  return Object.keys(amenityIcons).reduce((icon, key) => {
-    if (key === lowerCaseAmenityName) {
-      return amenityIcons[key];
-    }
-    return icon;
-  }, defaultIcon);
-};
-
-
-
-const galleryImages = [
-  { source: require('../../../assets/images/land.webp'), id: '1' },
-  { source: require('../../../assets/images/land.webp'), id: '2' },
-  { source: require('../../../assets/images/land.webp'), id: '3' },
-  { source: require('../../../assets/images/land.webp'), id: '4' },
-  { source: require('../../../assets/images/land.webp'), id: '5' },
-  { source: require('../../../assets/images/land.webp'), id: '6' },
-  // ... add other images as needed
-];
-
-
-
+const dummyGalleryImageUri = require('../../../assets/images/Newmetro.jpeg');
+const dummyGalleryImageUris = new Array(6).fill(dummyGalleryImageUri);  // Create an array of 6 dummy images
 
 
 const SOpropertiesDetails = ({route, navigation}) => {
   const { propertyId } = route.params?.params || {};
+  const {phaseId} = route.params?.params || {};
   const [customers, setCustomers] = useState([]);
   const [propertyDetails, setPropertyDetails] = useState(null);
+  const [phaseDetails, setPhaseDetails]= useState([])
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [carouselImages, setCarouselImages]= useState([])
+  const [galImages, setGalImages] = useState([])
+  const [currentPropertyId, setCurrentPropertyId] = useState();
   const [imageModalVisible, setImageModalVisible] = useState(false)
   const [isAddClientModalVisible, setAddClientModalVisible] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [selectedValue, setSelectedValue] = useState('');
+  const [showAll, setShowAll] = useState(false);
   const [textShown, setTextShown] = useState(false);
   const [prId, setPrId] = useState(null)
   const scrollViewRef = useRef();
@@ -84,22 +56,58 @@ const SOpropertiesDetails = ({route, navigation}) => {
     const paramsToken = route.params?.token;
     const paramsSoId = route.params?.userId;
     const effectivePropertyId = propertyId || route.params?.propertyId;
+    const effectivePhaseId = phaseId || route.params?.phaseId
     setPrId(effectivePropertyId)
     console.log("Effective Property ID for use:", effectivePropertyId);
+    console.log("Effective phase ID for use:", effectivePhaseId);
 
-    const fetchPropertyDetails = async () => {
-      if (!effectivePropertyId) {
-        console.log("No Property ID provided");
-        setError("No property ID provided");
-        setLoading(false);
-        return;
-      }
-
+    const fetchPropertyAndCustomers = async () => {
       setLoading(true);
+      setError('');
+
       try {
-        const response = await axios.get(`https://splashchemicals.in/metro/api/properties/${effectivePropertyId}/`);
-        console.log("Fetch success:", response.data);
-        setPropertyDetails(response.data);
+        // Fetching property details
+        if (effectivePropertyId && effectivePhaseId) {
+          setCurrentPropertyId(effectivePropertyId);
+          const details = await fetchPropertyDetails(effectivePropertyId, effectivePhaseId, true);
+          setPropertyDetails(details.propertyDetails);
+          setPhaseDetails(details.phaseDetails);
+
+          const fetchedSliderImages = details.propertyDetails.images
+          .filter(img => img.is_slider_image)
+          .sort((a, b) => a.slider_image_order - b.slider_image_order)
+          .map(img => ({ uri: img.image, key: img.id.toString() }));
+
+        // Check if the fetched images are fewer than 3
+        if (fetchedSliderImages.length < 3) {
+          const requiredDummyImages = 3 - fetchedSliderImages.length;
+          const dummyImages = dummyImageUris.slice(0, requiredDummyImages).map((uri, index) => ({
+            uri,
+            key: `dummy-${index}`  // Unique key for each dummy image
+          }));
+          setCarouselImages([...fetchedSliderImages, ...dummyImages]);
+        } else {
+          setCarouselImages(fetchedSliderImages);
+        }
+        const fetchedGalleryImages = details.propertyDetails.images
+          .filter(img => !img.is_thumbnail && !img.is_slider_image)
+          .map(img => ({ uri: img.image, key: img.id.toString() }));
+
+        if (fetchedGalleryImages.length < 6) {
+          const requiredDummyGalleryImages = 6 - fetchedGalleryImages.length;
+          const dummyGalleryImages = dummyGalleryImageUris.slice(0, requiredDummyGalleryImages).map((uri, index) => ({
+            uri,
+            key: `dummy-gallery-${index}`
+          }));
+          setGalImages([...fetchedGalleryImages, ...dummyGalleryImages]);
+        } else {
+          setGalImages(fetchedGalleryImages);
+        }
+
+        } else {
+          throw new Error("No property ID provided");
+        }
+
 
         const fetchedCustomers = await fetchSoCustomersList(paramsToken, paramsSoId);
         if (!fetchedCustomers.error) {
@@ -117,8 +125,8 @@ const SOpropertiesDetails = ({route, navigation}) => {
       }
     };
 
-    fetchPropertyDetails();
-  }, [propertyId, route.params]);
+    fetchPropertyAndCustomers();
+  }, [currentPropertyId, route.params]);
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
@@ -136,34 +144,6 @@ const SOpropertiesDetails = ({route, navigation}) => {
     setImageModalVisible(!imageModalVisible)
   }
 
-
-  const getPlotTypeText = (propertyType) => {
-    switch(propertyType) {
-      case 1:
-        return 'DTCP PLOTS';
-      case 2:
-        return 'Farmlands';
-      case 3:
-        return 'Flat';
-      case 4:
-        return 'Villa';
-      default:
-        return 'Unknown Plot Type';
-    }
-  };
-
-  const propertyType = propertyDetails.property_type ? propertyDetails.property_type.id : 0;
-  const isPlotOrFarmland = propertyType === 1;
-  const isSpecialUnit = propertyType === 2;  // Treat property type 2 as a special case
-
-  const numberOfUnitsLabel = isPlotOrFarmland ? 'No of Plots:' : (isSpecialUnit ? 'No of Units:' : (propertyType === 3 ? 'No of Homes:' : 'No of Villas:'));
-  const numberOfUnits = propertyDetails.details ? 
-    (isPlotOrFarmland ? propertyDetails.details.plots_available : 
-      (isSpecialUnit ? propertyDetails.details.units_available : 
-        (propertyType === 3 ? propertyDetails.details.homes_available : propertyDetails.details.villas_available))) : 'N/A';
-
-
-  
   const toggleTextShown = () => {
     setTextShown(!textShown);
   };
@@ -186,14 +166,7 @@ const SOpropertiesDetails = ({route, navigation}) => {
     );
   };
 
-  const calculatePricePerSqFt = () => {
-    if (propertyDetails && propertyDetails.price && propertyDetails.details.sq_ft_from) {
-      const price = parseFloat(propertyDetails.price);
-      const sqFtFrom = parseFloat(propertyDetails.details.sq_ft_from);
-      return (price / sqFtFrom).toFixed(2); // Keeping two decimal places for the result.
-    }
-    return "N/A"; // Return "N/A" if the data is not available to perform the calculation.
-  };
+
 
   if (!propertyDetails) {
     return <><Text>Property details not found.</Text> {console.log(propertyId)}</>;
@@ -202,7 +175,6 @@ const SOpropertiesDetails = ({route, navigation}) => {
   const amenitiesArray = propertyDetails.details.amenities.map(item => item.trim()).filter(Boolean);
 
   const handleCustomerSelect = (selectedName) => {
-    // Find the customer with the selected name
     const customer = customers.find(c => c.name === selectedName);
     if (customer) {
       console.log(`Selected customer ID: ${customer.id}`); // Log the customer ID
@@ -219,7 +191,7 @@ const SOpropertiesDetails = ({route, navigation}) => {
       return;
     }
     try {
-      const response = await postCrmLead(paramsToken, propertyDetails.id, selectedCustomer.id, assignedSoId);
+      const response = await postCrmLead(paramsToken, propertyDetails.id, phaseDetails.id, selectedCustomer.id, assignedSoId);
       if (response && response.id) { // Checking if the response has 'id'
         setShowSuccessMessage(true);
         setTimeout(() => {
@@ -244,12 +216,12 @@ const SOpropertiesDetails = ({route, navigation}) => {
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>{navigation.goBack()}}/>
     <ScrollView ref={scrollViewRef} style={styles.container} contentContainerStyle={styles.contentContainer}>    
-     <SafeAreaView style={styles.slidingContainer}>
-      <SlidingCarousel/>
-    </SafeAreaView>
+     <View style={styles.slidingContainer}>
+      <SlidingCarousel images={carouselImages}/>
+    </View>
     <View style={styles.cityConatiner}>
     <Text style={styles.cityText}>{propertyDetails.name}</Text>
-      <Text style={styles.cityAmount}>₹ {calculatePricePerSqFt()}/sqft</Text>
+      <Text style={styles.cityAmount}>₹ {phaseDetails.price_from}/sqft</Text>
     </View>
     <LayoutHeader onPress={ImageToggle} gmapUrl={propertyDetails.gmap_url}/>
     <View style={styles.separator} />
@@ -266,46 +238,28 @@ const SOpropertiesDetails = ({route, navigation}) => {
     <TouchableOpacity onPress={toggleTextShown}>
     <Text style={styles.smText}>{textShown ? 'Show Less -' : 'Show More +'}</Text>
     </TouchableOpacity>
-    <View style={styles.plotContainer}>
-        <Text style={styles.plotHeader}>Plot Information:</Text>
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoLabel}>Property Type:</Text>
-          <Text style={styles.infoContent}>{getPlotTypeText(propertyType)}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoLabel}>Property ID:</Text>
-          <Text style={styles.infoContent}>{propertyDetails.id}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoLabel}>{numberOfUnitsLabel}</Text>
-          <Text style={styles.infoContent}>{numberOfUnits}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoLabel}>Sq.ft:</Text>
-          <Text style={styles.infoContent}>{propertyDetails.details ? `from ${propertyDetails.details.sq_ft_from} sq.ft` : 'N/A'}</Text>
-        </View>
-      </View>
-    </View>
-    <View ref={amRef} style={styles.amContainer}>
-      <Text style={styles.amHeader}>Amenities:</Text>
-      <View style={styles.amenitiesContainer}>
-          {amenitiesArray.map((amenity, index) => (
-          <View key={index} style={styles.amenity}>
-            <Image source={getAmenityIcon(amenity)} style={styles.icon} />
-            <Text style={styles.text}>{amenity}</Text>
-          </View>
-        ))}
-      </View>
-    </View>
+       <DetailItems details={propertyDetails.details} phaseDetails={phaseDetails}
+       showAll={showAll} setShowAll={setShowAll}/>
+    </View> 
+    <AmenitiesDisplay ref={amRef} amenities={amenitiesArray} />
     <View ref={gmRef} style={styles.gmContainer}>
       <Text style={styles.gmHeader}>Gallery:</Text>
       <View style={styles.galleryContainer}>
-        {galleryImages.map((image, index) => (
-          <TouchableOpacity key={index} style={styles.imageWrapper}>
-            <Image source={image.source} style={styles.image} />
-          </TouchableOpacity>
-        ))}
-      </View>
+        {galImages.length > 0 ? (
+          galImages.map((image, index) => (
+            <TouchableOpacity key={index} style={styles.imageWrapper}>
+             <Image
+                source={image.key.includes('dummy-gallery') ? image.uri : { uri: image.uri }}
+                style={styles.image}
+            />
+            </TouchableOpacity>
+          ))
+        ) : (
+          <View style={{flex:1, justifyContent: 'center', alignItems: 'center'}}>
+          <Text style={{fontFamily: 'Poppins', fontWeight: '500', fontSize: 12 }}>Gallery images not provided.</Text>
+          </View>
+        )}
+    </View>
     </View>
     <AddClientModal
         label= "Client"

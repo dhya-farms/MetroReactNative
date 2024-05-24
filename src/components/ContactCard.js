@@ -1,8 +1,18 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, Dimensions, FlatList , Linking, TouchableOpacity} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import { getIconName, getStatusStyleCheckBox } from '../functions/statusHelpers';
 
-const CustomerCard = ({ name, number, mailId, progress, personimage, propertyName }) => {
+const formatPropertyName = (name) => {
+  const phaseIndex = name.indexOf('Phase');
+  if (phaseIndex !== -1) {
+    return `${name.substring(0, 6)}... ${name.substring(phaseIndex)}`;
+  }
+  return name;
+};
+
+
+const CustomerCard = ({ name, number, mailId, progress, personimage, propertyName, currentApprovalStatus }) => {
 
   const openWhatsApp = (number) => {
     let whatsappUrl = `https://wa.me/${number}`;
@@ -33,7 +43,7 @@ const sendEmail = (email) => {
      </View>
      <View style={styles.prContainer}>
                 <Text style={styles.prHeader}>Property Name: </Text>
-                <Text style={styles.prText}>{propertyName}</Text>
+                <Text style={styles.prText}>{formatPropertyName(propertyName)}</Text>
      </View>
      <View style={styles.smIconsContainer}>
                 <TouchableOpacity onPress={() => openWhatsApp(number)} style={styles.iconContainer}>
@@ -52,7 +62,9 @@ const sendEmail = (email) => {
         <Text style={styles.progressText}>Progress:</Text>
         <Text style={[styles.progressText, {color: '#5C5C5C', fontWeight: '500', fontSize: 18}]}>{progress}</Text>
         </View>
-        <Icon name="check-circle" size={34} color="#80FF00"/>
+          <View style={[styles.checkicon, getStatusStyleCheckBox(currentApprovalStatus)]}>
+                <Icon name={getIconName(currentApprovalStatus)} size={12} color="white" />
+          </View>
       </View>
       <View style={styles.separator} />
     </View>
@@ -70,6 +82,7 @@ const ContactCard = ({ customerData, onCardPress }) => {
         progress={item.progress}
         personimage={item.personimage}
         propertyName={item.property}
+        currentApprovalStatus={item.currentApprovalStatus.name}
       />
       </TouchableOpacity>
     );
@@ -188,7 +201,15 @@ const styles = StyleSheet.create({
       fontFamily: 'Poppins',
       fontWeight: '600',
       fontSize: 16,
-    }
+    },
+    checkicon: {
+      width: 32,
+      height: 32,
+      backgroundColor: '#1D9BF0',
+      borderRadius: 16,
+      justifyContent: 'center', // Center the icon vertically
+      alignItems: 'center', // Center the icon horizontally
+    },
     // Add other styles for status indicators and checkmark
   });
 

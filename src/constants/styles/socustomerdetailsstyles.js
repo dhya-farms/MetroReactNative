@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
       justifyContent: 'space-between',
       width: '90%', // Ensure the row takes full width
       padding: 10,
-      borderWidth: 1,
+      borderWidth: 1.6,
       borderColor: '#1D9BF0',
       borderRadius: 6,
       marginRight: 8,
@@ -111,8 +111,14 @@ const styles = StyleSheet.create({
     completedStatusItem: {
       borderColor: '#80FF00', // Green border color for completed status
     },
-    completedStatusCheck:{
-      backgroundColor: '#80FF00'
+    approvedStatusItem:{
+      borderColor: '#1D9BF0',
+    },
+    pendingStatusItem: {
+      borderColor: '#FDF525', // Yellow for pending
+    },
+    rejectedStatusItem: {
+      borderColor: '#FF0000', // Red for rejected
     },
     completedStatusTokenCheck:{
       backgroundColor: '#C4C4C4'
@@ -131,18 +137,28 @@ const styles = StyleSheet.create({
       justifyContent: 'center', // Center the icon vertically
       alignItems: 'center', // Center the icon horizontally
     },
+    completedStatusCheck:{
+      backgroundColor: '#80FF00'
+    },
+    approvedStatusCheck:{
+      borderColor: '#1D9BF0',
+    },
+    pendingStatusCheck:{
+      backgroundColor: '#FDF525'
+    },
+    rejectedStatusCheck:{
+      backgroundColor: '#FF0000',
+    },
     detailToggle: {
       fontFamily: 'Poppins',
       fontSize: 10,
       fontWeight: '500',
       marginLeft: 10,
-      marginVertical: 10,
     },
     details: {
       fontFamily: 'Poppins',
       fontSize: 12,
       fontWeight: '600',
-      marginBottom: 10,
     },
     infoRowContainer: {
       width: '100%',
@@ -191,6 +207,12 @@ const styles = StyleSheet.create({
     },
     paymentInfoContainer:{
       width: '90%',
+    },
+    balanceAmountContainer:{
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center'
     },
     paymentText:{
       fontFamily: 'Poppins',
@@ -251,6 +273,28 @@ const styles = StyleSheet.create({
       color: '#424242',
       textAlign: 'left', // Align text to the right
       width: '55%', // Remaining width for values
+    },
+    documentItem: {
+      width: '80%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: 4,
+      borderBottomWidth: 1,
+      borderBottomColor: '#ccc'
+    },
+    docDetailText:{
+        flex: 1,
+        fontFamily: 'Poppins',
+        fontWeight: '500',
+        fontSize: 10,
+        marginVertical: 5,
+    },
+    balanceAmountContainer:{
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center'
     },
 });
 

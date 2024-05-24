@@ -6,7 +6,10 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 const ImageCard = ({ name, date, title, description, source, personimage, textContainerStyle }) => {
   return (
     <View style={styles.cardContainer}>
-      <Image source={source} style={styles.cardImage} />
+      <Image
+          source={source}
+          style={styles.cardImage}
+        />
       <View style={styles.topTextContainer}>
         <Image source={personimage} style={styles.personImage} />
         <View style={styles.ndContainer}>
@@ -70,7 +73,8 @@ const styles = StyleSheet.create({
     cardImage: {
         width: '100%',
         height: '100%',
-        borderRadius: 10, // Set this to your desired border radius
+        borderRadius: 10,
+        resizeMode: 'cover' // Set this to your desired border radius
     },
       textContainer: {
         position: 'absolute',
