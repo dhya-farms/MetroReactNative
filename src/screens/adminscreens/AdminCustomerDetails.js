@@ -18,6 +18,9 @@ import UploadIcon from 'react-native-vector-icons/FontAwesome5'
 import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 import { fetchFullPaymentDetails } from '../../functions/fetchFullPaymentDeatils';
 import { fetchDocumentationDeliveryDetails } from '../../functions/fetchDocumentDeliveryDetails';
+import { makeCrmLeadInactive } from '../../apifunctions/makeCrmLeadInactive';
+import Toast from 'react-native-toast-message';
+import { useRefresh } from '../../contexts/useRefreshContext';
 
 
 
@@ -32,6 +35,7 @@ const InfoRow = ({ label, value }) => (
 
 const AdminCustomerDetails = ({route, navigation}) => {
   const { customerId } = route.params?.params || {};
+  const { triggerDataRefresh } = useRefresh();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [backscreen, setBackScreen] = useState('')
@@ -359,6 +363,30 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
       .catch(error => console.error("Error handling rejection:", error));
   };
 
+  const handleDelete = async (crmId) => {
+    const result = await makeCrmLeadInactive(crmId);
+    if (result.success) {
+      Toast.show({
+        type: 'success',
+        text1: result.message,
+        visibilityTime: 2000,  
+        
+      });
+      setTimeout(() => {
+        triggerDataRefresh();
+        navigation.navigate("Home", {
+          screen: "Admin home",
+        });
+      }, 2000); // Wait for 2 seconds to show the toast, then navigate
+    } else {
+      Toast.show({
+        type: 'error',
+        text1: result.message,
+        visibilityTime: 1800,
+      });
+    }
+  };
+
   const handleModalClose = () => {
     setisModalVisible(false);
   };
@@ -420,9 +448,9 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
             <Text style={styles.nameText}>{customerDetails.customer.name}</Text>
             <Text style={styles.numText}>{customerDetails.customer.mobile_no}</Text>
         </View>
-        <View style={styles.deleteContainer}>
+        <TouchableOpacity style={styles.deleteContainer}  onPress={() => handleDelete(effectiveCustomerId)}>
           <Icon name="trash-alt" size={9.92} color="#858585" style={styles.icon} />
-        </View>
+        </TouchableOpacity>
       </View>
       <View style={styles.smIconsContainer}>
       <TouchableOpacity onPress={()=> handleWhatsAppPress(customerDetails)}>

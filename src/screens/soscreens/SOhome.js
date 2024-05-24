@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity, Text, Image, StatusBar, ActivityIndicator} 
 from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 import ShowAllButton from '../../components/ShowAllButton';
 import OfficeUpdateView from '../../components/OfficeUpdateView';
 import CustomerCard from '../../components/CustomerCard';
@@ -11,12 +13,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchSoCustomers } from '../../apifunctions/fetchSoCustomersApi';
 import { fetchCommonProperties } from '../../apifunctions/fetchCommonProperties';
 import { fetchUpdates } from '../../apifunctions/fetchUpdatesApi';
+import { useRefresh } from '../../contexts/useRefreshContext';
 
 
 
 
 
 const SOhome = ({route, navigation}) => {
+  const { dummyState } = useRefresh();
   const [advisor, setAdvisor] = useState({});
   const [customers, setCustomers] = useState([]);
   const [properties, setProperties] = useState([]);
@@ -29,80 +33,66 @@ const SOhome = ({route, navigation}) => {
   const [updates, setUpdates] = useState([])
   const [nextUpdatesPageUrl, setNextUpdatesPageUrl] = useState(null)
 
-  useEffect(() => {
-    const initializeScreen = async () => {
-      const paramsToken = route.params?.token;
-      let paramsAdvisorId = route.params?.userId;
-      const paramsSoId = route.params?.userId;
-
-      if (!paramsAdvisorId) {
-        // If paramsAdvisorId is not available, get userId from AsyncStorage
-        paramsAdvisorId = await AsyncStorage.getItem('userId');
-      }
-
-      try {
-        const { properties: fetchedProperties, nextPageUrl: nextPage } = await fetchCommonProperties(paramsToken);
-        if (fetchedProperties.length > 0) {
-          setProperties(fetchedProperties);
-          console.log(fetchedProperties)
-          setNextPageUrl(nextPage)
-          setLoadingProperties(false)
-
-
+  useFocusEffect(
+    useCallback(() => {
+      const initializeScreen = async () => {
+        const paramsToken = route.params?.token;
+        let paramsAdvisorId = route.params?.userId;
+        const paramsSoId = route.params?.userId;
   
-        } else {
-          console.log('No properties fetched, array is empty');
+        if (!paramsAdvisorId) {
+          paramsAdvisorId = await AsyncStorage.getItem('userId');
         }
-      } catch (error) {
-        console.error('Error fetching common properties:', error);
-      }
-
-      try {
-        const { customers: fetchedCustomers, nextPageUrl: nextPage } = await fetchSoCustomers(paramsToken, paramsSoId);;
-        if (!fetchedCustomers.error) {
-          // Sort customers by 'created_at' in descending order to show newest first
-          const sortedCustomers = fetchedCustomers.sort((a, b) => {
-            const dateA = new Date(a.created_at);
-            const dateB = new Date(b.created_at);
-            return dateB - dateA;
-          });
-          setCustomers(sortedCustomers);
-          console.log("sc", sortedCustomers)
-          setSoNextPageUrl(nextPage)
-          setLoadingCustomers(false)
-        } else {
-          console.error('Error fetching customers:', fetchedCustomers.error);
+  
+        try {
+          const { properties, nextPageUrl } = await fetchCommonProperties(paramsToken);
+          setProperties(properties);
+          setNextPageUrl(nextPageUrl);
+          setLoadingProperties(false);
+          console.log(properties);
+        } catch (error) {
+          console.error('Error fetching common properties:', error);
         }
-      } catch (error) {
-        console.error('Error fetching customers:', error);
-      }
-
-      try {
-        const {updates: fetchedUpdates, nextPageUrl: nextPage} = await fetchUpdates(paramsToken);
-        if (!fetchedUpdates.error) {
-          setUpdates(fetchedUpdates);
-          setNextUpdatesPageUrl(nextPage)
-          console.log(fetchedUpdates)
-          setLoadingUpdates(false)
-        } else {
-          console.error('Error fetching customers:', fetchedUpdates.error);
+  
+        try {
+          const { customers, nextPageUrl } = await fetchSoCustomers(paramsToken, paramsSoId);
+          if (!customers.error) {
+            const sortedCustomers = customers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            setCustomers(sortedCustomers);
+            setSoNextPageUrl(nextPageUrl);
+            setLoadingCustomers(false);
+          }
+        } catch (error) {
+          console.error('Error fetching customers:', error);
         }
-      } catch (error) {
-        console.error('Error fetching customers:', error);
-      }
-
-      try {
-        const advisorDetails = await fetchSoDetails(paramsAdvisorId, paramsToken);
-        setAdvisor(advisorDetails);
-        console.log(advisorDetails)
-        setLoadingSo(false)
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      }
-    };
-
-    initializeScreen();
-  }, [route.params?.token, route.params?.userId]);
+  
+        try {
+          const updates = await fetchUpdates(paramsToken);
+          if (!updates.error) {
+            setUpdates(updates.updates);
+            setNextUpdatesPageUrl(updates.nextPageUrl);
+            setLoadingUpdates(false);
+          }
+        } catch (error) {
+          console.error('Error fetching updates:', error);
+        }
+  
+        try {
+          const advisorDetails = await fetchSoDetails(paramsAdvisorId, paramsToken);
+          setAdvisor(advisorDetails);
+          setLoadingSo(false);
+        } catch (error) {
+          console.error('Failed to fetch advisor details:', error);
+        }
+      };
+  
+      initializeScreen();
+  
+      return () => {
+        // Optional cleanup actions
+      };
+    }, [route.params?.token, route.params?.userId]) // Include any variables that your fetching logic depends on
+  );
   
  
 

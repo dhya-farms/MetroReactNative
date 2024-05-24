@@ -30,12 +30,14 @@ import { fetchFullPaymentDetails } from '../../functions/fetchFullPaymentDeatils
 import { useRefresh } from '../../contexts/useRefreshContext';
 import { postStatusChangeRequest } from '../../apifunctions/postStatusChangeRequest';
 import { fetchDocumentationDeliveryDetails } from '../../functions/fetchDocumentDeliveryDetails';
+import { makeCrmLeadInactive } from '../../apifunctions/makeCrmLeadInactive';
 
 
 
 
 const SoCustomerDetails = ({route ,navigation}) => {
   const { setGlobalCustomerId } = useCustomer();
+  const [homeReftech, setHomeRefetch] = useState(false)
   const { globalCustomerId } = useCustomer();
   const { dummyState, triggerDataRefresh} = useRefresh();
   const { customerId } = route.params?.params || {};
@@ -558,6 +560,31 @@ const fetchCustomerDetails = async (customerId) => {
       console.error('Failed to request approval:', error);
     }
   };
+
+  const handleDelete = async (crmId) => {
+    const result = await makeCrmLeadInactive(crmId);
+    if (result.success) {
+      Toast.show({
+        type: 'success',
+        text1: result.message,
+        visibilityTime: 2000,  
+      });
+      setTimeout(() => {
+        setHomeRefetch(prev=> !prev)
+        navigation.navigate("SO Home", {
+          screen: "SO home",
+          params: { homeReftech: homeReftech},
+        });
+      }, 2000); // Increasing this timeout may help ensure state updates are processed
+    } else {
+      Toast.show({
+        type: 'error',
+        text1: result.message,
+        visibilityTime: 1800,
+      });
+    }
+  };
+  
   
 
 
@@ -579,9 +606,9 @@ const fetchCustomerDetails = async (customerId) => {
             <Text style={styles.nameText}>{customerDetails.customer.name}</Text>
             <Text style={styles.numText}>{customerDetails.customer.mobile_no}</Text>
         </View>
-        <View style={styles.deleteContainer}>
+        <TouchableOpacity style={styles.deleteContainer}  onPress={() => handleDelete(globalCustomerId)}>
           <Icon name="trash" size={9.92} color="#858585" style={styles.icon} />
-        </View>
+        </TouchableOpacity>
       </View>
       <View style={styles.smIconsContainer}>
         <TouchableOpacity onPress={()=>handleWhatsAppPress(customerDetails)}>

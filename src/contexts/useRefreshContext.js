@@ -6,9 +6,10 @@ export const RefreshProvider = ({ children }) => {
     const [dummyState, setDummyState] = useState(false); // State to trigger refresh
 
     const triggerDataRefresh = () => {
-        setDummyState(prev => !prev); // Toggle state to trigger refresh
+        console.log("Triggering data refresh");
+        setDummyState(prev => !prev);
     };
-
+    
     return (
         <RefreshContext.Provider value={{ dummyState, triggerDataRefresh }}>
             {children}

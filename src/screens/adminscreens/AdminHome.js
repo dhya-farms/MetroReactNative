@@ -11,12 +11,14 @@ import { fetchCustomers } from '../../apifunctions/fetchCustomerApi';
 import { fetchAdminProperties } from '../../apifunctions/fetchAdminPropertiesApi';
 import { fetchSoUsers } from '../../apifunctions/fetchSoApi';
 import { fetchUpdates } from '../../apifunctions/fetchUpdatesApi';
+import { useRefresh } from '../../contexts/useRefreshContext';
 
 
 
 
 const AdminHome = ({ route, navigation }) => {
   const [customers, setCustomers] = useState([]);
+  const { dummyState } = useRefresh();
   const [properties, setProperties] = useState([]);
   const [soUsers, setSoUsers] = useState([]);
   const [nextPageUrl, setNextPageUrl] = useState(null);
@@ -108,7 +110,7 @@ const AdminHome = ({ route, navigation }) => {
 
   useEffect(() => {
     fetchData();
-  }, [route.params?.token]);
+  }, [route.params?.token, dummyState]);
 
 
 
