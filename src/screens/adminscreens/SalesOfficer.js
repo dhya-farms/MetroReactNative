@@ -93,21 +93,6 @@ const SalesOfficerList = ({route, navigation}) => {
   }, [backscreen]);
 
     
-  const handleBack = () => {
-    if (backscreen==="Home") {
-      navigation.navigate("Home", {
-        screen: "Admin Home",
-      });
-    
-    } else if(backscreen==="SOManager"){
-      navigation.navigate("SO", { 
-        screen: "So Manager" ,
-      })
-      
-    } else {
-      navigation.goBack();
-    }
-  };
 
   return (
     <View style={styles.mainContainer}>

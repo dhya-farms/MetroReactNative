@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "metrosmart",
-    "slug": "metrosmart",
+    "slug": "metroproject",
     "version": "0.0.2",
     "orientation": "default",
     "icon": "./assets/images/metrologo.png",
@@ -30,9 +30,12 @@
       },
       "buildNumber": "3",
       "bundleIdentifier": "com.metrosmart.app"
-    },  
-    "android":{
-      "permissions": ["WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE"],
+    },
+    "android": {
+      "permissions": [
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/Newmetro.jpeg",
         "backgroundColor": "#FFFFFF"
@@ -49,8 +52,14 @@
     },
     "extra": {
       "eas": {
-        "projectId": "2dda807b-6981-4f54-a378-fa953dca0a1f"
+        "projectId": "63320563-8e5e-471a-89be-254d65f23e96"
       }
-    }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2dda807b-6981-4f54-a378-fa953dca0a1f"
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

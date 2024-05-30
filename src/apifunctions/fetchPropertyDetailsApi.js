@@ -1,6 +1,7 @@
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
-const BASE_URL = 'https://splashchemicals.in/metro/api/';
 
 export const fetchPropertyDetails = async (propertyId, effectivePhaseId, fullResponse = false) => {
   if (!propertyId) {
@@ -11,7 +12,7 @@ export const fetchPropertyDetails = async (propertyId, effectivePhaseId, fullRes
   console.log("Fetching property details for ID:", propertyId);
   
   try {
-    const url = fullResponse ? `properties/${propertyId}/` : `crm-leads/${propertyId}/`;
+    const url = fullResponse ? `/properties/${propertyId}/` : `/crm-leads/${propertyId}/`;
     const response = await axios.get(`${BASE_URL}${url}`);
     console.log("fetch sucess", response.data)
    

@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
-const BASE_URL = 'https://splashchemicals.in/metro/api';
 const PROPERTIES_ENDPOINT = `${BASE_URL}/phases/my-favourites`;
 
 // Function to get authorization headers
@@ -64,8 +65,9 @@ export const fetchMyFavourites = async (paramsToken, pageUrl = null) => {
         displayText: getDisplayInfo(prop.property, prop),
         detailInfo: getDetailInfo(prop.property, prop),
         sqFtFrom: prop.sq_ft_from,
+        rating: prop?.property?.rating,
         bgimage: prop.property.images.length ? { uri: prop.property.images[0].image } : null,
-        phaseDetails: prop // Include phase details
+        phaseDetails: prop 
     };
     })
     return {

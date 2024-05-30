@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
-const BASE_URL = 'https://splashchemicals.in/metro/api';
 // Function to get authorization headers
 const getAuthData = async (paramsToken) => {
     const token = paramsToken || await AsyncStorage.getItem('userToken');
@@ -64,15 +65,16 @@ const getAuthData = async (paramsToken) => {
           formattedProperties.push({
               ...property,
               id: phase.id, 
-              propertyId: property.id, // Use phase ID for unique identification
+              propertyId: property.id, 
+              
               name: `${property.name} Phase-${phase.phase_number}`,
               displayText: getDisplayInfo(property, phase),
               detailInfo: getDetailInfo(property, phase),
               sqFtFrom: phase.area_size_from,
               phaseName: phase.area_size_unit.name_vernacular,
               bgimage: filteredImages.length > 0 ? { uri: filteredImages[0].image } : null,
-              images: filteredImages, // Use the first matching image or null if none
-              phaseDetails: phase // Include phase details
+              images: filteredImages, 
+              phaseDetails: phase 
           });
       });
   }
@@ -89,7 +91,6 @@ export const fetchCommonProperties = async (paramsToken, pageUrl= null) => {
     const response = await axios.get(url, { headers });
 
     const formattedProperties = response.data.results.map(formatPropertyDetails).flat(); 
-    console.lo
 
     return {
       properties: formattedProperties,

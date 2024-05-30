@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
-const BASE_URL = 'https://splashchemicals.in/metro/api';
 const USERS_ENDPOINT = `${BASE_URL}/users?role=3`; // Adjusted endpoint
 
 // Prepare the authorization headers

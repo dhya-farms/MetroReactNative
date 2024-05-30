@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const fetchFullPaymentDetails = async (crmId, setLoading, setStatus, setError) => {
+export const fetchFullPaymentDetails = async (crmId, setLoading, setStatus, setError, currentBalance, setBalanceAmount) => {
     console.log("Called fetchFullPaymentDetails with crmId:", crmId); // Debug log
     setLoading(true);
     try {

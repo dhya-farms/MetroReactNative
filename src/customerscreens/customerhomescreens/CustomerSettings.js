@@ -6,7 +6,6 @@ import LogOutModal from '../../modals/LogoutModal';
 import LogOutConfirmModal from '../../modals/LogOutConfirmModel';
 import styles from '../../constants/styles/customersettingsstyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 
 const CustomerSettings = ({navigation}) => {
@@ -80,7 +79,7 @@ const CustomerSettings = ({navigation}) => {
         <TouchableOpacity style={styles.settingsButton} onPress={()=> navigation.navigate("Customer Faq")}>
             <Text style={styles.settingsText}>FAQ's</Text>       
         </TouchableOpacity>
-        <TouchableOpacity style={styles.settingsButton}> 
+        <TouchableOpacity style={styles.settingsButton} onPress={()=>navigation.navigate('Customer Policy')}> 
             <Text style={styles.settingsText}>Privacy policy</Text>   
         </TouchableOpacity>
         </View>

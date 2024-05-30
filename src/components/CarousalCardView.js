@@ -19,30 +19,28 @@ const Card = ({ name, customer, property, requestDate, initialRequestType, onPre
     if (initialRequestType) {
       const typeKey = Object.keys(requestTypes).find(key => requestTypes[key] === initialRequestType);
       if (typeKey) {
-        const index = Object.keys(requestTypes).indexOf(typeKey);
-        setSelectedRequestIndex(index); // Store the index of the selected request
-        setRequestType(typeKey); // Use abbreviation as display
+        setSelectedRequestIndex(Object.keys(requestTypes).indexOf(typeKey));
       }
     }
   }, [initialRequestType]);
 
   const RequestButton = ({ type, index }) => {
-    const isSelected = index === selectedRequestIndex; // Check if this button is selected
+    const isSelected = index <= selectedRequestIndex; // Check if this button is selected
 
     return (
       <View
-      style={[
-        styles.requestButton,
-        isSelected && styles.selectedRequestButton
-      ]}
-    >
-       <Text style={[styles.buttonText, isSelected && styles.selectedButtonText]}>{type}</Text>
-    </View>
+        style={[
+          styles.requestButton,
+          isSelected && styles.selectedRequestButton
+        ]}
+      >
+        <Text style={[styles.buttonText, isSelected && styles.selectedButtonText]}>{type}</Text>
+      </View>
     );
   };
 
   // Determine if the currently displayed request type is selected
-  const isSelectedRequest = selectedRequestIndex !== null;
+  const progressText = requestTypes[Object.keys(requestTypes)[selectedRequestIndex]] || '';
 
 
   return (
@@ -70,10 +68,10 @@ const Card = ({ name, customer, property, requestDate, initialRequestType, onPre
         <View style={styles.requestTypeContainer}>
           <Text style={styles.requestedLabel}>Requested For: </Text>
           <View style={{ flex: 1 }}>
-            <Text style={styles.requestedValue}>{initialRequestType}</Text>
+            <Text style={styles.requestedValue}>{progressText}</Text>
           </View>
-          <Icon name="check" size={21} color={isSelectedRequest ? "#FFA500" : "grey"} />
         </View>
+
       </View>
     </TouchableOpacity>
   );

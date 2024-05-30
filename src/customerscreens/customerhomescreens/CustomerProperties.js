@@ -9,6 +9,9 @@ import { useCustomerProperties } from '../../contexts/useCustomerPropertiesApi';
 import { fetchCustomerProperties } from '../../apifunctions/fetchCustomerPropertiesApi';
 import { fetchProperties } from '../../apifunctions/fetchPropertiesApi';
 import _ from 'lodash'; 
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
+import { fetchMyFavourites } from '../../apifunctions/fetchMyFavouritesApi';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const RenderCustomerFooter = React.memo(({ loading }) => {
@@ -29,9 +32,12 @@ const CustomerProperties = ({ navigation, route }) => {
   const [nextPropertyPageUrl, setNextPropertyPageUrl]= useState(null)
   const [customerloading, setCustomerLoading] = useState(false);
   const [propertyLoading, setPropertyLoading] = useState(false)
+  const [initialCustomerLoading, setInitialCustomerLoading] = useState(true);
+  const [initialPropertyLoading, setInitialPropertyLoading] = useState(true)
   const {nextGlobalPageUrl} = useProperties();
   const {nextCustomerPageUrl} = useCustomerProperties();
   const [sortOrder, setSortOrder] = useState('newest');
+  const [favorites, setFavorites] = useState([]);
 
 
   const { token, customerProperties: routeCustomerProperties, properties: routeProperties, nextPage: routeNextPage, nextPropertyPage: routePropertyPage, source } = 
@@ -65,11 +71,34 @@ const CustomerProperties = ({ navigation, route }) => {
   useEffect(() => {
     setCustomerPropertyData(customerProperties);
     setCommonPropertyData(generalProperties)
-    console.log("cp", customerProperties)
-    console.log("gp", generalProperties)
     setNextCustomerPagesUrl(nextCustomerPageData)
     setNextPropertyPageUrl(nextPropertyPageData)
+    setInitialCustomerLoading(false)
+    setInitialPropertyLoading(false)
   }, [customerProperties, generalProperties, nextCustomerPageData, nextPropertyPageData]);
+
+  useEffect(() => {
+    let isSubscribed = true;
+  
+    const loadFavorites = async () => {
+      const paramsToken = await AsyncStorage.getItem('userToken');
+      if (!paramsToken || !isSubscribed) return;
+  
+      try {
+        const fetchedFavorites = await fetchMyFavourites(paramsToken);
+        if (isSubscribed) {
+          console.log("Fetched Favorites:", fetchedFavorites);
+          setFavorites(fetchedFavorites.properties.map(fav => fav.id));
+        }
+      } catch (error) {
+        console.error('Error fetching favorites:', error);
+      }
+    };
+  
+    loadFavorites();
+  
+    return () => { isSubscribed = false; };
+  }, [commonPropertyData]);
 
   const sortProperties = (properties, sortOrder) => {
     return properties.sort((a, b) => {
@@ -168,6 +197,7 @@ const fetchMoreCommonProperties = async () => {
         <Carousel
                     data={item}
                     onCardPress={(propertyId, phaseId) => handlePropertyPress(propertyId, phaseId, false)}
+                    favorites={favorites}
                     isHeartVisible={true}
                     paramsToken={token}
                     keyExtractor={(item) => `property-${item.id}`}
@@ -199,7 +229,9 @@ const fetchMoreCommonProperties = async () => {
        </>: null}
        {source === "myProperties" && (
           <>
-            {customerProperties.length > 0 ? (
+            {initialCustomerLoading ? (
+          <ActivityIndicator size="large" color={PRIMARY_COLOR} style={styles.loadingIndicator} />
+           ) : customerProperties.length > 0 ? (
               <FlatList
                     data={[customerPropertyData]} 
                     renderItem={renderCustomerItem}
@@ -222,7 +254,9 @@ const fetchMoreCommonProperties = async () => {
         {source === "properties" && (
           <>
             <SortHeader title="Properties" onSortPress={() => {}} isSortVisible={false} />
-            {generalProperties.length > 0 ? (
+            {initialPropertyLoading ? (
+             <ActivityIndicator size="large" color={PRIMARY_COLOR} style={styles.loadingIndicator} />
+            ) : generalProperties.length > 0 ? (
               <FlatList
                   data={[commonPropertyData]} // Wrap properties in an array since FlatList expects an array
                   renderItem={renderPropertyItem}
@@ -246,7 +280,9 @@ const fetchMoreCommonProperties = async () => {
         <>
           <SortHeader title="My Properties" onSortPress={() => {}} isSortVisible={false} />
           <>
-          {commonPropertyData.length > 0 ? (
+          {initialCustomerLoading ? (
+          <ActivityIndicator size="large" color={PRIMARY_COLOR} style={styles.loadingIndicator} />
+           ): customerPropertyData.length > 0 ? (
           <FlatList
                     data={[customerPropertyData]} // Wrap properties in an array since FlatList expects an array
                     renderItem={renderCustomerItem}
@@ -267,7 +303,9 @@ const fetchMoreCommonProperties = async () => {
            </>
           <SortHeader title="Properties" onSortPress={() => {}} isSortVisible={false} />
           <>
-          {commonPropertyData.length > 0 ? (
+          {initialPropertyLoading ? (
+             <ActivityIndicator size="large" color={PRIMARY_COLOR} style={styles.loadingIndicator} />
+            ) : commonPropertyData.length > 0 ? (
           <FlatList
             data={[commonPropertyData]}
             renderItem={renderPropertyItem}
@@ -321,6 +359,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#757575',
     fontFamily: 'Poppins'
+  },
+  loadingIndicator:{
+    width: '100%', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginVertical: 20,
   },
   
 });

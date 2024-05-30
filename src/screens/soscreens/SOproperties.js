@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet,  StatusBar, View, Text, FlatList, ActivityIndicator} from 'react-native';
+import { StyleSheet,  StatusBar, View, Text, FlatList, ActivityIndicator} from 'react-native';
 import SortHeader from '../../components/SortHeader';
 import Carousel from '../../components/Carousel';
 import HeaderContainer from '../../components/HeaderContainer';
@@ -32,6 +32,7 @@ const SOproperties = ({route, navigation}) => {
       params: { 
         propertyId: propertyId, 
         phaseId: phaseId, 
+        backScreen: "Properties"
     }});
   };
 
@@ -82,7 +83,9 @@ const SOproperties = ({route, navigation}) => {
       <HeaderContainer title="Properties" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
-      onPress={()=>{navigation.goBack()}}/>
+      onPress={()=>{ navigation.navigate("SO home", {
+        screen: "SO home",
+      })}}/>
        <>
         {soProperties.length > 0 ? (
        <FlatList

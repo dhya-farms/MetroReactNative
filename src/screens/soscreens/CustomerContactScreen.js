@@ -21,7 +21,6 @@ const CustomerContactScreen = ({route, navigation}) => {
   const routeCustomers = route.params?.customers;
   const routeNextPage = route.params?.nextPage
   const unsortedCustomerData = routeCustomers || soCustomers;
-  console.log(soCustomers)
   const nextPageData = routeNextPage || nextSoGlobalPageUrl
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -113,7 +112,7 @@ const CustomerContactScreen = ({route, navigation}) => {
         />
       ) : (
         <View style={styles.npContainer}>
-          <Text style={styles.nopText}>Error Occured. Plaease Try Again</Text>
+          <Text style={styles.nopText}>Customer Not Assigned Yet</Text>
         </View>
         )}
       </>

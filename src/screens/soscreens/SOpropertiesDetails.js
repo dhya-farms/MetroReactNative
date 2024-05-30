@@ -39,9 +39,11 @@ const SOpropertiesDetails = ({route, navigation}) => {
   const [imageModalVisible, setImageModalVisible] = useState(false)
   const [isAddClientModalVisible, setAddClientModalVisible] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [listCustomersPageUrl, setListCustomersPageUrl] = useState(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [selectedValue, setSelectedValue] = useState('');
   const [showAll, setShowAll] = useState(false);
+  const [backscreen, setBackScreen] = useState('')
   const [textShown, setTextShown] = useState(false);
   const [prId, setPrId] = useState(null)
   const scrollViewRef = useRef();
@@ -60,6 +62,17 @@ const SOpropertiesDetails = ({route, navigation}) => {
     setPrId(effectivePropertyId)
     console.log("Effective Property ID for use:", effectivePropertyId);
     console.log("Effective phase ID for use:", effectivePhaseId);
+
+    const nestedBackScreen = route.params?.params?.backScreen;
+    const directBackScreen = route.params?.backScreen;
+    const effectiveBackScreen = nestedBackScreen || directBackScreen;
+
+    if (effectiveBackScreen) {
+      console.log("Navigated from:", effectiveBackScreen);
+      setBackScreen(effectiveBackScreen)
+    } else {
+      console.log("No Back Screen provided in route params.");
+    }
 
     const fetchPropertyAndCustomers = async () => {
       setLoading(true);
@@ -107,12 +120,12 @@ const SOpropertiesDetails = ({route, navigation}) => {
         } else {
           throw new Error("No property ID provided");
         }
-
-
-        const fetchedCustomers = await fetchSoCustomersList(paramsToken, paramsSoId);
+      
+        const { customers: fetchedCustomers, nextPage: nextPageUrl } = await fetchSoCustomersList(paramsToken, paramsSoId);
         if (!fetchedCustomers.error) {
           const sortedCustomers = fetchedCustomers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
           setCustomers(sortedCustomers);
+          setListCustomersPageUrl(nextPageUrl)
           console.log(sortedCustomers);
         } else {
           console.error('Error fetching customers:', fetchedCustomers.error);
@@ -172,9 +185,13 @@ const SOpropertiesDetails = ({route, navigation}) => {
     return <><Text>Property details not found.</Text> {console.log(propertyId)}</>;
   }
 
-  const amenitiesArray = propertyDetails.details.amenities.map(item => item.trim()).filter(Boolean);
+  const amenitiesArray = propertyDetails?.amenities?.map(item => ({
+    name: item.name,
+    logo: item.logo
+   })) || [];
 
   const handleCustomerSelect = (selectedName) => {
+    console.log("selectedName", selectedName)
     const customer = customers.find(c => c.name === selectedName);
     if (customer) {
       console.log(`Selected customer ID: ${customer.id}`); // Log the customer ID
@@ -207,6 +224,21 @@ const SOpropertiesDetails = ({route, navigation}) => {
       console.error("Failed to post CRM lead", error);
     }
   };
+
+  const handleBack = () => {
+    if (backscreen==="Home") {
+      navigation.navigate("SO home", {
+        screen: "SO home",
+      });
+    
+    } else if(backscreen==="Properties"){
+      navigation.navigate("SO Sites", {
+        screen: "SO Properties",
+      });
+    } else {
+      navigation.goBack();
+    }
+  };
   
   
   return (
@@ -214,7 +246,7 @@ const SOpropertiesDetails = ({route, navigation}) => {
       <HeaderContainer title="Properties" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
-      onPress={()=>{navigation.goBack()}}/>
+      onPress={handleBack}/>
     <ScrollView ref={scrollViewRef} style={styles.container} contentContainerStyle={styles.contentContainer}>    
      <View style={styles.slidingContainer}>
       <SlidingCarousel images={carouselImages}/>
@@ -267,11 +299,13 @@ const SOpropertiesDetails = ({route, navigation}) => {
         setModalVisible={setAddClientModalVisible}
         selectedValue={selectedValue}
         setSelectedValue={handleCustomerSelect} // Pass the function to handle selection
-        options={["Add New Customer", ...customers.map(customer => customer.name)]}
+        initialOptions={["Add New Customer", ...customers.map(customer => customer.name)]}
         onDone={handleDone} 
         showSuccessMessage={showSuccessMessage}
         navigation={navigation}
-        propertyId={prId}// Map customer names as options
+        propertyId={prId}
+        nextCustomerPageUrl={listCustomersPageUrl}
+        setCustomers={setCustomers}// Map customer names as options
       />
     <View style={styles.bookContainer}>
     <TouchableOpacity style={styles.bookButton} onPress={() => setAddClientModalVisible(true)}>

@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
-const BASE_URL = 'https://splashchemicals.in/metro/api';
 const DEFAULT_PROPERTIES_ENDPOINT = `${BASE_URL}/properties/`; // Remove `?page=all` to support pagination
 
 // Function to get authorization headers
@@ -44,6 +45,7 @@ export const fetchProperties = async (paramsToken, pageUrl = null) => {
     const properties = response.data.results.map(property => {
       if (property.phases && property.phases.length) {
         const filteredImages = property.images.filter(img => img.is_thumbnail && !img.is_slider_image);
+        console.log('properties',)
         return property.phases.map(phase => ({
           ...property,
           id: phase.id, 
@@ -51,14 +53,14 @@ export const fetchProperties = async (paramsToken, pageUrl = null) => {
           name: `${property.name} Phase-${phase.phase_number}`, 
           phaseDetails: phase, // Include detailed phase info
           displayText: getDisplayInfo(property, phase), // Specific to phase
-          sqFtFrom: phase.sq_ft_from, // Specific to phase
+          sqFtFrom: phase.sq_ft_from,
+          rating: property.rating, // Specific to phase
           images: filteredImages, // Shared images across phases
         }));
       } else {
         // If no phases, return property as is but with enhanced structure
         return [{
           ...property,
-          displayText: determineDisplayText(property), // Delegate text determination to a function
           images: property.images,
         }];
       }

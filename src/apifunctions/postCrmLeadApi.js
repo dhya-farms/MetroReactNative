@@ -1,9 +1,11 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
 export const postCrmLead = async (paramsToken, propertyId, phaseId, customerId, assignedSoId) => {
   const token = paramsToken || await AsyncStorage.getItem('userToken');
-  const url = 'https://splashchemicals.in/metro/api/crm-leads/';
+  const url = `${BASE_URL}/crm-leads/`;
   const data = {
     property_id: propertyId,
     customer_id: customerId,

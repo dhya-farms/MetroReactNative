@@ -1,8 +1,9 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
-const BASE_URL = 'https://splashchemicals.in/metro';
-const USER_DETAILS_ENDPOINT = `${BASE_URL}/api/status-change-requests/`;
+const USER_DETAILS_ENDPOINT = `${BASE_URL}/status-change-requests/?approval_status=5`;
 
 const getAuthHeaders = async (token) => {
   const authToken = token || await AsyncStorage.getItem('userToken');
@@ -16,7 +17,7 @@ const getAuthHeaders = async (token) => {
   };
 };
 
-export const fetchStatusRequests = async (paramsToken, pageUrl = null) => {
+export const fetchStatusRequests = async (paramsToken, requestedById, pageUrl = null) => {
     let headers;
     try {
       headers = await getAuthHeaders(paramsToken);
@@ -25,10 +26,18 @@ export const fetchStatusRequests = async (paramsToken, pageUrl = null) => {
       return [];  // Consider how you want to handle this case in your app
     }
 
-    const url = pageUrl || `${USER_DETAILS_ENDPOINT}`;
-    
+    const baseUrl = new URL(pageUrl || USER_DETAILS_ENDPOINT);
+
+    // Check if requestedById is needed and not already included
+    if (requestedById && !baseUrl.searchParams.has('requested_by_id')) {
+        baseUrl.searchParams.append('requested_by_id', requestedById);
+    }
+
+    console.log('url', baseUrl.toString());
+
     try {
-        const response = await axios.get(url, { headers });
+        const response = await axios.get(baseUrl.toString(), { headers });
+        
         const formattedData = response.data.results.map((item) => {
           return {
                     id: item.crm_lead.id,

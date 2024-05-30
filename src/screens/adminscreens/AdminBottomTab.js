@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import AdminPropertyNavigator from '../../navigations/AdminScreenNavigator';
-import AdminHome from './AdminHome';
 import AdminCustomerScreenNavigator from '../../navigations/AdminCustomerScreenNavigator';
 import SoscreenNavigator from '../../navigations/SOscreenNavigator';
 import AdminSettings from './AdminSettings';
@@ -40,6 +39,7 @@ const AdminBottomTab = () => {
       screenOptions={{
         tabBarActiveTintColor: '#1D9BF0',
         tabBarInactiveTintColor: 'white',
+        tabBarHideOnKeyboard: true,
         headerShown: false,
         tabBarStyle: { 
           backgroundColor: '#1D9BF0', 

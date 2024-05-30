@@ -102,6 +102,11 @@ const CustomerPaymentMethod = ({route, navigation}) => {
       return null;
     };
 
+    const handleCancel = ()=>{
+      navigation.goBack();
+    }
+  
+
     
     
 
@@ -285,7 +290,7 @@ const CustomerPaymentMethod = ({route, navigation}) => {
                         )}
                       </View>
                       {showInputFields && renderInputField()}
-                      <CancelNextButton handleNext={handleNext}  handleSaveAndAddNew={handleSaveAndAddNew}/>
+                      <CancelNextButton handleNext={handleNext}  handleSaveAndAddNew={handleSaveAndAddNew} handleCancel={handleCancel}/>
                       {errorMessage.length > 0 && (
                         <Text style={styles.errorText}>{errorMessage}</Text>
                       )}

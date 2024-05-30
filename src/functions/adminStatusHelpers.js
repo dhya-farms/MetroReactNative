@@ -6,7 +6,7 @@ export const getStatusColor = (status) => {
     } else if (status.isPending) {
       return '#FDF525'; 
     } else if (status.isRejected) {
-      return '#FF0000'; 
+      return 'red'; 
     } else if (status.isCompleted) {
       return '#80FF00'; 
     } else if (status.isProgress) {

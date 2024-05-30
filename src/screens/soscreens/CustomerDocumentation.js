@@ -13,6 +13,8 @@ import Toast from 'react-native-toast-message';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRefresh } from '../../contexts/useRefreshContext';
+import getEnvVars from '../../../config';
+const { BASE_URL } = getEnvVars();
 
 
 const CustomerDocumentation = ({route, navigation}) => {
@@ -135,7 +137,7 @@ const CustomerDocumentation = ({route, navigation}) => {
     
             if (allSuccessful) {
                 // All documents uploaded successfully, proceed to patch
-                const patchResponse = await axios.patch(`https://splashchemicals.in/metro/api/crm-leads/${customerDetails.id}/`, {
+                const patchResponse = await axios.patch(`${BASE_URL}/crm-leads/${customerDetails.id}/`, {
                     current_crm_status: 3,
                     current_approval_status: 1,
                 }, 
@@ -152,7 +154,6 @@ const CustomerDocumentation = ({route, navigation}) => {
                     triggerDataRefresh();
                     navigation.navigate('SO Client', {
                         screen: 'SO Customer Details',
-                        params: { refetch: true }
                     });
                 }, 2200);
             } else {

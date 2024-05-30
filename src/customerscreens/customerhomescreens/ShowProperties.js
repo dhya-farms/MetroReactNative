@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, Image, ScrollView, StatusBar, ActivityIndicator} from 'react-native';
 import SlidingCarousel from '../../components/SlidingCarousel';
-import { SafeAreaView } from 'react-native';
 import LayoutHeader from '../../components/LayoutHeader';
 import { TabBar } from '../../components/TabComponent';
 import EnquireContainer from '../../components/EnquireContainer';
@@ -10,8 +9,8 @@ import LayoutImageModal from '../../modals/LayoutImageModal';
 import styles from '../../constants/styles/showpropertiesstyles';
 import AmenitiesDisplay from '../../components/AmenitiesDisplay';
 import { fetchPropertyDetails } from '../../apifunctions/fetchPropertyDetailsApi';
-
-
+import { DetailItems } from '../../functions/DetailItems';
+import { handleBack } from '../../functions/generalHandleBack';
 
 
 const dummyImageUri = require('../../../assets/images/Newmetro.jpeg')
@@ -137,102 +136,30 @@ const ShowProperties = ({ route, navigation }) => {
       (x, y, width, height) => {
         scrollViewRef.current.scrollTo({ x: 0, y, animated: true });
       },
-      () => {} // Error callback method
+      () => {} 
     );
   };
 
-  function formatSquareFeet(sqFt) {
-    // Convert to a float to remove any non-numeric characters
-    const number = parseFloat(sqFt);
-    // Check if the number is an integer
-    if (number % 1 === 0) {
-        return number.toString(); // Return as integer
-    } else {
-        return number.toFixed(2); // Keep two decimal places if needed
-    }
-}
 
   if (!propertyDetails) {
-    return <><Text>Property details not found.</Text> {console.log(propertyId)}</>;
+    return <><Text>Property details not found.</Text></>;
   }
 
-  const formatLabel = (key) => {
-    // Transform key from snake_case or camelCase to readable format
-    return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
- };
 
-  const DetailItems = ({ details }) => {
 
-    const handleToggleShowAll = () => {
-      setShowAll(!showAll); // Toggle the state to show/hide additional details
-    };
+  const amenitiesArray = propertyDetails?.amenities?.map(item => ({
+    name: item.name,
+    logo: item.logo
+   })) || [];
 
-    const excludeKeys = ['amenities', 'sq_ft_from', 'phase_number'];
-
-    const sortedKeys = Object.keys(details).filter(key => !excludeKeys.includes(key)); // Exclude 'amenities'
-    const initialKeys = sortedKeys.slice(0, 3); // First three entries
-    const additionalKeys = sortedKeys.slice(3); // Remaining entries
-
-    return (
-      <View style={styles.plotContainer}>
-      <Text style={styles.plotHeader}>Plots Information:</Text>
-      {phaseDetails && (
-      <>
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoLabel}>No of Plots:</Text>
-          <Text style={styles.infoContent}>{phaseDetails.no_of_plots}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoLabel}>{phaseDetails.area_size_unit.name_vernacular} From:</Text>
-          <Text style={styles.infoContent}>from {formatSquareFeet(phaseDetails.area_size_from)}{phaseDetails.area_size_unit.name_vernacular}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoLabel}>Phase Number:</Text>
-          <Text style={styles.infoContent}>{phaseDetails.phase_number}</Text>
-        </View>
-      </>
-    )}
-      {initialKeys.concat(showAll ? additionalKeys : []).map((key) => {
-        const label = formatLabel(key);
-        return (
-          <View key={key} style={styles.infoContainer}>
-            <Text style={styles.infoLabel}>{label}:</Text>
-            <Text style={styles.infoContent}>{details[key].toString()}</Text>
-          </View>
-      );
-    })}
-    {sortedKeys.length > 3 && ( // Only show toggle if there are more than three items
-        <TouchableOpacity onPress={handleToggleShowAll}>
-        <Text style={styles.smText}>{showAll ? 'Show Less -' : 'Show More +'}</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
-  };
-
-  const amenitiesArray = propertyDetails.details.amenities.map(item => item.trim()).filter(Boolean);
-
-  const handleBack = () => {
-    if (backscreen==="Home") {
-      navigation.navigate("Home");
-    
-    } else if(backscreen==="Properties"){
-      navigation.navigate("properties", {
-        screen: "Customer Properties",
-      });
-    } else if(backscreen==="Favorites"){
-      navigation.navigate("Favorites");
-    } else {
-      navigation.goBack();
-    }
-  };
+  
   
   return (
     <View style={styles.mainContainer}>
       <HeaderContainer title="Properties" 
           ImageLeft={require('../../../assets/images/back arrow icon.png')}
           ImageRight={require('../../../assets/images/belliconblue.png')}
-          onPress={handleBack}/>     
+         onPress={() => handleBack(backscreen, navigation)}/>     
     <ScrollView ref={scrollViewRef} style={styles.container} contentContainerStyle={styles.contentContainer}>
     <View style={styles.slidingContainer}>
       <SlidingCarousel images={carouselImages}/>
@@ -258,8 +185,8 @@ const ShowProperties = ({ route, navigation }) => {
     <TouchableOpacity onPress={toggleTextShown}>
     <Text style={styles.smText}>{textShown ? 'Show Less -' : 'Show More +'}</Text>
     </TouchableOpacity>
- 
-    <DetailItems details={propertyDetails.details} />
+    <DetailItems details={propertyDetails.details} phaseDetails={phaseDetails}
+       showAll={showAll} setShowAll={setShowAll}/>
     </View>
     <AmenitiesDisplay ref={amRef} amenities={amenitiesArray} />
     <View ref={gmRef} style={styles.gmContainer}>

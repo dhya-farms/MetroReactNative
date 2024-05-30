@@ -31,6 +31,8 @@ import UploadIcon from 'react-native-vector-icons/FontAwesome5'
 import { useRefresh } from '../../contexts/useRefreshContext';
 import { fetchFullPaymentDetails } from '../../functions/fetchFullPaymentDeatils';
 import { fetchDocumentationDeliveryDetails } from '../../functions/fetchDocumentDeliveryDetails';
+import { InfoRow } from '../../functions/detailsInfoRow';
+
 
 
 
@@ -66,6 +68,7 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
   const [pickupTime, setPickupTime] = useState('')
   const [dropAddress, setDropAddress] = useState('')
   const [backscreen, setBackScreen] = useState('')
+  const [balanceAmount, setBalanceAmount] = useState(null)
   const [plot, setPlot] = useState({})
   const [selectedPaymentMethod, setSelectedPaymentMethod]= useState('')
   const [selectedPaymentId, setSelectedPaymentId]= useState(null)
@@ -186,6 +189,8 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
         const updatedStatus = updateStatusBasedOnResponse(status, statusName, crmStatusName, plotInfo);
           setStatus(updatedStatus);        
           setPlot(details.fullDetails.plot)
+          setBalanceAmount(details.fullDetails.amount_to_paid)
+
       
   
         const fetchedSliderImages = details.propertyDetails.images
@@ -280,9 +285,24 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
       const relevantStatusChange = status.payment.isApproved || status.payment.isRejected || status.payment.isCompleted || status.payment.isPending;
       if (relevantStatusChange) {
         console.log("Fetching payment details due to status change in payment.");
-        fetchFullPaymentDetails(effectivePropertyId, setLoading, setStatus, setError); 
+        fetchFullPaymentDetails(effectivePropertyId, setLoading, setStatus, setError)
+          .then(() => {
+            fetchStatus(effectivePropertyId)
+              .then((statusDetails) => {
+                setBalanceAmount(statusDetails.balanceAmount);
+              })
+              .catch((error) => {
+                console.error('Failed to fetch status after payment details:', error);
+                setError("Failed to fetch status after payment details");
+              });
+          })
+          .catch((error) => {
+            console.error('Failed to fetch payment details:', error);
+          });
       }
     }, [effectivePropertyId, dummyState, status.payment.isApproved ,status.payment.isRejected, status.payment.isCompleted, status.payment.isPending]);
+
+
 
     useEffect(() => {
       const relevantStatusChange = status.ddDelivery.isCompleted ;
@@ -448,7 +468,6 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
         type: 'success',
         text1: 'Token Advance Completed Sucessfully',
         visibilityTime: 1800,  
-        
       });
       toggleModalVisibility('paymentModalVisible', false);
     } catch (error) {
@@ -487,7 +506,7 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
       setFullPaymentCompleted(true)
     }
 
-  };
+ };
 
   const handleDocVeifyDone = () => {
       toggleModalVisibility('docverifyModalVisible', false);
@@ -501,35 +520,15 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
 
 
 
-  const InfoRow = ({ label, value }) => (
-    <View style={styles.infoRow}>
-      <Text style={[styles.contextText, styles.labelText]}>{label}</Text>
-      <Text style={[styles.contextText, styles.colonText]}>:</Text>
-      <Text style={[styles.contextText, styles.valueText]}>{value}</Text>
-    </View>
-  );
 
-
-  const formatLabel = (label) => {
-    return label.split('_')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' ');
-  };
-
-  function formatSquareFeet(sqFt) {
-    // Convert to a float to remove any non-numeric characters
-    const number = parseFloat(sqFt);
-    // Check if the number is an integer
-    if (number % 1 === 0) {
-        return number.toString(); // Return as integer
-    } else {
-        return number.toFixed(2); // Keep two decimal places if needed
-    }
-}
-
-
-  const amenitiesArray = propertyDetails?.details?.amenities?.map(item => item.trim()).filter(Boolean) || [];
-  const nearByArray = propertyDetails?.details?.nearby_attractions?.map(item => item.trim()).filter(Boolean) || [];
+  const amenitiesArray = propertyDetails?.amenities?.map(item => ({
+  name: item.name,
+  logo: item.logo
+})) || [];
+  const nearByArray = propertyDetails?.nearby_attractions?.map(item => ({
+    name: item.name,
+    logo: item.logo
+  })) || []
 
   
   return (
@@ -567,8 +566,8 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
       <View style={styles.verticalLine}></View>
       <View style={styles.balanceAmountContainer}>
       <Text style={styles.statusText}>Progress Status:</Text>
-        {status.tokenAdvance.isCompleted && (
-         <Text style={[styles.paymentText, {fontSize: 12}]}>Balance Amount: {fullDetails.amount_to_paid}</Text>
+        {(status.tokenAdvance.isCompleted || status.tokenAdvance.isPending || status.tokenAdvance.isPending) && (
+         <Text style={[styles.paymentText, {fontSize: 12}]}>Balance Amount: {balanceAmount|| ''}</Text>
         )}
         </View>
       <View style={styles.itemContainer}>
@@ -743,7 +742,7 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
         <View style={[
           styles.statusItem, getStatusItemStyle(status.payment)] }>
           <Text style={styles.siteText}>Payment</Text>
-          {status.payment.isProgress || status.payment.isPending && (
+          {(status.payment.isProgress || status.payment.isPending) && (balanceAmount > 0) && (
             <TouchableOpacity onPress={() => toggleModalVisibility('completePaymentModalVisible', true)}  style={styles.button}>
             <Text style={styles.buttonText}>Pay</Text>
             </TouchableOpacity>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, Image } from 'react-native';
 import styles from '../constants/styles/propertydetailsstyles';
-import { getNearByIcon } from './NearbyIcons';
 
 
 const NearbyDisplay = ({ nearby }) => (
@@ -10,8 +9,8 @@ const NearbyDisplay = ({ nearby }) => (
     <View style={styles.NearbyContainer}>
       {nearby.map((nearby, index) => (
         <View key={index} style={styles.nearby}>
-        <Image source={getNearByIcon(nearby)} style={styles.icon} />
-        <Text style={styles.text}>{nearby}</Text>
+        <Image source={{ uri: nearby.logo }} style={styles.icon} />
+        <Text style={styles.text}>{nearby.name}</Text>
       </View>
       ))}
     </View>

@@ -1,8 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
-const BASE_URL = 'https://splashchemicals.in/metro/api';
-// Function to get authorization headers
+
 const getAuthData = async (paramsToken, paramsDirectorId) => {
     const token = paramsToken || await AsyncStorage.getItem('userToken');
     const directorId = paramsDirectorId || await AsyncStorage.getItem('userId'); // Assume 'userId' is the storage key for directorId
@@ -86,7 +87,7 @@ function formatPropertyDetails(property) {
 // Fetch properties for admin by director_id
 export async function fetchAdminProperties(paramsToken, paramsDirectorId, pageUrl = null) {
   const { headers, directorId } = await getAuthData(paramsToken, paramsDirectorId);
-  const url = pageUrl || `${BASE_URL}/properties/?director_id=${directorId}`;
+  const url = pageUrl || `${BASE_URL}/properties/`;
 
   try {
     const response = await axios.get(url, { headers });

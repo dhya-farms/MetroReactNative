@@ -1,21 +1,59 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput, StatusBar} 
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput, StatusBar, Alert, Linking} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import ContactButton from '../../components/ContactButton';
+import { fetchSoDetails } from '../../apifunctions/fetchSoDetailsApi';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
-const handleCallPress = ()=>{
 
-}
-
-const handleChatPress = ()=>{
-    
-}
 
 const CustomerSupport = ({navigation}) => {
   const [query, setQuery] = useState('');
+  const [userDetails, setUserDetails] = useState({});
+
+  const handleCallPress = () => {
+    const phoneNumber = userDetails.mobile_no;
+    if (phoneNumber) {
+      Linking.openURL(`tel:${phoneNumber}`);
+    } else {
+      Alert.alert('Error', 'No phone number available');
+    }
+  };
+  
+  // Handle WhatsApp chat
+  const handleChatPress = () => {
+    const phoneNumber = userDetails.mobile_no;
+    if (phoneNumber) {
+      Linking.openURL(`https://wa.me/${phoneNumber}`);
+    } else {
+      Alert.alert('Error', 'No phone number available');
+    }
+  };
+
+  const handleFetchUserDetails = async () => {
+    try {
+      const createdBy = await AsyncStorage.getItem('createdBy');
+      const userToken = await AsyncStorage.getItem('userToken');
+      const details = await fetchSoDetails(createdBy, userToken);
+      if (details.error) {
+        Alert.alert('Error', details.error);
+      } else {
+        setUserDetails(details);
+        console.log('Fetched user details:', details);
+      }
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      Alert.alert('Error', 'Failed to fetch user details');
+    }
+  };
+
+  // Optionally, fetch details when the component mounts
+  useEffect(() => {
+    handleFetchUserDetails();
+  }, []);
 
 
   return (

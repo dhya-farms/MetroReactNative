@@ -21,16 +21,13 @@ import { fetchDocumentationDeliveryDetails } from '../../functions/fetchDocument
 import { makeCrmLeadInactive } from '../../apifunctions/makeCrmLeadInactive';
 import Toast from 'react-native-toast-message';
 import { useRefresh } from '../../contexts/useRefreshContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { updateStatusBasedOnResponse } from '../../functions/adminUpdateStatus';
+import { InfoRow } from '../../functions/detailsInfoRow';
+import getEnvVars from '../../../config';
+const { BASE_URL } = getEnvVars();
 
 
-
-const InfoRow = ({ label, value }) => (
-    <View style={styles.infoRow}>
-      <Text style={[styles.contextText, styles.labelText]}>{label}</Text>
-      <Text style={[styles.contextText, styles.colonText]}>:</Text>
-      <Text style={[styles.contextText, styles.valueText]}>{value}</Text>
-    </View>
-  );
 
 
 const AdminCustomerDetails = ({route, navigation}) => {
@@ -38,6 +35,7 @@ const AdminCustomerDetails = ({route, navigation}) => {
   const { triggerDataRefresh } = useRefresh();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [userRole, setUserRole] = useState(null);
   const [backscreen, setBackScreen] = useState('')
   const [customerDetails, setCustomerDetails] = useState(null);
   const [ismodalVisible, setisModalVisible] = useState(false);
@@ -46,7 +44,6 @@ const AdminCustomerDetails = ({route, navigation}) => {
   const [tokenRefetch, setTokenRefetch] = useState(false)
   const [documentReFetch, setDocumentRefetch] = useState(false)
   const [paymentRefetch, setPaymentRefetch] = useState(false)
-
   const effectiveCustomerId= customerId || route.params?.customerId
   const [buttonsDisabled, setButtonsDisabled] = useState(false);
   const [status, setStatus] = useState({
@@ -98,79 +95,6 @@ const AdminCustomerDetails = ({route, navigation}) => {
   });
 
 
-
-
-
-  const statusMapping = {
-    'SITE_VISIT': 'siteVisit',
-    'TOKEN_ADVANCE': 'tokenAdvance',
-    'DOCUMENTATION': 'documentation',
-    'PAYMENT': 'payment',
-    'DOCUMENT_DELIVERY': 'ddDelivery'
-  };
-
-const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails) => {
-    let newState = { ...status };
-    const allStageKeys = Object.keys(statusMapping); // Get all the keys from the mapping
-    const normalizedCrmStatusName = crmStatusName ? crmStatusName.toUpperCase() : "";
-
-    console.log("All stage keys:", allStageKeys); // Display all keys
-    console.log("Normalized CRM Status Name:", normalizedCrmStatusName);
-    
-    if (!normalizedCrmStatusName || !(normalizedCrmStatusName in statusMapping)) {
-      allStageKeys.forEach(key => newState[statusMapping[key]] = {
-          isPending: false,
-          isApproved: false,
-          isRejected: false,
-          isCompleted: false,
-          isProgress: false
-      });
-      newState[statusMapping[allStageKeys[0]]].isProgress = true; // Set the first stage to in progress
-      console.log("No valid CRM status, setting initial stage to progress");
-      return newState;
-  }// Display normalized name
-
-    // Use the keys to find the index
-    const currentStageIndex = allStageKeys.indexOf(normalizedCrmStatusName);
-    console.log("current stage index", currentStageIndex);
-
-
-    const currentStage = statusMapping[normalizedCrmStatusName]; // This should now correctly retrieve 'siteVisit', 'tokenAdvance', etc.
-
-    // Initialize all stages to default values
-    allStageKeys.forEach(key => {
-        newState[statusMapping[key]] = {
-            isPending: false,
-            isApproved: false,
-            isRejected: false,
-            isCompleted: false,
-            isProgress: false
-        };
-    });
-
-    // Set the current stage based on the status
-    newState[currentStage] = {
-        isPending: statusName === "PENDING",
-        isApproved: statusName === "APPROVED",
-        isRejected: statusName === "REJECTED",
-        isCompleted: statusName === "COMPLETED",
-        isProgress: statusName === null || statusName === "IN_PROGRESS"
-    };
-
-    // Update previous stages to completed
-    for (let i = 0; i < currentStageIndex; i++) {
-        newState[statusMapping[allStageKeys[i]]].isCompleted = true;
-    }
-
-    // Set the next stage to in progress if the current stage is completed
-    if (newState[currentStage].isCompleted && currentStageIndex + 1 < allStageKeys.length) {
-        newState[statusMapping[allStageKeys[currentStageIndex + 1]]].isProgress = true;
-    }
-
-    return newState;
-  };
-
-
   const fetchCustomerDetails = async (effectiveCustomerId) => {
     if (!effectiveCustomerId) {
         console.log("No customer ID provided");
@@ -193,7 +117,7 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
 
     setLoading(true);
     try {
-        const response = await axios.get(`https://splashchemicals.in/metro/api/crm-leads/${effectiveCustomerId}/`);
+        const response = await axios.get(`${BASE_URL}/crm-leads/${effectiveCustomerId}/`);
         console.log("Fetch success:", response.data);
         setCustomerDetails(response.data);
         setStatusChangeRequestId(response.data.status_change_request?.id);
@@ -215,6 +139,19 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
         setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const getRole = async () => {
+      try {
+        const storedRole = await AsyncStorage.getItem('role');
+        setUserRole(storedRole);
+      } catch (error) {
+        console.error('Failed to fetch role from storage', error);
+      }
+    };
+  
+    getRole();
+  }, []);
 
   useEffect(() => {
     const relevantStatusChange = status.siteVisit.isApproved || status.siteVisit.isRejected || status.siteVisit.isCompleted || status.siteVisit.isPending;
@@ -269,7 +206,8 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
       console.log("Fetching payment details due to status change in payment.");
       fetchFullPaymentDetails(effectiveCustomerId, setLoading, setStatus, setError); 
     }
-  }, [effectiveCustomerId, status.payment.isApproved ,status.payment.isRejected, status.payment.isCompleted, status.payment.isPending]);
+  }, [effectiveCustomerId, status.payment.isApproved ,status.payment.isRejected, 
+    status.payment.isCompleted, status.payment.isPending]);
 
   useEffect(() => {
     const relevantStatusChange = status.ddDelivery.isCompleted ;
@@ -282,21 +220,8 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
 
     useEffect(() => {
       fetchCustomerDetails(effectiveCustomerId);
-    }, [effectiveCustomerId, route.params]);
+    }, [effectiveCustomerId]);
 
-  
-
-  if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
-  }
-
-  if (error) {
-    return <Text>Error: {error}</Text>;
-  }
-
-  if (!customerDetails) {
-    return <Text>No customer details available.</Text>;
-  }
 
   const toggleDetailsVisibility = (category) => {
     setStatus((prevState) => ({
@@ -338,6 +263,7 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
   const handleReject = (category) => {
     updateApprovalStatus(3, statusChangeRequestId) // 3 for rejected
       .then(() => {
+        console.log('Before status update:', status);
         if (category === 'tokenAdvance') {
           setSiteVisitRefetch(prev => !prev);
         } else if (category === 'documentation') {
@@ -348,14 +274,19 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
           setTokenRefetch(prev => !prev);
           setDocumentRefetch(prev=>!prev)
         } 
-        setStatus((prevState) => ({
-          ...prevState,
-          [category]: {
-            ...prevState[category],
-            isApproved: false,
-            isRejected: true,
-          },
-        }));
+        setStatus((prevState) => {
+          const newState = {
+            ...prevState,
+            [category]: {
+              ...prevState[category],
+              isPending: false,
+              isApproved: false,
+              isRejected: true,
+            },
+          };
+          console.log('After status update:', newState);
+          return newState;
+        });
         setisModalVisible(false);
         setButtonsDisabled(true);
       })
@@ -395,20 +326,6 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
     setButtonsDisabled(false); // Enable buttons when edit is clicked
   };
 
-  const handleSubmitRemarks = (category) => {
-    // Close the modal
-    setisModalVisible(false);
-  
-    // Update the status state to make detailsVisible false for the given category
-    setStatus((prevState) => ({
-      ...prevState,
-      [category]: {
-        ...prevState[category],
-        detailsVisible: false,
-      },
-    }));
-  };
-
  
 
   const handleBack = () => {
@@ -429,6 +346,18 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
       navigation.goBack();
     }
   };
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+  }
+
+  if (error) {
+    return <Text>Error: {error}</Text>;
+  }
+
+  if (!customerDetails) {
+    return <Text>No customer details available.</Text>;
+  }
   
 
   
@@ -496,7 +425,7 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
           ) : (
             <Text style={{marginLeft: 10}}>No site visit details available.</Text>
           )}
-          {!status.siteVisit.isCompleted && (
+          {!status.siteVisit.isCompleted && userRole === '1' && (
           <>
             <ApproveButton onApprovePress={() => handleApproval('siteVisit')} onRejectPress={() => setisModalVisible(true)} disabled={buttonsDisabled} handleEdit={handleEdit}/>
             <RemarkModal
@@ -510,16 +439,13 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
         </View>
       )} 
         </>
-        )}
-
-         
+        )} 
        {status.siteVisit.isPending || status.siteVisit.isApproved || status. siteVisit.isCompleted || status. siteVisit.isRejected ?  
          <TouchableOpacity onPress={()=> toggleDetailsVisibility('siteVisit')}>
           <Text style={styles.detailToggle}>
             {status.siteVisit.detailsVisible ? 'Less Details' : 'More Details >>>'}
           </Text>
         </TouchableOpacity>: null}
-       
         <View style={styles.statusContainer}>
         <View style={[styles.checkicon, { backgroundColor: getStatusColor(status.tokenAdvance) }]}>
           <Icon name={getIconName(status.tokenAdvance)} size={18} color="white" />
@@ -551,7 +477,7 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
             ) : (
               <Text style={{marginLeft: 10}}>No details available.</Text>
             )}
-             {!status.tokenAdvance.isCompleted && (
+             {!status.tokenAdvance.isCompleted && userRole === '1' && (
               <>
                   <ApproveButton onApprovePress={()=>handleApproval('tokenAdvance')} onRejectPress={() => setisModalVisible(true)} disabled={buttonsDisabled} handleEdit={handleEdit}/>
                   <RemarkModal
@@ -605,7 +531,7 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
             ) : (
               <Text style={{marginLeft: 10}}>No details available.</Text>
             )}
-            {!status.documentation.isCompleted && (
+            {!status.documentation.isCompleted && userRole === '1' && (
             <>
             <ApproveButton onApprovePress={()=>handleApproval('documentation')} onRejectPress={() => setisModalVisible(true)} disabled={buttonsDisabled} handleEdit={handleEdit}/>
             <RemarkModal
@@ -645,7 +571,7 @@ const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails)
                 <InfoRow label="Amount Paid" value={`₹${status.payment.totalAmount?.toFixed(2) || ''}`} />
                 <InfoRow label="Modes of Payment" value={status.payment.uniqueModes?.join(', ') || ''} />
                 <InfoRow label="Dates" value={status.payment.uniqueDates || ''} />
-                {(!status.payment.isCompleted && statusChangeRequestId) && (
+                {(!status.payment.isCompleted && statusChangeRequestId  && userRole === '1') && (
               <>
                 <ApproveButton onApprovePress={() => handleApproval('payment')} onRejectPress={() => setisModalVisible(true)} disabled={buttonsDisabled} handleEdit={handleEdit}/>
                 <RemarkModal

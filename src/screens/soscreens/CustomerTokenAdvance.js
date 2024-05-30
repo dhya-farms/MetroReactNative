@@ -3,12 +3,9 @@ import { View, Text, TouchableOpacity, Image, ScrollView}
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import { TextInput } from 'react-native-paper';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../../constants/styles/customertokenadvancestyles';
 import CustomTokenDropdown from '../../components/CustomTokenDropdown';
-import axios from 'axios';
 import { fetchPaymentTypes } from '../../apifunctions/paymentTypesApi';
-import updatePlotId from '../../apifunctions/updatePlotApi';
 import createPayment from '../../apifunctions/createPaymentApi';
 import { useRefresh } from '../../contexts/useRefreshContext';
 
@@ -40,8 +37,6 @@ const CustomerTokenAdvance = ({route, navigation}) => {
   const customerDetails = route.params?.customerDetails
   const plotInfo = route.params?.plotInfo
   const isNewPayment = route.params?.isNewPayment
-  const [selectedPlotNumber, setSelectedPlotNumber] = useState('');
-  const [selectedPlotId, setSelectedPlotId] = useState(plotInfo.id);
   const [selectedPaymentMethod, setSelectedPaymentMethod]= useState('')
   const [paymentMethods, setPaymentMethods] = useState([])
   const [selectedPaymentId, setSelectedPaymentId]= useState(null)
@@ -162,7 +157,7 @@ const CustomerTokenAdvance = ({route, navigation}) => {
      }
  };
   const handleCancel = ()=>{
-    navigation.navigate("SO Client", { screen: "SO Customer Details"})
+    navigation.goBack();
   }
 
 
@@ -195,7 +190,6 @@ const CustomerTokenAdvance = ({route, navigation}) => {
             setSuccessMessage('');  // Clear the success message
             navigation.navigate("SO Client", { 
               screen: "SO Customer Details",
-              params: { tokenAdvanceCompleted: true }
           }); // Navigate after success
         }, 2000);  // Delay of 2 seconds
     } catch (error) {

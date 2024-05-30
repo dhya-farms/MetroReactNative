@@ -45,6 +45,7 @@ import { fetchStatusRequests } from '../../apifunctions/fetchStatusRequests';
       try {
         const response = await fetchStatusRequests(paramsToken);
         setSoRequests(response.soRequests);
+        console.log("so" , response.soRequests)
         setNextPageUrl(response.nextPageUrl);
         setLoading(false);
       } catch (error) {
@@ -57,7 +58,7 @@ import { fetchStatusRequests } from '../../apifunctions/fetchStatusRequests';
   }, []);
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
   }
 
   return (

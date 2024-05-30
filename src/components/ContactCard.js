@@ -187,6 +187,16 @@ const styles = StyleSheet.create({
       fontSize: 12,
       marginRight: 5,
     },
+    imageContainer:{
+      width: 60,
+      height: 60,
+    },
+    personImage:{
+      width: '100%',
+      height: '100%',
+      borderRadius: 30,
+      resizeMode: 'cover'
+    },
     prContainer:{
       flexDirection: 'row',
       alignItems: 'center',

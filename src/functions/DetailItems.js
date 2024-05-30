@@ -33,7 +33,7 @@ export const DetailItems = ({ details, phaseDetails, showAll, setShowAll }) => {
     return (
       <View style={styles.plotContainer}>
       <Text style={styles.plotHeader}>Plot Information:</Text>
-      {phaseDetails && (
+      {phaseDetails.no_of_plots > 0 && (
       <>
         <View style={styles.infoContainer}>
           <Text style={styles.infoLabel}>No of Plots:</Text>

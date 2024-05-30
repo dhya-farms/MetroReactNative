@@ -104,9 +104,8 @@ const styles = StyleSheet.create({
       width: '27%', // Set this to control the number of items per row
     },
     icon: {
-      width: 35,
-      height: 35,
-      // Include other styling for your icons
+      width: 30,
+      height: 30,
     },
     text: {
       fontFamily: 'Poppins',

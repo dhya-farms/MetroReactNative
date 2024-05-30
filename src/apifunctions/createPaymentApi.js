@@ -1,9 +1,11 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
 const createPayment = async (paymentDetails) => {
   const token = await AsyncStorage.getItem('userToken'); // Get the auth token from AsyncStorage
-  const url = 'https://splashchemicals.in/metro/api/payments/';
+  const url = `${BASE_URL}/payments/`;
 
   try {
     const response = await axios.post(url, paymentDetails, {

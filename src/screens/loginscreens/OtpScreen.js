@@ -11,7 +11,7 @@ const RESEND_URL = 'https://splashchemicals.in/metro/api/otp/resend/'
 
 const OtpScreen = ({ route, navigation }) => {
   const [otp, setOtp]= useState(new Array(6).fill(''))
-  const inputsRef = useRef(new Array(6).fill().map(() => React.createRef()));
+  const inputsRef = useRef([...new Array(6)].map(() => React.createRef()));
   const [timeLeft, setTimeLeft] = useState(90); // 90 seconds for 1:30
   const [isResendButtonEnabled, setIsResendButtonEnabled] = useState(false);
   const [resetSucessMessage, setResetSucessMessage] = useState('')
@@ -50,12 +50,33 @@ const OtpScreen = ({ route, navigation }) => {
 
 
   const handleOtpChange = (text, index) => {
-    otp[index] = text;
-    setOtp([...otp]);
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
   
-    // Adjust the condition to handle up to 5 indices (for a total of 6 inputs)
+    // Move focus to next input if current input is not the last one and has been filled
     if (text !== '' && index < 5) {
-      inputsRef.current[index + 1].focus();
+      inputsRef.current[index + 1]?.current?.focus();
+    }
+  };
+  
+
+  const handleBackspace = (text, index) => {
+    // Move focus to previous input if current is empty and it's not the first input
+    if (text === '' && index > 0) {
+      inputsRef.current[index - 1]?.current?.focus();
+    }
+  };
+
+  const onKeyPress = ({ nativeEvent: { key }, index }) => {
+    if (key === 'Backspace' && otp[index] === '') {
+      // Move focus back if it is not the first input box
+      if (index > 0) {
+        handleBackspace(otp[index], index);
+        const newOtp = [...otp];
+        newOtp[index - 1] = ''; // Clear the previous input
+        setOtp(newOtp);
+      }
     }
   };
 
@@ -91,12 +112,20 @@ const OtpScreen = ({ route, navigation }) => {
         }
       });
       console.log('Verification success:', response.data);
+
+      const { user } = response.data;
+      if (!user.role) {
+        // Role is null or not defined, handle this case by showing an error message
+        console.error("User role not defined, cannot proceed with login.");
+        setResetSucessMessage('Contact your Sales Officer to Register your Number and Log in.');
+        return; // Exit function to prevent further execution
+      }
   
       // Store the token and user data
       await AsyncStorage.setItem('userToken', response.data.token);
       const userId = response.data.customer ? response.data.customer.id.toString() : response.data.user.id.toString();
       await AsyncStorage.setItem('userId', userId);
-      await AsyncStorage.setItem('role', response.data.user.role.toString());
+      await AsyncStorage.setItem('role', user.role.toString());
       if (response.data.customer && response.data.customer.created_by) {
         await AsyncStorage.setItem('createdBy', response.data.customer.created_by.toString());
       }       
@@ -104,6 +133,7 @@ const OtpScreen = ({ route, navigation }) => {
       // Determine navigation based on user role
       let navigateToTab;
       switch (response.data.user.role) {
+        case 1:
         case 2:
           navigateToTab = {
             name: 'AdminBottomTab',
@@ -152,20 +182,9 @@ const OtpScreen = ({ route, navigation }) => {
           break;
         default:
           // Define a default navigation if the role doesn't match known values
-          navigateToTab = {
-            name: 'CustomerBottomTab',
-            params: {
-              screen: 'Home', // Assuming 'Home' is the tab containing CustomerHomeScreenNavigator
-              params: {
-                screen: 'Customer Home', // Assuming 'Customer Home' is the route name within CustomerHomeScreenNavigator
-                params: {
-                  token: response.data.token,
-                  userId: response.data.customer.id.toString(),
-                }
-              }
-            }
-          }; // Adjust as needed
-          break;
+          console.error('User role is undefined or not recognized');
+          setResetSucessMessage('Contact your Sales Officer to Register your Number and Log in.');
+          return;
       }
   
       // Reset the navigation stack to the determined tab and screen
@@ -176,7 +195,8 @@ const OtpScreen = ({ route, navigation }) => {
     } catch (otpError) {
       console.error('Verification error:', otpError.response ? otpError.response.data : otpError.message);
       console.log('Sent OTP:', enteredOtp);
-      // Handle error, show message to user
+      setResetSucessMessage('An error occurred. Please try again.');
+  
     }
   };
   
@@ -193,15 +213,16 @@ const OtpScreen = ({ route, navigation }) => {
         />
       </View>
       <View style={styles.otpContainer}>
-        {otp.map((_, index) => (
+      {otp.map((value, index) => (
           <TextInput
             key={index}
-            ref={el => inputsRef.current[index] = el}
+            ref={inputsRef.current[index]}
             style={styles.otpBox}
             maxLength={1}
-            keyboardType="number-pad" // Ensure the keyboard is numeric
+            keyboardType="number-pad"
             onChangeText={(text) => handleOtpChange(text, index)}
-            value={otp[index]}
+            onKeyPress={(event) => onKeyPress({ nativeEvent: event.nativeEvent, index })}
+            value={value}
           />
         ))}
       </View>
@@ -211,7 +232,13 @@ const OtpScreen = ({ route, navigation }) => {
       </TouchableOpacity>
       <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
      </View>
-     {resetSucessMessage ? <Text style={styles.errorMessage}>{resetSucessMessage}</Text> : null}
+     <>
+     {resetSucessMessage && 
+     <View style={styles.erContainer}>
+      <Text style={styles.errorMessage}>{resetSucessMessage}</Text> 
+      </View>
+     }
+     </>
      <TouchableOpacity style={styles.changeNumContiner} onPress={changeNumberPress}>
         <Text style={styles.cnText}>{phoneNumber} Change number?</Text>
      </TouchableOpacity>
@@ -282,10 +309,18 @@ const styles = StyleSheet.create({
       color: '#A4B6C6',
       textAlign: 'center',
     },
+    erContainer:{
+      width: '80%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginVertical: 15,
+    },
     errorMessage:{
       fontFamily: 'Poppins',
       fontWeight: '400',
-      color: '#5cb85c',
+      color: 'red',
+      fontSize: 12,
+      textAlign: 'center'
     }
   })
 

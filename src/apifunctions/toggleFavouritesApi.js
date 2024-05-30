@@ -1,5 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
+
 
 export const toggleFavorite = async (propertyId, shouldLike, paramsToken, onFavoriteStatusChange) => {
   // Function to obtain the auth headers
@@ -13,8 +16,8 @@ export const toggleFavorite = async (propertyId, shouldLike, paramsToken, onFavo
   };
   const headers = await getAuthHeaders()
   const endpoint = shouldLike
-    ? `https://splashchemicals.in/metro/api/phases/${propertyId}/add-to-favorites/`
-    : `https://splashchemicals.in/metro/api/phases/${propertyId}/remove-from-favorites/`;
+    ? `${BASE_URL}/phases/${propertyId}/add-to-favorites/`
+    : `${BASE_URL}/phases/${propertyId}/remove-from-favorites/`;
 
   try {
     const response = await fetch(endpoint, {

@@ -1,8 +1,9 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
-const BASE_URL = 'https://splashchemicals.in/metro';
-const USER_DETAILS_ENDPOINT = `${BASE_URL}/api/users/`;
+const USER_DETAILS_ENDPOINT = `${BASE_URL}/users/`;
 
 const getAuthHeaders = async (token) => {
   const authToken = token || await AsyncStorage.getItem('userToken');

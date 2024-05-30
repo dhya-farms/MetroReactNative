@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CustomerSettings from '../customerscreens/customerhomescreens/CustomerSettings';
 import CustomerSupport from '../customerscreens/customerhomescreens/CustomerSupport';
 import CustomerFaq from '../customerscreens/customerhomescreens/CustomerFaq';
+import CustomerPolicies from '../customerscreens/customerhomescreens/CustomerPolicies';
 
 const SettingsScreen = createNativeStackNavigator();
 
@@ -26,6 +27,7 @@ const SettingsScreenNavigator = ({navigation}) => {
       <SettingsScreen.Screen name="Customer Settings" component={CustomerSettings} />
       <SettingsScreen.Screen name="Customer Support" component={CustomerSupport} />
       <SettingsScreen.Screen name="Customer Faq" component={CustomerFaq}/>
+      <SettingsScreen.Screen name="Customer Policy" component={CustomerPolicies}/>
     </SettingsScreen.Navigator>
   );
 };

@@ -13,14 +13,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchSoCustomers } from '../../apifunctions/fetchSoCustomersApi';
 import { fetchCommonProperties } from '../../apifunctions/fetchCommonProperties';
 import { fetchUpdates } from '../../apifunctions/fetchUpdatesApi';
-import { useRefresh } from '../../contexts/useRefreshContext';
-
 
 
 
 
 const SOhome = ({route, navigation}) => {
-  const { dummyState } = useRefresh();
   const [advisor, setAdvisor] = useState({});
   const [customers, setCustomers] = useState([]);
   const [properties, setProperties] = useState([]);
@@ -152,7 +149,7 @@ const SOhome = ({route, navigation}) => {
         <ActivityIndicator size="large" color="#1D9BF0" style={styles.loadingIndicator} />
      ): customers.length > 0 ? (
       <View style={{width: '100%'}}>
-        <CustomerCard customerData={customers.slice(0, 3)} onCardPress={(customerId) => {
+        <CustomerCard customerData={customers} onCardPress={(customerId) => {
             navigation.navigate("SO Client", { 
               screen: "SO Customer Details",
               params: { customerId: customerId, backScreen: "Home" } // Pass customerId to the detail screen
@@ -161,7 +158,7 @@ const SOhome = ({route, navigation}) => {
       </View>
       ) : (
         <View style={styles.npContainer}>
-          <Text style={styles.nopText}>Error Occurred. Please Try Again</Text>
+          <Text style={styles.nopText}>Customers Not Assigned Yet</Text>
         </View>
       )}
       <View style={styles.separator} />
@@ -176,7 +173,7 @@ const SOhome = ({route, navigation}) => {
         onCardPress={(propertyId, phaseId) => {
           navigation.navigate("SO Sites", {
             screen: "SO Properties Details",
-            params: { propertyId: propertyId , phaseId: phaseId,},
+            params: { propertyId: propertyId , phaseId: phaseId, backScreen: "Home"},
           });
         }}
       />

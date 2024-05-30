@@ -13,9 +13,6 @@ import SOhomeScreenNavigator from '../../navigations/SOhomeScreenNavigator';
 const Tab = createBottomTabNavigator();
 
 
-
-
-
 const CustomTabBarButton = ({ children, onPress, focused }) => (
   <TouchableOpacity
     style={{
@@ -44,6 +41,7 @@ const SObottomTab = () => {
       screenOptions={{
         tabBarActiveTintColor: '#1D9BF0',
         tabBarInactiveTintColor: 'white',
+        tabBarHideOnKeyboard: true,
         headerShown: false,
         tabBarStyle: { 
           backgroundColor: '#1D9BF0', 

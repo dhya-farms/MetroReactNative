@@ -1,38 +1,32 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableWithoutFeedback, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, LayoutAnimation, Platform, UIManager } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Make sure to install react-native-vector-icons
 
-const FaqDropdown = () => {
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+const FaqDropdown = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selection, setSelection] = useState('Select an option');
 
-  const options = ['Lorem ipsum dolor sit amet consectetur.', 'Option 2'];
-
-  const handleSelectOption = (option) => {
-    setSelection(option);
-    setIsOpen(false);
+  const toggleExpand = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIsOpen(!isOpen);
   };
+
 
   return (
     <View style={styles.container}>
-      <TouchableWithoutFeedback onPress={() => setIsOpen(!isOpen)}>
+      <TouchableOpacity onPress={toggleExpand}>
         <View style={styles.selectionBox}>
-          <Text style={styles.selectionText}>{selection}</Text>
-          <Icon name="chevron-down" size={9} color="#1D9BF0" />
+        <Text style={styles.questionText}>{question}</Text>
+        <Icon name={isOpen ? "minus" : "plus"} size={20} color="#1D9BF0" />
         </View>
-      </TouchableWithoutFeedback>
+      </TouchableOpacity>
       {isOpen && (
         <View style={styles.optionsContainer}>
-          {options.map((option, index) => (
-            <TouchableWithoutFeedback
-              key={index}
-              onPress={() => handleSelectOption(option)}
-            >
-              <View style={styles.option}>
-                <Text style={styles.optionText}>{option}</Text>
-              </View>
-            </TouchableWithoutFeedback>
-          ))}
+          <Text style={styles.answerText}>{answer}</Text>
         </View>
       )}
     </View>
@@ -41,7 +35,7 @@ const FaqDropdown = () => {
 
 const styles = StyleSheet.create({
   container: {
-    width: '80%',
+    width: '98%',
     marginVertical: 5,
   },
   selectionBox: {
@@ -51,30 +45,33 @@ const styles = StyleSheet.create({
     padding: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     backgroundColor: '#fff',
-    marginHorizontal: 5,
+    marginHorizontal: 7,
     marginVertical: 10,
   },
-  selectionText: {
+  questionText: {
     fontFamily: 'Poppins',
     fontWeight: '400',
-    fontSize: 12,
-    color: '#000000'
+    fontSize: 14,
+    color: '#000000',
+    flexShrink: 1, 
   },
   optionsContainer: {
     borderWidth: 1,
     borderColor: '#1D9BF0',
-    margin: 20,
-    borderRadius: 5,
+    borderRadius: 7,
+    padding: 15,
+    marginHorizontal: 5,
+    marginVertical: 10,
   },
   option: {
     padding: 15,
   },
-  optionText: {
+  answerText: {
     fontFamily: 'Poppins',
     fontWeight: '400',
-    fontSize: 10,
+    fontSize: 12,
     color: '#000000'
   },
 });

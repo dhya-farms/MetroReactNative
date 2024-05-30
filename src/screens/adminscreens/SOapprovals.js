@@ -16,6 +16,7 @@ const SOApprovals = ({route, navigation}) => {
   const [requests, setRequests] = useState([]);
   const routeRequests = route.params?.soRequests;
   const routeNextPage = route.params?.nextPage;
+  const effectiveSoId = route.params?.effectiveSoId || null
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState('newest');
@@ -52,7 +53,7 @@ const SOApprovals = ({route, navigation}) => {
     console.log('Setting loading true');
     setLoading(true);
     try {
-      const { soRequests: newRequests, nextPageUrl: newNextPageUrl } = await fetchStatusRequests(null, nextPageUrl);
+      const { soRequests: newRequests, nextPageUrl: newNextPageUrl } = await fetchStatusRequests(null, effectiveSoId, nextPageUrl);
       console.log('New properties fetched:', newRequests.length);
       if (newRequests.length > 0) {
         console.log('New properties fetched:', newRequests.length);
@@ -90,6 +91,14 @@ const SOApprovals = ({route, navigation}) => {
     console.log('Render footer, loading:', loading);  // Check if this logs
     return loading ? <ActivityIndicator size="large" color="#0000ff" /> : null;
   };
+
+  const renderEmptyComponent = () => {
+    return (
+      <View style={styles.npContainer}>
+            <Text style={styles.nopText}>No Approvals Created by the Sales Officer</Text>
+      </View>
+    );
+  };
   
   return (
     <View style={styles.mainContainer}>
@@ -102,7 +111,7 @@ const SOApprovals = ({route, navigation}) => {
       <SortHeader title="Approval" onSort={toggleSortOrder}/>
       </View>
       <FlatList
-        data={[requests]} // Wrap properties in an array since FlatList expects an array
+        data={requests.length > 0 ? [requests] : []} // Wrap properties in an array since FlatList expects an array
         renderItem={renderItem}
         keyExtractor={(item, index) => index.toString()}
         ListFooterComponent={renderFooter}
@@ -112,6 +121,7 @@ const SOApprovals = ({route, navigation}) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1 }}  
         style={{ flex: 1 }} 
+        ListEmptyComponent={renderEmptyComponent}
       />
     </View>
   );
@@ -134,7 +144,18 @@ const styles = StyleSheet.create({
   },
   filterText: {
     color: '#ffffff',
-  }
+  },
+  npContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  nopText: {
+    fontSize: 14,
+    color: '#757575',
+    fontFamily: 'Poppins'
+  },
   
 });
 

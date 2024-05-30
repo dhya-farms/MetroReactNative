@@ -8,6 +8,26 @@ import FaqDropdown from '../../components/FaqDropdown';
 
 const CustomerFaq = ({navigation}) => {
   const [query, setQuery] = useState('');
+  const [showMore, setShowMore] = useState(false);
+
+  const faqs = [
+    { question: "What types of properties do Metro City Developers offer?", 
+    answer: "We specialize in a variety of property types, including residential , luxury villas, commercial spaces, and agricultural lands, tailored to meet the needs and preferences of our clients." },
+    { question: "Can Metro City Developers assist with property financing?", 
+    answer: "Yes, we offer financial guidance and assistance, providing options that cater to the diverse financial needs of our clients, from mortgages to bespoke financing solutions." },
+    { question: "Does Metro City Developers handle the entire purchasing process?", 
+    answer: "Absolutely. From property selection, financial advice, to finalizing the paperwork, we manage the full spectrum of the purchasing process to ensure a smooth and hassle-free experience." },
+    { question: "How does Metro City Developers ensure the quality of their properties?", 
+    answer: "Our properties undergo rigorous quality checks and are developed using the highest construction standards to ensure that they not only meet but exceed industry benchmarks." },
+    { question: "Can international clients buy property through Metro City Developers?", 
+    answer: "Yes, we work with both local and international clients. We have a multilingual team ready to assist clients from around the world in finding their ideal property." },
+    { question: "How can I get started with Metro City Developers?", 
+    answer: "Simply reach out to us via our contact form, email, or phone. Our team is ready to discuss your needs and help you begin your journey towards finding your perfect property." },
+   ];
+
+   const toggleShowMore = () => {
+    setShowMore(!showMore);
+  };
 
 
   return (
@@ -25,11 +45,12 @@ const CustomerFaq = ({navigation}) => {
       <View style={styles.faqContainer}>
         <Text style={styles.faqText}>Frequently asked questions</Text>
       </View>
-      <FaqDropdown/>
-      <FaqDropdown/>
-      <FaqDropdown/>
-      <FaqDropdown/>
-      <Text style={styles.quText}>More Questions +</Text>
+      {faqs.slice(0, showMore ? faqs.length : 3).map((faq, index) => (
+          <FaqDropdown key={index} question={faq.question} answer={faq.answer} />
+        ))}
+      <TouchableOpacity onPress={toggleShowMore} style={{width: '100%', marginLeft: '12%'}}>
+      <Text style={styles.quText}>{showMore ? "Less Questions -" : "More Questions +"}</Text>
+      </TouchableOpacity>
       <View style={styles.queryContainer}>
       <Text style={styles.label}>Your Questions:</Text>
       <TextInput
@@ -40,12 +61,12 @@ const CustomerFaq = ({navigation}) => {
         value={query}
         placeholder="Type Here"
       />
-      <View style={styles.buttonContainer}>
+    </View>
+    <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.qsButton}>
             <Text style={styles.qsText}>Submit Questions</Text>
         </TouchableOpacity>
       </View>
-    </View>
     </ScrollView>
     </View>
   );
@@ -66,7 +87,7 @@ const styles = StyleSheet.create({
     paddingBottom: 50,
   },
   faqContainer:{
-    width: '90%',
+    width: '100%',
     alignItems: 'left',
     marginLeft: 20,
     marginTop: 20,
@@ -92,18 +113,21 @@ const styles = StyleSheet.create({
     marginVertical: 16,
     borderRadius: 10,
   },
+  buttonContainer:{
+    width: '100%',
+    marginTop: '2%',
+    marginBottom: '10%',
+  },
   quText: {
     fontFamily: 'Poppins',
     fontSize: 10,
     fontWeight: '500',
     color: '#1D9BF0',
-    alignSelf: 'flex-start', // Add this line to align the text to the left
-    marginLeft: '12%', // Add this line to give it the same left margin as faqContainer
+    
   },
   queryContainer:{
     width: '90%',
-    marginLeft: 10,
-    marginVertical: 15,
+    marginVertical: 10,
   },
   label: {
     fontFamily: 'Poppins',
@@ -117,8 +141,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     padding: 10,
     fontSize: 16,
-    marginBottom: 30,
-    width: '88%',
+    width: '100%',
     alignSelf: 'center'
   },
   qsButton:{
@@ -128,7 +151,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
-    marginLeft: 20,
+    marginLeft: '5%',
   },
   qsText:{
     fontFamily: 'Poppins',

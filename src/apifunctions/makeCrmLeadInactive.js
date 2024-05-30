@@ -1,5 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
 export const makeCrmLeadInactive = async (crmId) => {
   try {
@@ -17,7 +19,7 @@ export const makeCrmLeadInactive = async (crmId) => {
     };
 
     // Make the API request
-    const response = await axios.post(`https://splashchemicals.in/metro/api/crm-leads/${crmId}/make_inactive/`, null, config);
+    const response = await axios.post(`${BASE_URL}/crm-leads/${crmId}/make_inactive/`, null, config);
     return { success: true, message: 'CRM lead successfully made inactive.' };
   } catch (error) {
     // Return error message from API or generic error if something else went wrong

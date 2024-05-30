@@ -3,6 +3,7 @@ import { View, TouchableOpacity, ScrollView, Image, Text, Dimensions, StyleSheet
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { toggleFavorite } from '../apifunctions/toggleFavouritesApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { formatPropertyName } from '../functions/formatPropertyName';
 
 
 // If `styles` are defined within this component, keep them here,
@@ -27,13 +28,13 @@ const Card = ({ property={}, displayText, imageUrls = [], onPress, paramsToken }
         </View>
         <View style={styles.cardContent}>
           <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
-          <Text style={styles.cardTitle}>{property.name}</Text>
+          <Text style={styles.cardTitle}>{formatPropertyName(property.name)}</Text>
           <View style={styles.ratingStarContainer}>
               <View style={styles.starContainer}>
                 <MaterialIcons name="star" size={16} color="#FEC623" />
               </View>
               <View style={styles.ratingContainer}>
-                <Text style={styles.rating}>4.3</Text>
+                <Text style={styles.rating}>{property.rating}</Text>
               </View>
             </View>
           </View>

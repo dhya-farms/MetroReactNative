@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { View, ScrollView, StyleSheet, StatusBar, FlatList} 
+import { View, ScrollView, StyleSheet, StatusBar, FlatList, Text} 
 from 'react-native';
 import SortHeader from '../../components/SortHeader';;
 import HeaderContainer from '../../components/HeaderContainer';
@@ -17,24 +17,26 @@ import _ from 'lodash';
     const [sortOrder, setSortOrder] = useState('newest');
     const [loading, setLoading] = useState(false);
 
-    const toggleSortOrder = () => {
-      setSortOrder(prevSortOrder => prevSortOrder === 'newest' ? 'oldest' : 'newest');
+
+    const setSortOrderExplicitly = (order) => {
+      setSortOrder(order);
     };
+    
   
-    const UpdatesData = useMemo(() => {
-      const sortedUpdates = [...routeUpdates]; // Create a copy of the updates array
-      return sortedUpdates.sort((a, b) => {
+    const sortUpdatesData = (updates) => {
+      return updates.sort((a, b) => {
         const dateA = new Date(a.created_at);
         const dateB = new Date(b.created_at);
         return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
       });
-    }, [routeUpdates, sortOrder]);
-  
+    };
+
     useEffect(() => {
-      setOfficalUpdates(UpdatesData);
+      setOfficalUpdates(sortUpdatesData([...routeUpdates]));
       setNextPageUrl(routeNextPage)
-      console.log(UpdatesData)
-    }, [UpdatesData, nextPageUrl]);  
+    }, [routeUpdates, sortOrder, routeNextPage]);  
+
+  
 
 
     const fetchMoreUpdates = useCallback(_.debounce(async () => {
@@ -49,7 +51,7 @@ import _ from 'lodash';
       try {
         const { updates: newUpdates, nextPageUrl: newNextPageUrl } = await fetchUpdates(null, nextPageUrl);
         console.log('New updates fetched:', newUpdates.length);
-        setOfficalUpdates(prevUpdates => [...prevUpdates, ...newUpdates]);
+        setOfficalUpdates(prevUpdates => sortUpdatesData([...prevUpdates, ...newUpdates]));
         setNextPageUrl(newNextPageUrl);
       } catch (error) {
         console.error('Failed to fetch more Updates:', error);
@@ -82,8 +84,10 @@ import _ from 'lodash';
         ImageRight={require('../../../assets/images/belliconblue.png')}
         onPress={()=>{navigation.goBack()}}/>
         <View style={{ zIndex: 3000, justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <SortHeader title="Customer List" onSort={toggleSortOrder} />
+          <SortHeader title="Offical Updates" onSort={setSortOrderExplicitly} />
         </View>
+        <>
+        {officeUpdates.length > 0 ? (
         <FlatList
             data={[officeUpdates]} // Wrap properties in an array since FlatList expects an array
             renderItem={renderItem}
@@ -94,6 +98,12 @@ import _ from 'lodash';
             extraData={loading}
             showsVerticalScrollIndicator={false}
           />
+        ) : (
+          <View style={styles.npContainer}>
+            <Text style={styles.nopText}>No new Updates For Now</Text>
+          </View>
+        )}
+        </>
         </View>
     );
 };

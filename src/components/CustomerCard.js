@@ -1,21 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Linking } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import { formatPropertyName } from '../functions/formatPropertyName';
 
 
 
 
 
-const formatPropertyName = (name) => {
-  const phaseIndex = name.indexOf('Phase');
-  if (phaseIndex !== -1) {
-    return `${name.substring(0, 6)}... ${name.substring(phaseIndex)}`;
-  }
-  return name;
-};
 
 
 const Card = ({ name, number, mail, personimage, propertyName, currentApprovalStatus, currentCRMStatus }) => {
+
 
   const steps = ['SITE_VISIT', 'TOKEN_ADVANCE', 'DOCUMENTATION', 'PAYMENT', 'DOCUMENT_DELIVERY'];
 
@@ -138,9 +133,8 @@ const CustomerCard = ({customerData, isHorizontal = true, onCardPress})=>{
 }
 
 const styles = StyleSheet.create({
-    // ... your previous styles
     flatList: {
-      flexGrow: 0, // Ensure the FlatList doesn't expand beyond its content size
+      flexGrow: 0,
     },
     cardContainer: {
         backgroundColor: 'white',
@@ -192,11 +186,11 @@ const styles = StyleSheet.create({
         shadowColor: '#000', // Shadow color
         shadowOffset: {
             width: 0,
-            height: 1, // Shadow direction (downwards)
+            height: 3, // Shadow direction (downwards)
         },
         shadowOpacity: 0.25, // Shadow opacity
         shadowRadius: 3.84, // Shadow blur radius
-        elevation: 1,
+        elevation: 0.2,
         borderWidth: 1,
         borderColor: '#C4C4C4',
         borderRadius: 6,
@@ -247,6 +241,16 @@ const styles = StyleSheet.create({
       fontFamily: 'Poppins',
       fontWeight: '600',
       fontSize: 16,
+    },
+    imageContainer:{
+      width: 60,
+      height: 60,
+    },
+    personImage:{
+      width: '100%',
+      height: '100%',
+      borderRadius: 30,
+      resizeMode: 'cover'
     },
     checkicon: {
       width: 32,

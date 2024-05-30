@@ -13,12 +13,11 @@ import { fetchCustomerProperties } from '../../apifunctions/fetchCustomerPropert
 import { fetchProperties } from '../../apifunctions/fetchPropertiesApi';
 import { fetchSoDetails } from '../../apifunctions/fetchSoDetailsApi';
 import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
+import { formatPropertyName } from '../../functions/formatPropertyName';
 
 
 
-  
-
-const CustomerHome = ({route, navigation}) => {
+  const CustomerHome = ({route, navigation}) => {
   const token = route.params?.token
   const [selectedCategoryKey, setSelectedCategoryKey] = useState('filter');
   const [categories, setCategories] = useState([{ key: 'filter', name: 'Filter' }]);
@@ -54,14 +53,15 @@ const CustomerHome = ({route, navigation}) => {
 
         const {properties: commonProperties, nextPageUrl: nextPropertyPage} = await fetchProperties(paramsToken);
         setProperties(commonProperties);
+        console.log("properties", commonProperties)
         console.log("images",commonProperties)
         setNextPropertyPageUrl(nextPropertyPage)
-        setLoadingProperties(false); // Data fetched for general properties
+        setLoadingProperties(false); 
 
         // Fetch advisor details
         const advisorDetails = await fetchSoDetails(paramsAdvisorId, paramsToken);
         setAdvisor(advisorDetails);
-        setLoadingAdvisor(false); // Advisor data fetched
+        setLoadingAdvisor(false); 
       } catch (error) {
         console.error('Failed to fetch data:', error);
         setLoadingProperties(false);
@@ -219,14 +219,20 @@ const CustomerHome = ({route, navigation}) => {
           }}/>
       {loadingCustomerProperties ? (
     <ActivityIndicator size="large" color={PRIMARY_COLOR} style={styles.loadingIndicator} />
-      ) : customerProperties.map(property => {
-          const { progress, progressText } = calculateProgress(property);
-          return (
+        ) : customerProperties.length ? (
+          customerProperties.slice(0,3).map(property => {
+            const { progress, progressText } = calculateProgress(property);
+            return (
               <View key={property.id} style={{ width: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                  <ProgressBar progress={progress} propertyName={property.name} progressText={progressText} />
+                <ProgressBar progress={progress} propertyName={formatPropertyName(property.name)} progressText={progressText} />
               </View>
-          );
-      })}
+            );
+          })
+        ) : (
+          <View style={styles.npContainer}>
+            <Text style={styles.nopText}>No Customer Properties Available</Text>
+          </View>
+      )}
       <ShowAllButton text="My properties"  onPress={() => {
             navigation.navigate("properties", { screen: "Customer Properties", 
             params: { customerProperties: customerProperties, source: "myProperties", nextPage: nextCustomerPageUrl, token: token}});
@@ -281,7 +287,7 @@ const CustomerHome = ({route, navigation}) => {
     {loadingProperties ? (
        <ActivityIndicator size="large" color={PRIMARY_COLOR} style={styles.loadingIndicator} />
       ) : finalPropertiesFiltered.length ? (
-        finalPropertiesFiltered.slice(0, 2).map((property, index) => {
+        finalPropertiesFiltered.map((property, index) => {
     // Extract image URLs from the property's images array
     const imageUrls = property.images.map(img => img.image);
     return (

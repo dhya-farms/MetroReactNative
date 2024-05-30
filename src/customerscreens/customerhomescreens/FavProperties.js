@@ -11,12 +11,14 @@ const FavProperties = ({ route, navigation }) => {
   const [favourites, setFavourites] = useState([]);
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [ favouriteId, setFavouriteId] = useState([]);
 
   const loadFavourites = async (paramsToken, url) => {
     setLoading(true);
     try {
       const { properties, nextPageUrl } = await fetchMyFavourites(paramsToken, url);
-      setFavourites(prev => url ? [...prev, ...properties] : properties); // Append properties if paginating
+      setFavourites(prev => url ? [...prev, ...properties] : properties);
+      setFavouriteId(properties.map(fav => fav.id)) // Append properties if paginating
       setNextPageUrl(nextPageUrl);
       console.log('Favourites fetched:', properties);
     } catch (error) {
@@ -47,6 +49,7 @@ const FavProperties = ({ route, navigation }) => {
         <Carousel
           data={item}
           onCardPress={handleGeneralPropertyPress}
+          favorites={favouriteId}
           isHeartVisible={true}
           paramsToken={route.params?.token}
           keyExtractor={(item, index) => `property-${item.id}-${index}`}

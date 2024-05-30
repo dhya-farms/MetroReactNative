@@ -2,11 +2,11 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { PRIMARY_COLOR } from '../constants/constantstyles/colors';
 
-const CancelNextButton = ({handleNext, handleSaveAndAddNew}) => {
+const CancelNextButton = ({handleNext, handleSaveAndAddNew, handleCancel}) => {
 
   return (
     <View style={[styles.cnbtnContainer]}>
-        <TouchableOpacity style={[styles.cnButton, {backgroundColor: 'white', borderWidth: 1, borderColor: '#1D9BF0'}]} onPress={()=>{}}>
+        <TouchableOpacity style={[styles.cnButton, {backgroundColor: 'white', borderWidth: 1, borderColor: '#1D9BF0'}]} onPress={handleCancel}>
           <Text style={[styles.cnText, {color: '#1D9BF0'}]}>Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.cnButton} onPress={handleNext}>

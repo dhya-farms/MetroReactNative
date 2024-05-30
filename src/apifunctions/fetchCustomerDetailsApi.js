@@ -1,8 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
-const BASE_URL = 'https://splashchemicals.in/metro';
-const CUSTOMER_DETAILS_ENDPOINT = `${BASE_URL}/api/customers/`;
+
+const CUSTOMER_DETAILS_ENDPOINT = `${BASE_URL}/customers/`;
 
 // Using the existing getAuthHeaders function to get authorization headers
 const getAuthHeaders = async (paramsToken) => {

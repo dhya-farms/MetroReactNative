@@ -31,6 +31,7 @@ import { useRefresh } from '../../contexts/useRefreshContext';
 import { postStatusChangeRequest } from '../../apifunctions/postStatusChangeRequest';
 import { fetchDocumentationDeliveryDetails } from '../../functions/fetchDocumentDeliveryDetails';
 import { makeCrmLeadInactive } from '../../apifunctions/makeCrmLeadInactive';
+import { updateStatusBasedOnResponse } from '../../functions/soUpdateStatus';
 
 
 
@@ -53,22 +54,12 @@ const SoCustomerDetails = ({route ,navigation}) => {
   const [addressConfirmModalVisible, setAddressConfirmModalVisible ] = useState(false)
   const [confirmationModalVisible, setConfirmationModalVisible] = useState(false)
   const [statusChangeRequestId, setStatusChangeRequestId] = useState(null);
-  const [paymentModalVisible, setPaymentModalVisible] = useState(false)
-  const [bookingStatus, setBookingStatus] = useState(false);
-  const [tokenAdvanceStatus, setTokenAdvanceStatus] = useState(false)
-  const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [cameFromPickupNo, setCameFromPickupNo] = useState(false);
-  const [verificationComplete, setVerificationComplete] = useState(false)
-  const [completePayment, setCompletePayment] = useState(false)
-  const [paymentEntries, setPaymentEntries] = useState([])
   const [crmId, setCrmId] = useState(null)
   const [pickupAddress, setPickupAddress] = useState('')
   const [dropAddress, setDropAddress] = useState('')
   const [pickupTime, setPickupTime] = useState('')
   const [pickupDate, setPickupDate] = useState('')
-  const [selectedDocuments, setSelectedDocuments] = useState([]);
-  const [deliveryCompleted, setDeliveryCompleted] = useState(false)
-  const [refreshCounter, setRefreshCounter] = useState(0);
   const [tokenDetailsFetch, setTokenDetailsFetch] = useState(false)
   const [documentsRefetch, setDocumentsRefetch] = useState(false)
   const effectiveCustomerId = customerId || route.params?.customerId;
@@ -121,74 +112,6 @@ const SoCustomerDetails = ({route ,navigation}) => {
     }
   });
 
-  const statusMapping = {
-    'SITE_VISIT': 'siteVisit',
-    'TOKEN_ADVANCE': 'tokenAdvance',
-    'DOCUMENTATION': 'documentation',
-    'PAYMENT': 'payment',
-    'DOCUMENT_DELIVERY': 'ddDelivery'
-  };
-
-const updateStatusBasedOnResponse = (statusName, crmStatusName, customerDetails) => {
-    let newState = { ...status };
-    const allStageKeys = Object.keys(statusMapping); // Get all the keys from the mapping
-    const normalizedCrmStatusName = crmStatusName ? crmStatusName.toUpperCase() : "";
-
-    console.log("All stage keys:", allStageKeys); // Display all keys
-    console.log("Normalized CRM Status Name:", normalizedCrmStatusName);
-    
-    if (!normalizedCrmStatusName || !(normalizedCrmStatusName in statusMapping)) {
-      allStageKeys.forEach(key => newState[statusMapping[key]] = {
-          isPending: false,
-          isApproved: false,
-          isRejected: false,
-          isCompleted: false,
-          isProgress: false
-      });
-      newState[statusMapping[allStageKeys[0]]].isProgress = true; // Set the first stage to in progress
-      console.log("No valid CRM status, setting initial stage to progress");
-      return newState;
-  }// Display normalized name
-
-    // Use the keys to find the index
-    const currentStageIndex = allStageKeys.indexOf(normalizedCrmStatusName);
-    console.log("current stage index", currentStageIndex);
-
-
-    const currentStage = statusMapping[normalizedCrmStatusName]; // This should now correctly retrieve 'siteVisit', 'tokenAdvance', etc.
-
-    // Initialize all stages to default values
-    allStageKeys.forEach(key => {
-        newState[statusMapping[key]] = {
-            isPending: false,
-            isApproved: false,
-            isRejected: false,
-            isCompleted: false,
-            isProgress: false
-        };
-    });
-
-    // Set the current stage based on the status
-    newState[currentStage] = {
-        isPending: statusName === "PENDING",
-        isApproved: statusName === "APPROVED",
-        isRejected: statusName === "REJECTED",
-        isCompleted: statusName === "COMPLETED",
-        isProgress: statusName === null || statusName === "IN_PROGRESS"
-    };
-
-    // Update previous stages to completed
-    for (let i = 0; i < currentStageIndex; i++) {
-        newState[statusMapping[allStageKeys[i]]].isCompleted = true;
-    }
-
-    // Set the next stage to in progress if the current stage is completed
-    if (newState[currentStage].isCompleted && currentStageIndex + 1 < allStageKeys.length) {
-        newState[statusMapping[allStageKeys[currentStageIndex + 1]]].isProgress = true;
-    }
-
-    return newState;
-  };
   useEffect(() => {
     if (effectiveCustomerId) {
       setGlobalCustomerId(effectiveCustomerId);
@@ -264,7 +187,6 @@ const fetchCustomerDetails = async (customerId) => {
   if (!customerId) {
     console.log("No customer ID provided");
     setError("No customer ID provided");
-    setBookingStatus("Not Booked");
     setLoading(false);
     return;
   }
@@ -283,14 +205,13 @@ const fetchCustomerDetails = async (customerId) => {
     const crmStatusName = response.data.current_crm_status ? response.data.current_crm_status.name : null;
 
 
-          const updatedStatus = updateStatusBasedOnResponse(statusName, crmStatusName, customerStatus);
+          const updatedStatus = updateStatusBasedOnResponse(status, statusName, crmStatusName, customerStatus);
           setStatus(updatedStatus);
 
     return response;  
   } catch (error) {
     console.error("Fetch error:", error);
     setError(error.response ? error.response.data.message : error.message);
-    setBookingStatus("Not Booked");
   } finally {
     setLoading(false);
   }
@@ -385,7 +306,7 @@ const fetchCustomerDetails = async (customerId) => {
 
         const statusResponse = await fetchStatus(crmId);
           if (statusResponse && statusResponse.approvalStatus && statusResponse.crmStatus) {
-            const updatedStatus = updateStatusBasedOnResponse(statusResponse.approvalStatus, statusResponse.crmStatus);
+            const updatedStatus = updateStatusBasedOnResponse(status, statusResponse.approvalStatus, statusResponse.crmStatus);
             setStatus(updatedStatus);
           } 
      } catch (error) {
@@ -411,7 +332,7 @@ const fetchCustomerDetails = async (customerId) => {
   const navigateToCompletePayment = () => {
     navigation.navigate("SO Client", {
       screen: "Payment Method",
-      params: {  crmId: customerDetails.id, } // Optional: pass existing count if needed
+      params: {  crmId: customerDetails.id } // Optional: pass existing count if needed
     });
   };
 
@@ -452,7 +373,7 @@ const fetchCustomerDetails = async (customerId) => {
       // Fetch the updated status
       const statusResponse = await fetchStatus(globalCustomerId);
       if (statusResponse && statusResponse.approvalStatus && statusResponse.crmStatus) {
-        const updatedStatus = updateStatusBasedOnResponse(statusResponse.approvalStatus, statusResponse.crmStatus);
+        const updatedStatus = updateStatusBasedOnResponse(status, statusResponse.approvalStatus, statusResponse.crmStatus);
         setStatus(updatedStatus);
         Toast.show({
           type: 'success',
@@ -486,7 +407,7 @@ const fetchCustomerDetails = async (customerId) => {
       console.log("Completion status update success:", response);
       const statusResponse = await fetchStatus(globalCustomerId);
       if (statusResponse && statusResponse.approvalStatus && statusResponse.crmStatus) {
-        const updatedStatus = updateStatusBasedOnResponse(statusResponse.approvalStatus, statusResponse.crmStatus);
+        const updatedStatus = updateStatusBasedOnResponse(status, statusResponse.approvalStatus, statusResponse.crmStatus);
         setStatus(updatedStatus);
         setTokenDetailsFetch(true)
 
@@ -503,7 +424,7 @@ const fetchCustomerDetails = async (customerId) => {
       console.log("Completion status update success:", response);
       const statusResponse = await fetchStatus(globalCustomerId);
       if (statusResponse && statusResponse.approvalStatus && statusResponse.crmStatus) {
-        const updatedStatus = updateStatusBasedOnResponse(statusResponse.approvalStatus, statusResponse.crmStatus);
+        const updatedStatus = updateStatusBasedOnResponse(status, statusResponse.approvalStatus, statusResponse.crmStatus);
         setStatus(updatedStatus);
         setTokenDetailsFetch(true)
         setDocumentsRefetch(true)
@@ -521,7 +442,7 @@ const fetchCustomerDetails = async (customerId) => {
       console.log("Completion status update success:", response);
       const statusResponse = await fetchStatus(globalCustomerId);
       if (statusResponse && statusResponse.approvalStatus && statusResponse.crmStatus) {
-        const updatedStatus = updateStatusBasedOnResponse(statusResponse.approvalStatus, statusResponse.crmStatus);
+        const updatedStatus = updateStatusBasedOnResponse(status, statusResponse.approvalStatus, statusResponse.crmStatus);
         setStatus(updatedStatus);
         setTokenDetailsFetch(true)
         setDocumentsRefetch(true)

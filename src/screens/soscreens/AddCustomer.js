@@ -44,14 +44,14 @@ const AddCustomerScreen = ({route, navigation}) => {
     const [occupation, setOccupation] = useState('')
     const [preferences, setPreferences] = useState({ area_of_purpose: [], property_types: [] });
     const [showDoneButton, setShowDoneButton] = useState(false)
-    const [imageUri, setImageUri] = useState(null);
+    const [imageData, setImageData] = useState(null);
     const [message, setMessage] = useState('')
+    const [errorMessage, setErrorMessage] = useState('')
 
     useFocusEffect(
       React.useCallback(() => {
           // Reset the form visibility state every time the screen is focused
           setShowContactForm(true);
-          setShowDoneButton(false);
           setMessage(''); // Optionally clear any messages
       }, [])
   );
@@ -85,26 +85,42 @@ const AddCustomerScreen = ({route, navigation}) => {
     };
     const selectImage = async () => {
       try {
+        // Request permission to access the media library
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     
-        if (permissionResult.granted === false) {
+        if (!permissionResult.granted) {
           alert("You've refused to allow this app to access your photos!");
           return;
         }
     
-        const pickerResult = await ImagePicker.launchImageLibraryAsync();
-        console.log('Picker result:', pickerResult); // Correctly logs the full result
+        // Launch the image picker
+        const pickerResult = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images, // Ensure only images can be picked
+        });
     
-        // This condition checks if the operation was not cancelled and assets are available
+        console.log('Picker result:', pickerResult);
+    
+        // Check if the operation was not cancelled and if an image was selected
         if (!pickerResult.cancelled && pickerResult.assets && pickerResult.assets.length > 0) {
-          const selectedImageUri = pickerResult.assets[0].uri;
-          setImageUri(selectedImageUri);
-          setShowDoneButton(true);
+          const selectedImage = pickerResult.assets[0];
+    
+          // Check the MIME type of the selected image
+          if (selectedImage.mimeType === 'image/jpeg' || selectedImage.mimeType === 'image/png') {
+            setImageData({
+              uri: selectedImage.uri,
+              type: selectedImage.mimeType // Store MIME type directly from the asset
+            });
+            setErrorMessage(''); // Clear any existing error messages
+          } else {
+           
+            setErrorMessage('Only JPEG or PNG images are allowed.');
+          }
         } else {
-          console.log('No image selected'); // This should not log if an image is successfully selected
+          console.log('No image selected');
         }
       } catch (error) {
         console.error("ImagePicker Error: ", error);
+        setMessage('Error picking image.'); // General error message for exceptions
       }
     };
 
@@ -119,7 +135,7 @@ const AddCustomerScreen = ({route, navigation}) => {
       };
     
       try {
-        const result = await addCustomerApi(paramsToken, customerData);
+        const result = await addCustomerApi(paramsToken, customerData, imageData);
         console.log(customerData);
         setMessage("Customer added successfully");
     
@@ -139,7 +155,7 @@ const AddCustomerScreen = ({route, navigation}) => {
             setEmail('');
             setOccupation('');
             setPreferences({ area_of_purpose: [], property_types: [] });
-            setImageUri(null);
+            setImageData(null);
             setShowDoneButton(false);
           }
         }, 3000);
@@ -173,10 +189,15 @@ const AddCustomerScreen = ({route, navigation}) => {
      {!showContactForm && (<View style={styles.addImgContainer}>
       <View style={styles.imageContainer}>
       <Image 
-        source={imageUri ? { uri: imageUri } : require('../../../assets/images/gsoperson.jpg')} 
+        source={imageData ? { uri: imageData.uri } : require('../../../assets/images/gsoperson.jpg')} 
         style={styles.personImage} 
       />
     </View>
+      <>
+        {errorMessage && (
+            <Text style={[styles.message, {color: 'red'}]}>{errorMessage}</Text>
+          )}
+      </>
       <TouchableOpacity style={styles.btnContainer} onPress={selectImage}>
         <Text style={styles.btnText}>Add image</Text>
       </TouchableOpacity>
@@ -184,15 +205,12 @@ const AddCustomerScreen = ({route, navigation}) => {
         <Text style={styles.nameText}>{customerName}</Text>
         <Text style={styles.mbText}>{customerMobile}</Text>
       </View>
-      {showDoneButton && (
-      <>{message && <Text style={styles.message}>{message}</Text>}
+     <>{message && <Text style={styles.message}>{message}</Text>}</>
       <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.doneButton} onPress={handleAddCustomer}>
-                <Text style={styles.doneButtonText}>done</Text>
+          <TouchableOpacity style={styles.doneButton} onPress={handleAddCustomer}>
+              <Text style={styles.doneButtonText}>done</Text>
             </TouchableOpacity>
-       </View>
-       </>
-      )}
+      </View>
      </View>
        )}
     </ScrollView>

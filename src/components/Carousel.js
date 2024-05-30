@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, Dimensions, TouchableOpacity, ScrollView, Alert} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { toggleFavorite } from '../apifunctions/toggleFavouritesApi';
 
 
 const { width: screenWidth } = Dimensions.get('window');
 const cardWidth = 330;
 
-const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFavoriteStatusChange }) => {
-  
+const Carousel = ({ data, onCardPress, favorites=[], isHeartVisible = true, paramsToken, onFavoriteStatusChange }) => {
 
   const PropertyCard = ({ item }) => {
-    const [liked, setLiked] = useState(false);
+    const [liked, setLiked] = useState(favorites.includes(item.id));
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const imageScrollRef = useRef();
 
@@ -34,14 +32,13 @@ const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFav
       return () => clearInterval(interval);
     }, [images.length]);
 
-    useEffect(() => {
-      const loadLikedStatus = async () => {
-        const likedStatus = await AsyncStorage.getItem(`liked_${item.id}`);
-        setLiked(likedStatus ? JSON.parse(likedStatus) : false);
-      };
 
-      loadLikedStatus();
-    }, [item.id]);
+
+    
+
+    useEffect(() => {
+      setLiked(favorites.includes(item.id));
+    }, [favorites, item.id]);
 
     const handleLikePress = () => {
       const newLikedStatus = !liked;
@@ -51,10 +48,11 @@ const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFav
           onFavoriteStatusChange(id, status);
         }
       });
+      setLiked(newLikedStatus);
     };
 
     const renderPagination = () => {
-      if (images.length <= 1) return null; // Don't render pagination for a single image
+      if (images.length <= 1) return null;
   
       return (
         <View style={styles.paginationContainer}>
@@ -67,6 +65,7 @@ const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFav
         </View>
       );
     };
+
 
     return (
       <View style={styles.card}>
@@ -100,7 +99,7 @@ const Carousel = ({ data, onCardPress, isHeartVisible = true, paramsToken, onFav
                 <MaterialIcons name="star" size={16} color="#FEC623" />
               </View>
               <View style={styles.ratingContainer}>
-                <Text style={styles.rating}>4.3</Text>
+                <Text style={styles.rating}>{item.rating}</Text>
               </View>
             </View>
           </View>

@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
-const BASE_URL = 'https://splashchemicals.in/metro/api';
 const CUSTOMERS_ENDPOINT = `${BASE_URL}/crm-leads/`;
 
 // Prepare the authorization headers
@@ -11,7 +12,7 @@ const getAuthHeaders = token => ({
 });
 
 // Fetch customers with pagination support
-export const fetchCustomers = async (paramsToken, pageUrl = null) => {
+export const fetchCustomers = async (paramsToken, assignedSoId, pageUrl = null) => {
     let token;
     try {
         // Attempt to fetch the token from AsyncStorage
@@ -25,10 +26,15 @@ export const fetchCustomers = async (paramsToken, pageUrl = null) => {
 
     try {
         const headers = getAuthHeaders(token);
-        const url = pageUrl || CUSTOMERS_ENDPOINT;  // Use the pageUrl if provided, else default to the initial endpoint
-        const response = await axios.get(url, { headers });
+        const baseUrl = new URL(pageUrl || CUSTOMERS_ENDPOINT);
 
-        console.log("cm", response.data)
+    // Check if requestedById is needed and not already included
+        if (assignedSoId && !baseUrl.searchParams.has('assigned_so_id')) {
+                baseUrl.searchParams.append('assigned_so_id', assignedSoId);
+        }
+
+        console.log('url', baseUrl.toString());  // Use the pageUrl if provided, else default to the initial endpoint
+        const response = await axios.get(baseUrl.toString(), { headers });
         
         const customers = response.data.results.map(entry => {
             return {

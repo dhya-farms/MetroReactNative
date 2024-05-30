@@ -1,8 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
+
 
 // Assuming you have a BASE_URL defined somewhere
-const BASE_URL = 'https://splashchemicals.in/metro';
 
 // Function to get authorization headers
 const getAuthHeaders = async (token) => {
@@ -39,7 +41,7 @@ const updateCustomerDetailsApiCall = async (customerId, updateData, paramsToken)
 
   try {
     const headers = await getAuthHeaders(token);
-    const response = await axios.patch(`${BASE_URL}/api/customers/${userId}/`, updateData, { headers });
+    const response = await axios.patch(`${BASE_URL}/customers/${userId}/`, updateData, { headers });
     return response.data;
   } catch (error) {
     console.error('Failed to update customer details:', error.response ? error.response.data : error.message);

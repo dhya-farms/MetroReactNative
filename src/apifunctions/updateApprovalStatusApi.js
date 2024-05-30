@@ -1,5 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
 // Function to update approval status
 export const updateApprovalStatus = async (statusValue, statusChangeRequestId, includeUserId = true) => {
@@ -14,7 +16,7 @@ export const updateApprovalStatus = async (statusValue, statusChangeRequestId, i
       payload.actioned_by_id = userId;
     }
 
-    const response = await axios.patch(`https://splashchemicals.in/metro/api/status-change-requests/${statusChangeRequestId}/`, payload, {
+    const response = await axios.patch(`${BASE_URL}/status-change-requests/${statusChangeRequestId}/`, payload, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Token ${token}`,

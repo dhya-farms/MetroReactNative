@@ -1,5 +1,8 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Ensure this is imported to use AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
+ // Ensure this is imported to use AsyncStorage
 
 export const postStatusChangeRequest = async (crmLeadId, requestedById) => {
     const token = await AsyncStorage.getItem('userToken');
@@ -7,7 +10,7 @@ export const postStatusChangeRequest = async (crmLeadId, requestedById) => {
         console.error("No token found");
         throw new Error("Authentication required. Please log in.");
     }
-    const url = 'https://splashchemicals.in/metro/api/status-change-requests/';
+    const url = `${BASE_URL}/status-change-requests/`;
     try {
         const response = await axios.post(url, {
             crm_lead_id: crmLeadId,

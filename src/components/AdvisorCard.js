@@ -27,7 +27,7 @@ const AdvisorCard = ({ advisor }) => {
               <Text style={styles.status}>Status: {advisor.is_active ? 'Available' : 'Offline'}</Text>
               <MaterialIcons name={advisor.is_active ? "check-circle" : "cancel"} size={14} color={advisor.is_active ? "#34C759" : "#FF3B30"} />
               </View>
-              <Text style={styles.points}>Metro Points: 8</Text>
+              <Text style={styles.points}>Metro Points: {advisor.points}</Text>
             </View>
             <Image
               source={require('../../assets/images/person.png')} // Replace with the actual path to your image

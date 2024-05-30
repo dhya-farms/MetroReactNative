@@ -2,6 +2,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
 import { Platform } from 'react-native';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
 function dataURItoBlob(dataURI) {
     const byteString = atob(dataURI.split(',')[1]);
@@ -55,7 +57,7 @@ export const uploadDocument = async (document, crmLeadId, crmDocumentTypeId, onS
     try {
         const response = await axios({
             method: 'post',
-            url: 'https://splashchemicals.in/metro/api/files/upload/standard/',
+            url: `${BASE_URL}/files/upload/standard/`,
             data: formData,
             headers: {
                 'Authorization': `Token ${token}`,

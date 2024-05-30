@@ -14,6 +14,7 @@ const AdminCustomerList = ({route, navigation}) => {
   const [commonCustomers, setCommonCustomers] = useState([]);
   const routeCustomers = route.params?.allCustomers;
   const routeNextPage = route.params?.nextPage
+  const effectiveSoId = route.params?.effectiveSoId || null
   const {customers} = useCustomers();
   const {nextGlobalCustomerPageUrl} = useCustomers();
   const unsortedCustomers = routeCustomers || customers;
@@ -21,25 +22,27 @@ const AdminCustomerList = ({route, navigation}) => {
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState('newest');
-  
-  const toggleSortOrder = () => {
-    setSortOrder(prevSortOrder => prevSortOrder === 'newest' ? 'oldest' : 'newest');
-  };
 
-  const customerData = useMemo(() => {
-    const sortedCustomers = [...unsortedCustomers];
-    sortedCustomers.sort((a, b) => {
+
+  const setSortOrderExplicitly = (order) => {
+    setSortOrder(order);
+  };
+  
+
+  const sortCustomerData = (customers) => {
+    return customers.sort((a, b) => {
       const dateA = new Date(a.created_at);
       const dateB = new Date(b.created_at);
       return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
     });
-    return sortedCustomers;
-  }, [unsortedCustomers, sortOrder]);
+  };
+  
 
   useEffect(() => {
-    setCommonCustomers(customerData);
+    setCommonCustomers(sortCustomerData([...unsortedCustomers]));
     setNextPageUrl(nextPageData)
-  }, [customerData, nextPageData]);  
+  }, [unsortedCustomers, sortOrder, nextPageData]);  
+
 
   
   const fetchMoreCustomers = useCallback(_.debounce(async () => {
@@ -52,9 +55,9 @@ const AdminCustomerList = ({route, navigation}) => {
     console.log('Setting loading true');
     setLoading(true);
     try {
-      const { customers: newCustomers, nextPageUrl: newNextPageUrl } = await fetchCustomers(null, nextPageUrl);
+      const { customers: newCustomers, nextPageUrl: newNextPageUrl } = await fetchCustomers(null, effectiveSoId, nextPageUrl);
       console.log('New properties fetched:', newCustomers.length);
-      setCommonCustomers(prevCustomers => [...prevCustomers, ...newCustomers]);
+      setCommonCustomers(prevCustomers => sortCustomerData([...prevCustomers, ...newCustomers]));
       setNextPageUrl(newNextPageUrl);
     } catch (error) {
       console.error('Failed to fetch more Customers:', error);
@@ -83,6 +86,8 @@ const AdminCustomerList = ({route, navigation}) => {
     return loading ? <ActivityIndicator size="large" color="#0000ff" /> : null;
   };
 
+  
+
    
 
   return (
@@ -93,7 +98,7 @@ const AdminCustomerList = ({route, navigation}) => {
       ImageRight={require('../../../assets/images/belliconblue.png')}
       onPress={()=>navigation.goBack()}/>
         <View style={{ zIndex: 3000, justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <SortHeader title="Customer List" onSort={toggleSortOrder} />
+          <SortHeader title="Customer List" onSort={setSortOrderExplicitly} />
         </View>
         <>
     {commonCustomers.length > 0 ? (

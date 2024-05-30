@@ -65,6 +65,7 @@ const screenOptions = ({ route }) => ({
     paddingHorizontal: 10,
   },
   tabBarShowLabel: false,
+  tabBarHideOnKeyboard: true,
 });
 
 const CustomerBottomTab = ({}) => {

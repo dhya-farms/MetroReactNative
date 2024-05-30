@@ -1,15 +1,55 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { TextInput, Provider } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { PRIMARY_COLOR } from '../constants/constantstyles/colors';
+import { fetchSoCustomersList } from '../apifunctions/fetchSoCustomerList';
 
 
 
-const AddClientModal = ({ label, modalVisible, setModalVisible, selectedValue, setSelectedValue, options, onDone, 
-  showSuccessMessage, navigation, propertyId}) => {
+const AddClientModal = ({ label, modalVisible, setModalVisible, selectedValue, setSelectedValue, initialOptions, onDone, showSuccessMessage, navigation, propertyId, nextCustomerPageUrl=null, setCustomers}) => {
   const [visible, setVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [options, setOptions] = useState(initialOptions); // Use state to manage options
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextPageUrl, setNextPageUrl] = useState(nextCustomerPageUrl);
+
+
+  const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+    const isClose = layoutMeasurement.height + contentOffset.y >= contentSize.height - 50;
+    console.log("Is close to bottom:", isClose);
+    return isClose;
+  };
+
+
+
+  
+  const fetchMoreCustomers = async () => {
+    if (!nextPageUrl || loadingMore) {
+      console.log('Fetch halted or no more pages', { nextPageUrl, loadingMore });
+      return;
+    }
+    setLoadingMore(true);
+    try {
+      const response = await fetchSoCustomersList(null, null, nextPageUrl);
+      if (response.customers.length > 0) {
+        const newCustomers = response.customers;
+        const newOptions = new Set([...options, ...newCustomers.map(customer => customer.name)]);
+        setOptions(Array.from(newOptions));
+        setCustomers(prev => [...new Set([...prev, ...newCustomers])]); // Assuming unique objects
+        setNextPageUrl(response.nextPage || null);
+      } else {
+        setNextPageUrl(null); // No more data to fetch
+      }
+    } catch (error) {
+      console.error('Failed to fetch more customers:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+  
+  
+
 
   const CustomDropdownIcon = () => (
     <Image
@@ -76,15 +116,18 @@ const AddClientModal = ({ label, modalVisible, setModalVisible, selectedValue, s
 
 
             {visible && (
-            <View style={styles.dropdown}>
-            <ScrollView nestedScrollEnabled={true}>
+            <ScrollView nestedScrollEnabled={true} style={styles.dropdown} onScroll={({ nativeEvent }) => {
+            if (isCloseToBottom(nativeEvent)) {
+                fetchMoreCustomers();
+            }
+            }}
+            scrollEventThrottle={400}>
             {options.map((item, index) => (
                 <TouchableOpacity key={index} onPress={() => pickItem(item)} style={styles.dropdownItem}>
                 <Text style={styles.dropdownText}>{item}</Text>
                 </TouchableOpacity>
             ))}
-        </ScrollView>
-        </View>
+          </ScrollView>
         )}
       </View>
            {errorMessage !== '' && (
@@ -188,7 +231,7 @@ const styles = StyleSheet.create({
     borderColor: '#1D9BF0',
     borderRadius: 5,
     marginVertical: 10, // Add space above and below the dropdown
-    maxHeight: 140, // Set a max height for scrollable content
+    maxHeight: 90, // Set a max height for scrollable content
     zIndex: 2, // Ensure it stacks above other items
     borderRadius: 5,
     marginVertical: 10

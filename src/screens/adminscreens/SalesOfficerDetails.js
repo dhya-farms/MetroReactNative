@@ -4,6 +4,10 @@ from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import axios from 'axios';
 import SoProfileHeader from '../../components/SoProfileHeader';
+import { fetchStatusRequests } from '../../apifunctions/fetchStatusRequests';
+import { fetchCustomers } from '../../apifunctions/fetchCustomerApi';
+import getEnvVars from '../../../config';
+const { BASE_URL } = getEnvVars();
 
 
 
@@ -15,8 +19,11 @@ const SalesOfficerDetails = ({route, navigation}) => {
     const [error, setError] = useState('');
     const [soDetails, setSoDetails] = useState(null);
     const [customers, setCustomers] = useState([]);
+    const [soRequests, setSoRequests] = useState([]);
     const [backscreen, setBackScreen] = useState('')
     const [bsSoId, setBsSoId ] = useState(null)
+    const [nextPageUrl, setNextPageUrl] = useState(null);
+    const [nextCustomerPageUrl, setNextCustomerPageUrl] = useState(null)
 
     useEffect(() => {
       const effectiveSoId = SoId || route.params?.SoId;
@@ -44,34 +51,34 @@ const SalesOfficerDetails = ({route, navigation}) => {
   
           setLoading(true);
           try {
-              const response = await axios.get(`https://splashchemicals.in/metro/api/users/${effectiveSoId}/`);
+              const response = await axios.get(`${BASE_URL}/users/${effectiveSoId}/`);
               console.log("Fetch success for SO details:", response.data);
               setSoDetails(response.data);
           } catch (error) {
               console.error("Fetch error for SO details:", error);
               setError(error.response ? error.response.data.message : error.message);
           }
-  
+
           try {
-              const response = await axios.get(`https://splashchemicals.in/metro/api/crm-leads/?assigned_so_id=${effectiveSoId}`);
-              console.log("Fetch success for customers:", response.data.results);
-              const customerDetails = response.data.results.map(entry => {
-                  const { customer, property } = entry;
-                  return {
-                      uniqueId: entry.id,
-                      customerId: customer?.id || 'Unknown',
-                      name: customer?.name || 'No Name',
-                      number: customer?.mobile_no || 'No Mobile Number',
-                      mailId: customer?.email || 'No Email',
-                      personimage: require('../../../assets/images/person.png'), // Ensure this path is correct
-                      property: property?.name || 'No Property'
-                  };
-              });
-              setCustomers(customerDetails);
-              console.log('cd', customerDetails)
+            const response = await fetchStatusRequests(null, effectiveSoId);
+            setSoRequests(response.soRequests);
+            console.log("so" , response.soRequests)
+            setNextPageUrl(response.nextPageUrl);
           } catch (error) {
-              console.error("Fetch error for customers:", error);
-              setError(error.response ? error.response.data.message : error.message);
+            console.error("Failed to fetch status requests:", error);
+            setError(error.response ? error.response.data.message : error.message);
+          }
+
+          try {
+            const {customers: fetchedCustomers, nextPageUrl: nextPage} = await fetchCustomers(null, effectiveSoId);
+            if (!fetchedCustomers.error) {
+              setCustomers(fetchedCustomers);
+              setNextCustomerPageUrl(nextPage)
+            } else {
+              console.error('Error fetching customers:', fetchedCustomers.error);
+            }
+          } catch (error) {
+            console.error('Error fetching customers:', error);
           } finally {
               setLoading(false);
           }
@@ -160,13 +167,19 @@ const SalesOfficerDetails = ({route, navigation}) => {
         </View>
         <SoProfileHeader soDetails={soDetails}/>
         <View style={styles.acContainer}>
-            <TouchableOpacity style={styles.button} onPress={()=> navigation.navigate("SO Approvals")}>
+            <TouchableOpacity style={styles.button} onPress={()=> navigation.navigate("SO", { 
+                screen: "SO Approvals" ,
+                params: {         
+                  soRequests: soRequests,
+                  nextPage: nextPageUrl,
+                  effectiveSoId: bsSoId}
+              })}>
                 <Text style={styles.btnText}>Approvals</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.button, {backgroundColor: 'white',
              borderWidth: 1, borderColor: '#1D9BF0'}]} onPress={()=> navigation.navigate("Client", { 
               screen: "Customer List" ,
-              params: { allCustomers: customers}
+              params: { allCustomers: customers, nextPage: nextCustomerPageUrl, effectiveSoId: bsSoId }
            })}>
                 <Text style={[styles.btnText, {color: '#1D9BF0'}]}>Customers</Text>
             </TouchableOpacity>

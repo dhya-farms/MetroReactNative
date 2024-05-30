@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-
-const BASE_URL = 'https://splashchemicals.in/metro/api';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
 // Function to get authorization headers
 const getAuthData = async (paramsToken, paramsSoId) => {
@@ -33,7 +33,7 @@ export const fetchSoCustomers = async (paramsToken, paramsSoId, pageUrl = null) 
                 number: customer.mobile_no,
                 mailId: customer.email,
                 created_at: entry.created_at,
-                personimage: require('../../assets/images/person.png'),
+                personimage: customer.image ? { uri: customer.image } : require('../../assets/images/person.png'),
                 progress: entry.current_crm_status.name_vernacular || 'Site Visit', // Dummy progress state
                 property: `${property.name} Phase-${entry.phase.phase_number}`,
                 currentCRMStatus: entry.current_crm_status,

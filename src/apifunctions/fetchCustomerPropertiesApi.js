@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
-const BASE_URL = 'https://splashchemicals.in/metro/api';
 const USER_PROPERTIES_ENDPOINT = `${BASE_URL}/crm-leads/?customer_id=`;
 
 const getAuthHeaders = token => ({
@@ -59,6 +60,8 @@ export const fetchCustomerProperties = async (paramsToken, paramsUserId, pageUrl
       return { properties: [], nextPageUrl: null };
     }
 
+    console.log("customer", propertiesResponse.results)
+
     const formattedProperties = propertiesResponse.results.map(prop => {
 
       const thumbnailImages = prop.property.images.filter(image => image.is_thumbnail && !image.is_slider_image);
@@ -73,6 +76,7 @@ export const fetchCustomerProperties = async (paramsToken, paramsUserId, pageUrl
         location: prop.property.location,
         phaseDetails: prop.phase,
         displayText: getDisplayInfo(prop.property, prop.phase),
+        rating: prop.property.rating,
         source: displayImage
       };
     });

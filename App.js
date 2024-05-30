@@ -1,21 +1,14 @@
-
 import { StyleSheet, useColorScheme, StatusBar, View, Text } from 'react-native';
 import * as Font from 'expo-font';
 import { useEffect, useState } from 'react';
 import { NavigationContainer} from '@react-navigation/native';
 import { createNativeStackNavigator} from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import SObottomTab from './src/screens/soscreens/SObottomTab';
 import HomeScreenNavigator from './src/navigations/HomeScreenNavigator';
 import LoginScreenNavigator from './src/navigations/LoginScreenNavigator';
-import CustomerBottomTab from './src/customerscreens/customerhomescreens/CustomerBottomTab';
-import AdminBottomTab from './src/screens/adminscreens/AdminBottomTab';
 import { PaperProvider } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PropertiesProvider } from './src/contexts/usePropertiesContext';
-import { CustomerPropertiesProvider } from './src/contexts/useCustomerPropertiesApi';
 import { ThemeProvider } from './src/contexts/useThemeContext';
-import { CustomerProvider } from './src/contexts/useCustomerdata';
 import CustomerTabEntry from './src/customerscreens/customerhomescreens/CustomerTabEntry';
 import AdminTabEntry from './src/screens/adminscreens/AdminTabEntry';
 import SoTabEntry from './src/screens/soscreens/SoTabEntry';
@@ -80,7 +73,8 @@ export default function App() {
         if (token && userId) {
           const roleNumber = parseInt(role, 10);
           switch (roleNumber) {
-            case 2: // Admin
+            case 1:
+            case 2: 
               routeName = "AdminBottomTab";
               params = { screen: 'Admin home', params: { token, userId } };
               break;
