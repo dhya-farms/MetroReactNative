@@ -41,10 +41,11 @@ const updateCustomerDetailsApiCall = async (customerId, updateData, paramsToken)
 
   try {
     const headers = await getAuthHeaders(token);
-    const response = await axios.patch(`${BASE_URL}/customers/${userId}/`, updateData, { headers });
+    const response = await axios.patch(`${BASE_URL}/customers/${userId}/`, JSON.stringify(updateData), { headers });
     return response.data;
   } catch (error) {
     console.error('Failed to update customer details:', error.response ? error.response.data : error.message);
+    console.log("updated", updateData)
     throw new Error(error);
   }
 };

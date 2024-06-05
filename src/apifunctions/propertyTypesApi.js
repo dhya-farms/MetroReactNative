@@ -21,13 +21,20 @@ export const fetchPropertyTypes = async (paramsToken = null) => {
     const headers = await getAuthHeaders(paramsToken);
     const response = await axios.get(ENUM_VALUES_ENDPOINT, { headers });
     const data = response.data;
-    return data.PropertyType.values.map((item) => ({
+
+    const propertyTypes = data.PropertyType.values.map(item => ({
       key: item.id.toString(),
       name: item.name_vernacular,
-
     }));
+
+    const areaOfPurpose = data.AreaOfPurpose.values.map(item => ({
+      key: item.id.toString(),
+      name: item.name_vernacular,
+    }));
+
+    return { propertyTypes, areaOfPurpose };
   } catch (error) {
-    console.error('Error fetching property types:', error);
-    return []; // Return an empty array in case of error
+    console.error('Error fetching enum values:', error);
+    return { propertyTypes: [], areaOfPurpose: [] }; // Return empty arrays in case of error
   }
 };

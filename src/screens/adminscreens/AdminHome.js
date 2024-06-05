@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity, Text, Image, StatusBar, ActivityIndicator} 
 from 'react-native';
 import ShowAllButton from '../../components/ShowAllButton';
@@ -11,14 +11,13 @@ import { fetchCustomers } from '../../apifunctions/fetchCustomerApi';
 import { fetchAdminProperties } from '../../apifunctions/fetchAdminPropertiesApi';
 import { fetchSoUsers } from '../../apifunctions/fetchSoApi';
 import { fetchUpdates } from '../../apifunctions/fetchUpdatesApi';
-import { useRefresh } from '../../contexts/useRefreshContext';
+import { useFocusEffect } from '@react-navigation/native';
 
 
 
 
 const AdminHome = ({ route, navigation }) => {
   const [customers, setCustomers] = useState([]);
-  const { dummyState } = useRefresh();
   const [properties, setProperties] = useState([]);
   const [soUsers, setSoUsers] = useState([]);
   const [nextPageUrl, setNextPageUrl] = useState(null);
@@ -32,28 +31,61 @@ const AdminHome = ({ route, navigation }) => {
   const [loadingSoUsers, setLoadingSoUsers]= useState(true)
 
 
-  const fetchData = async () => {
+  const initializeScreen = async () => {
     const paramsToken = route.params?.token;
-    // Fetch customers
+    const paramsDirectorId = route.params?.userId;
+
+    fetchAdminCustomers(paramsToken);
+    fetchedAdminUpdates(paramsToken);
+    fetchProperties(paramsToken, paramsDirectorId);
+    fetchSoDetails(paramsToken);
+  };
+
+  useEffect(() => {
+    initializeScreen();
+  }, []);
+
+  const fetchProperties = async (token, paramsDirectorId) => {
     try {
-      const {customers: fetchedCustomers, nextPageUrl: nextPage} = await fetchCustomers(paramsToken);
+      const { properties: fetchedProperties, nextPageUrl: nextPage } = await fetchAdminProperties(token, paramsDirectorId);
+      if (fetchedProperties.length > 0) {
+        const sortedProperties = fetchedProperties.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setProperties(sortedProperties);
+        setNextPageUrl(nextPage)
+        setLoadingAdminProperties(false)
+      } else {
+        console.log('No properties fetched, array is empty');
+      }
+    } catch (error) {
+      console.error('Error fetching admin properties:', error);
+    }
+  };
+
+  const fetchAdminCustomers = async (token) => {
+    setLoadingCustomers(true)
+    try {
+      const {customers: fetchedCustomers, nextPageUrl: nextPage} = await fetchCustomers(token);
       if (!fetchedCustomers.error) {
-        setCustomers(fetchedCustomers);
+        const sortedCustomers = fetchedCustomers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setCustomers(sortedCustomers);
         setNextCustomerPageUrl(nextPage)
-        setLoadingCustomers(false)
+        
       } else {
         console.error('Error fetching customers:', fetchedCustomers.error);
       }
     } catch (error) {
       console.error('Error fetching customers:', error);
     }
+    setLoadingCustomers(false)
+  };
 
+  const fetchedAdminUpdates = async (token) => {
     try {
-      const {updates: fetchedUpdates, nextPageUrl: nextPage} = await fetchUpdates(paramsToken);
+      const {updates: fetchedUpdates, nextPageUrl: nextPage} = await fetchUpdates(token);
       if (!fetchedUpdates.error) {
-        setUpdates(fetchedUpdates);
+        const sortedUpdates = fetchedUpdates.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setUpdates(sortedUpdates);
         setNextUpdatesPageUrl(nextPage)
-        console.log(fetchedUpdates)
         setLoadingUpdates(false)
       } else {
         console.error('Error fetching customers:', fetchedUpdates.error);
@@ -61,26 +93,11 @@ const AdminHome = ({ route, navigation }) => {
     } catch (error) {
       console.error('Error fetching customers:', error);
     }
+  };
 
-    // Fetch properties
+  const fetchSoDetails = async (token) => {
     try {
-      const paramsDirectorId = route.params?.userId;
-      const { properties: fetchedProperties, nextPageUrl: nextPage } = await fetchAdminProperties(paramsToken, paramsDirectorId);
-      if (fetchedProperties.length > 0) {
-        setProperties(fetchedProperties);
-        setNextPageUrl(nextPage)
-        console.log("fp", fetchedProperties)
-        setLoadingAdminProperties(false)
-
-      } else {
-        console.log('No properties fetched, array is empty');
-      }
-    } catch (error) {
-      console.error('Error fetching admin properties:', error);
-    }
-    // Fetch SO Users
-    try {
-      const {data: fetchedSOData, nextPageUrl: nextPage} = await fetchSoUsers(paramsToken);
+      const {data: fetchedSOData, nextPageUrl: nextPage} = await fetchSoUsers(token);
       if (fetchedSOData.error) {
         console.error(fetchedSOData.error);
       } else {
@@ -95,26 +112,25 @@ const AdminHome = ({ route, navigation }) => {
           clients: `${user.clients} Clients`,  // Dummy data
           source: require('../../../assets/images/soperson.png')  // Assuming a placeholder image
         }));
+
+        transformedData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
         setSoUsers(transformedData);
         setNextSoPageUrl(nextPage)
         setLoadingSoUsers(false)
       }
     } catch (error) {
       console.error('Error fetching SO users:', error);
-      setLoadingCustomers(false)
-      setLoadingSoUsers(false)
-      setLoadingUpdates(false)
-      setLoadingAdminProperties(false)
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [route.params?.token, dummyState]);
+  useFocusEffect(
+    useCallback(() => {
+      const paramsToken = route.params?.token;
+      fetchAdminCustomers(paramsToken);
+    }, [route.params?.token])
+  );
 
-
-
-  
 
   return (
     <View style={styles.mainContainer}>

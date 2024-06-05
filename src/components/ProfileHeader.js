@@ -11,6 +11,10 @@ const InfoRow = ({ label, value }) => (
 
 
 const ProfileHeader = ({ onEditPress, inputValues, type, aop }) => {
+  
+  const typeString = type.map(t => t.name).join(", ");
+  const aopString = aop.map(a => a.name).join(", ");
+
   return (
     <View style={styles.headerContainer}>
       <View
@@ -36,8 +40,8 @@ const ProfileHeader = ({ onEditPress, inputValues, type, aop }) => {
         <InfoRow label="Address:" value={inputValues.address} />
         <InfoRow label="Occupation:" value={inputValues.occupation} />
         <InfoRow label="Budget:" value={inputValues.budget} />
-        <InfoRow label="Type:" value={type} />
-        <InfoRow label="Purpose:" value={aop} />
+        <InfoRow label="Type:" value={typeString} />
+        <InfoRow label="Purpose:" value={aopString} />
       </View>
     </View>
   );
@@ -89,7 +93,7 @@ const styles = StyleSheet.create({
   },
   labelText: {
     width: 90, // Set a fixed width for labels
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Medium',
     fontSize: 14,
     fontWeight: '500',
     color: '#424242',
@@ -99,7 +103,7 @@ const styles = StyleSheet.create({
     flex: 1, // This will take up the rest of the space in the container
     fontFamily: 'Poppins',
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#424242',
     textAlign: 'left', // Align the text to the left
   },

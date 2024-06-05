@@ -117,7 +117,11 @@ const OtpScreen = ({ route, navigation }) => {
       if (!user.role) {
         // Role is null or not defined, handle this case by showing an error message
         console.error("User role not defined, cannot proceed with login.");
-        setResetSucessMessage('Contact your Sales Officer to Register your Number and Log in.');
+        setResetSucessMessage('Contact your Admin to Register your Number and Log in.');
+
+        setTimeout(() => {
+          navigation.goBack();
+        }, 2500);
         return; // Exit function to prevent further execution
       }
   

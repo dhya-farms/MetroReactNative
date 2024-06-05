@@ -40,8 +40,11 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 50, // Set the height
-    backgroundColor: 'white', // Set the background color
+    backgroundColor: 'transparent',
+    fontFamily: 'Poppins',
+    fontSize: 14,
     marginBottom: 10, 
+    color: 'green'
 
   },
   cnText:{
@@ -83,7 +86,7 @@ const styles = StyleSheet.create({
     // ... any other styling you want for this message
   },
   loadingIndicator:{
-    width: '100%', 
+    flex: 1,
     justifyContent: 'center', 
     alignItems: 'center', 
     marginVertical: 20,

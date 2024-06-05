@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, ActivityIndicator} 
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator} 
 from 'react-native';
 import { SafeAreaView } from 'react-native';
 import styles from '../../constants/styles/propertydetailsstyles';
@@ -49,9 +49,6 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
   const [isDrop, setIsDrop] = useState(false);
   const { dummyState} = useRefresh();
   const [carouselImages, setCarouselImages]= useState([])
-  const [paymentCompleted, setPaymentCompleted] = useState(false);
-  const [docUploadCompleted, setDocUploadCompleted] = useState(false)
-  const [fullPaymentCompleted, setFullPaymentCompleted] = useState(false)
   const [cameFromPickupNo, setCameFromPickupNo] = useState(false);
   const [imageModalVisible, setImageModalVisible] = useState(false)
   const [loading, setLoading] = useState(true);
@@ -61,7 +58,6 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
   const [phaseDetails, setPhaseDetails]= useState([])
   const [siteVisitReFetch, setSiteVisitRefetch]= useState(false)
   const [fullDetails, setFullDetails] = useState({})
-  const [bookingStatus, setBookingStatus] = useState(false);
   const [pickupNeeded, setPickupNeeded] = useState(true);
   const [error, setError] = useState('');
   const [crmId, setCrmId] = useState(null)
@@ -80,9 +76,6 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
     date: '',
     pickupAddress: '',
   });
-  const [tokenPaymentDetails, setTokenPaymentDetails] = useState({
-    tokenPayment: ''
-  })
   
   const [status, setStatus] = useState({
     siteVisit: {
@@ -147,9 +140,6 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
   const effectivePropertyId = propertyId || route.params?.propertyId;
   const effectivePhaseId = phaseId || route.params?.phaseId;
   const effectiveBackScreen = route.params?.params || route.params?.backScreen;
-
-
-
 
 
   const handlePaymentMethodSelect = (paymentMethod) => {
@@ -229,6 +219,7 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
     });
   setCrmId(effectivePropertyId);
  }, [effectivePropertyId, effectivePhaseId]);
+
 
 
   useEffect(() => {
@@ -503,14 +494,13 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
     } else {
       // Data is valid, close DetailsInputModal and open DropModal
       toggleModalVisibility('completePaymentModalVisible', false);
-      setFullPaymentCompleted(true)
     }
 
  };
 
   const handleDocVeifyDone = () => {
       toggleModalVisibility('docverifyModalVisible', false);
-      setDocUploadCompleted(true)
+
   };
 
 

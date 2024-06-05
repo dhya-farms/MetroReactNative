@@ -1,32 +1,62 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, TextInput, StatusBar} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import FaqDropdown from '../../components/FaqDropdown';
+import { fetchFAQs } from '../../apifunctions/fetchFaqApi';
+import Toast from 'react-native-toast-message';
+import { postFAQQuestion } from '../../apifunctions/postQuestionsApi';
 
 
 
 const CustomerFaq = ({navigation}) => {
+  const [faqs, setFaqs] = useState([]);
   const [query, setQuery] = useState('');
   const [showMore, setShowMore] = useState(false);
 
-  const faqs = [
-    { question: "What types of properties do Metro City Developers offer?", 
-    answer: "We specialize in a variety of property types, including residential , luxury villas, commercial spaces, and agricultural lands, tailored to meet the needs and preferences of our clients." },
-    { question: "Can Metro City Developers assist with property financing?", 
-    answer: "Yes, we offer financial guidance and assistance, providing options that cater to the diverse financial needs of our clients, from mortgages to bespoke financing solutions." },
-    { question: "Does Metro City Developers handle the entire purchasing process?", 
-    answer: "Absolutely. From property selection, financial advice, to finalizing the paperwork, we manage the full spectrum of the purchasing process to ensure a smooth and hassle-free experience." },
-    { question: "How does Metro City Developers ensure the quality of their properties?", 
-    answer: "Our properties undergo rigorous quality checks and are developed using the highest construction standards to ensure that they not only meet but exceed industry benchmarks." },
-    { question: "Can international clients buy property through Metro City Developers?", 
-    answer: "Yes, we work with both local and international clients. We have a multilingual team ready to assist clients from around the world in finding their ideal property." },
-    { question: "How can I get started with Metro City Developers?", 
-    answer: "Simply reach out to us via our contact form, email, or phone. Our team is ready to discuss your needs and help you begin your journey towards finding your perfect property." },
-   ];
+  
+  useEffect(() => {
+    const initFaqs = async () => {
+      try {
+        const data = await fetchFAQs();
+        setFaqs(data);
+      } catch (error) {
+        console.error('Error fetching FAQs:', error);
+      }
+    };
+
+    initFaqs();
+  }, []);
 
    const toggleShowMore = () => {
     setShowMore(!showMore);
+  };
+
+  const handleSubmitQuestion = async () => {
+    if (query.trim() === '') {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid Input, Please enter a question before submitting.',
+        visibilityTime: 2200
+      });
+      return;
+    }
+    try {
+      const result = await postFAQQuestion(query);
+      Toast.show({
+        type: 'success',
+        text1: 'Question uploaded successfully. We will get back to you within 24-48 hours.',
+        visibilityTime: 2200,  
+        
+      });
+      setQuery(''); // Clear the input field after successful submission
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to submit your question. Please try again later.'
+      });
+    }
   };
 
 
@@ -63,7 +93,7 @@ const CustomerFaq = ({navigation}) => {
       />
     </View>
     <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.qsButton}>
+        <TouchableOpacity style={styles.qsButton} onPress={handleSubmitQuestion}>
             <Text style={styles.qsText}>Submit Questions</Text>
         </TouchableOpacity>
       </View>

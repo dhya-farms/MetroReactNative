@@ -3,7 +3,8 @@ import { View, TouchableOpacity, ScrollView, Text, StyleSheet, Image } from 'rea
 import { TextInput, Provider } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
-const CustomDropdownInput = ({ label, selectedValues=[], setSelectedValues, options }) => {
+const CustomDropdownInput = ({ label, selectedValues, setSelectedValues, options }) => {
+
   const [visible, setVisible] = useState(false);
 
   const CustomDropdownIcon = () => (
@@ -12,51 +13,45 @@ const CustomDropdownInput = ({ label, selectedValues=[], setSelectedValues, opti
       style={{ width: 24, height: 24 }}
     />
   );
-  
 
   const toggleDropdown = () => setVisible(!visible);
 
   const pickItem = (item) => {
-    setVisible(false); // Close the dropdown when an item is picked
-    // Check if the item is already selected
-    if (selectedValues.includes(item)) {
-      // If already selected, remove it from the array
-      setSelectedValues(selectedValues.filter(value => value !== item));
+    setVisible(false);
+    if (selectedValues.some(value => value.key === item.key)) {
+      setSelectedValues(selectedValues.filter(value => value.key !== item.key));
     } else {
-      // If not selected, add it to the array
-      setSelectedValues([...selectedValues, item]);
+      setSelectedValues(prevValues => [...prevValues, item]);
     }
   };
 
   return (
     <Provider>
       <View style={styles.inputContainer}>
-      <TouchableOpacity style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}} onPress={toggleDropdown}>
-      <TextInput
-        label={label}
-        value={selectedValues.join(', ')}
-        mode="outlined"
-        outlineColor="#1D9BF0"
-        editable={false}
-        theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent', background: 'white' , onSurface: 'black'} }}
-        right={<CustomDropdownIcon />}
-        style={styles.input}
-      />
-      <Icon name= "chevron-down" size={14} color="#1D9BF0" style={{ position: 'absolute', right: 10 }}/>
-
-    </TouchableOpacity>
-
+        <TouchableOpacity style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}} onPress={toggleDropdown}>
+          <TextInput
+            label={label}
+            value={selectedValues.map(sv => sv.name).join(', ')} // Display names of selected items
+            mode="outlined"
+            outlineColor="#1D9BF0"
+            editable={false}
+            theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent', background: 'white', onSurface: 'black'} }}
+            right={<CustomDropdownIcon />}
+            style={styles.input}
+          />
+          <Icon name="chevron-down" size={14} color="#1D9BF0" style={{ position: 'absolute', right: 10 }}/>
+        </TouchableOpacity>
 
         {visible && (
-           <View style={styles.dropdown}>
-          <ScrollView nestedScrollEnabled={true}>
-          {options.map((item, index) => (
-            <TouchableOpacity key={index} onPress={() => pickItem(item)} style={styles.dropdownItem}>
-              <Text style={styles.dropdownText}>{item}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-        </View>
+          <View style={styles.dropdown}>
+            <ScrollView nestedScrollEnabled={true}>
+            {options.map((item) => (
+                <TouchableOpacity key={item.key.toString()} onPress={() => pickItem(item)} style={styles.dropdownItem}>
+                  <Text style={styles.dropdownText}>{item.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
         )}
       </View>
     </Provider>

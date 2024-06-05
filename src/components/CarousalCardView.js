@@ -12,7 +12,6 @@ const requestTypes = {
 
 const Card = ({ name, customer, property, requestDate, initialRequestType, onPress }) => {
   const [selectedRequestIndex, setSelectedRequestIndex] = useState(null);
-  const [requestType, setRequestType] = useState('Select a request');
 
   // Set the initial selected state based on the initialRequestType prop
   useEffect(() => {

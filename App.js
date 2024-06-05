@@ -25,7 +25,7 @@ const toastConfig = {
   ),
   error: ({ text1 }) => (
     <View style={[styles.customToast, styles.errorToast]}>
-      <Text style={styles.customText}>{text1}</Text>
+      <Text style={[styles.customText, {color: "red"}]}>{text1}</Text>
     </View>
   )
 };
@@ -50,6 +50,7 @@ export default function App() {
           'Poppins': require('./assets/fonts/Poppins.ttf'),
           'HelveticaNeue': require('./assets/fonts/Helvetica.ttf'),
           'RobotoCondensed': require('./assets/fonts/RobotoCondensed.ttf'),
+          'Poppins-Medium': require('./assets/fonts/Poppins-Medium.ttf'),
         });
 
         // Retrieve token, user ID, and role
@@ -160,7 +161,8 @@ const styles = StyleSheet.create({
     borderColor: '#1D9BF0' // success color
   },
   errorToast: {
-    backgroundColor: 'red',
+    backgroundColor: 'white',
+    borderWidth: 1,
     borderColor: '#FF0000' // error color
   },
   customText: {

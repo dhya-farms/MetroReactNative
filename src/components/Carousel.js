@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, Dimensions, TouchableOpacity, ScrollView, Alert} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { toggleFavorite } from '../apifunctions/toggleFavouritesApi';
+import { formatPropertyName } from '../functions/formatPropertyName';
 
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -105,7 +106,7 @@ const Carousel = ({ data, onCardPress, favorites=[], isHeartVisible = true, para
           </View>
         {renderPagination()}
         <View style={styles.cardContent}>
-          <Text style={styles.title}>{item.name}</Text>
+          <Text style={styles.title}>{formatPropertyName(item.name, 12)}</Text>
           <Text style={styles.description}>{item.displayText}</Text>
           <View style={styles.locationContainer}>
             <MaterialIcons name="place" size={16} color="#757575" />

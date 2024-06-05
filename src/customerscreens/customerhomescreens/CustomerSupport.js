@@ -5,7 +5,8 @@ import HeaderContainer from '../../components/HeaderContainer';
 import ContactButton from '../../components/ContactButton';
 import { fetchSoDetails } from '../../apifunctions/fetchSoDetailsApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { postQueries } from '../../apifunctions/postQueryApi';
+import Toast from 'react-native-toast-message';
 
 
 
@@ -55,6 +56,33 @@ const CustomerSupport = ({navigation}) => {
     handleFetchUserDetails();
   }, []);
 
+  const handleSubmitQuery = async () => {
+    if (query.trim() === '') {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid Input, Please enter a question before submitting.',
+        visibilityTime: 2200
+      });
+      return;
+    }
+    try {
+      const result = await postQueries(query);
+      Toast.show({
+        type: 'success',
+        text1: 'Query uploaded successfully. We will get back to you within 24-48 hours.',
+        visibilityTime: 2200,  
+        
+      });
+      setQuery(''); // Clear the input field after successful submission
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error, Failed to submit your Query. Please try again later.',
+        visibilityTime: 2200,  
+      });
+    }
+  };
+
 
   return (
     <View style={styles.mainContainer}>
@@ -82,7 +110,7 @@ const CustomerSupport = ({navigation}) => {
         placeholder="Type your query here"
       />
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.qsButton}>
+        <TouchableOpacity style={styles.qsButton} onPress={handleSubmitQuery}>
             <Text style={styles.qsText}>Submit</Text>
         </TouchableOpacity>
       </View>

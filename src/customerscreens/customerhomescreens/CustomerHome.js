@@ -42,19 +42,19 @@ import { formatPropertyName } from '../../functions/formatPropertyName';
       try {
         // Fetch categories synchronously as example (though you might not need a loading state for this)
         const fetchedCategories = await fetchPropertyTypes(paramsToken);
-        setCategories([{ key: 'filter', name: 'Filter' }, ...fetchedCategories]);
+        setCategories([{ key: 'filter', name: 'Filter' }, ...fetchedCategories.propertyTypes]);
 
         // Fetch properties
         const {properties: propertiesResponse, nextPageUrl: nextPage} = await fetchCustomerProperties(paramsToken, paramsUserId);
-        setCustomerProperties(propertiesResponse);
-        console.log("customer properties", propertiesResponse)
+        const sortedProperties = propertiesResponse.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setCustomerProperties(sortedProperties);
         setNextCustomerPageUrl(nextPage)
         setLoadingCustomerProperties(false);
 
         const {properties: commonProperties, nextPageUrl: nextPropertyPage} = await fetchProperties(paramsToken);
-        setProperties(commonProperties);
-        console.log("properties", commonProperties)
-        console.log("images",commonProperties)
+        const sortedCommonProperties = commonProperties.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setProperties(sortedCommonProperties);
+        console.log("c properties", commonProperties)
         setNextPropertyPageUrl(nextPropertyPage)
         setLoadingProperties(false); 
 
@@ -191,7 +191,6 @@ import { formatPropertyName } from '../../functions/formatPropertyName';
         />
 
       </View>
-
       <View style={{width: '100%', marginVertical: 20, marginHorizontal: 2, paddingHorizontal: 12,}}>
       <FlatList
         ref={flatListRef}

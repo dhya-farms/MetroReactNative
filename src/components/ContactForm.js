@@ -133,14 +133,15 @@ const styles = StyleSheet.create({
     height: 40, // Set the height
     backgroundColor: 'white', // Set the background color
     marginBottom: 20,
-    color: 'black' // Add a bottom margin
+    color: 'black',
+    fontFamily: 'Poppins' // Add a bottom margin
   },
 
   buttonContainer: {
-        flexDirection: 'row', // Align children in a row
-        justifyContent: 'flex-end', // Align button to the end
-        width: '80%', // Ensure the container takes full width
-    },
+    flexDirection: 'row', // Align children in a row
+    justifyContent: 'flex-end', // Align button to the end
+    width: '80%', // Ensure the container takes full width
+  },
 
   doneButton: {
     backgroundColor: "#1D9BF0",

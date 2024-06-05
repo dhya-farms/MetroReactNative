@@ -67,7 +67,8 @@ function formatPropertyDetails(property) {
           formattedProperties.push({
               ...property,
               id: phase.id, 
-              propertyId: property.id, // Use phase ID for unique identification
+              propertyId: property.id,
+              created_at: property.created_at,// Use phase ID for unique identification
               name: `${property.name} Phase-${phase.phase_number}`,
               displayText: getDisplayInfo(property, phase),
               detailInfo: getDetailInfo(property, phase),
@@ -91,6 +92,7 @@ export async function fetchAdminProperties(paramsToken, paramsDirectorId, pageUr
 
   try {
     const response = await axios.get(url, { headers });
+    console.log("response", response.data.results)
     const formattedProperties = response.data.results.map(formatPropertyDetails).flat(); // Flatten in case of phases
 
     return {

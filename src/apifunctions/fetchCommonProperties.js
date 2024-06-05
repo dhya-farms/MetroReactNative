@@ -66,7 +66,7 @@ const getAuthData = async (paramsToken) => {
               ...property,
               id: phase.id, 
               propertyId: property.id, 
-              
+              created_at: property.created_at,
               name: `${property.name} Phase-${phase.phase_number}`,
               displayText: getDisplayInfo(property, phase),
               detailInfo: getDetailInfo(property, phase),

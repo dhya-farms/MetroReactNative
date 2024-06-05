@@ -11,19 +11,10 @@ import updateCustomerDetailsApiCall from '../../apifunctions/UpdateCustomerApi';
 import { useIsFocused } from '@react-navigation/native';
 import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 import Toast from 'react-native-toast-message';
+import { fetchPropertyTypes } from '../../apifunctions/propertyTypesApi';
 
 
-const propertyTypeMappings = {
-  1: 'DTCP PLOTS',
-  2: 'Farmlands',
-  3: 'Flat',
-  4: 'Villa',
-};
 
-const areaOfPurposeMappings = {
-  1: 'Residential',
-  2: 'Commercial',
-};
 
 const FloatingLabelInput = ({ label, value, onChangeText,editable = true, ...props }) => {
     return (
@@ -40,13 +31,6 @@ const FloatingLabelInput = ({ label, value, onChangeText,editable = true, ...pro
       />
     );
   };
-
-  const getIdsFromSelection = (selectionArray, mappings) => {
-    const ids = selectionArray.map(item => {
-      return Object.keys(mappings).find(key => mappings[key] === item);
-    });
-    return ids.filter(id => id !== undefined).map(Number);
-  };
   
 
 const CustomerProfile = ({route, navigation}) => {
@@ -55,9 +39,9 @@ const CustomerProfile = ({route, navigation}) => {
   const [saveMessage, setSaveMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [typeOptions, setTypeOptions] = useState([]);
+  const [aopOptions, setAopOptions] = useState([]);
   const [error, setError] = useState(null);
-  const aopOptions = ['Residential', 'Commercial'];
-  const typeOptions = ['DTCP PLOTS', 'Farmlands', 'Flat', 'Villa'];
   const isFocused = useIsFocused(); 
   const [inputValues, setInputValues] = useState({
     name: '',
@@ -79,18 +63,28 @@ const CustomerProfile = ({route, navigation}) => {
   }
 
   useEffect(() => {
-    const paramsToken = route.params?.token;
-    const paramsUserId = route.params?.userId; 
-    setLoading(true);
   
-    fetchCustomerDetails(paramsToken, paramsUserId)
-      .then(details => {
-        // Assuming the API returns a single customer object directly
-        const mappedTypes = details.preferences?.property_types.map(type => propertyTypeMappings[type]) || [];
-        const mappedAop = details.preferences?.area_of_purpose.map(aop => areaOfPurposeMappings[aop]) || [];
+    const initFetch = async () => {
+      const paramsToken = route.params?.token;
+      const paramsUserId = route.params?.userId;
   
-        setAop(mappedAop);
-        setType(mappedTypes);
+      setLoading(true);
+  
+      try {
+        const { propertyTypes, areaOfPurpose } = await fetchPropertyTypes(paramsToken);
+  
+        setTypeOptions(propertyTypes.map(t => ({ key: t.key, name: t.name })));
+        setAopOptions(areaOfPurpose.map(a => ({ key: a.key, name: a.name })));
+        
+  
+        // Fetch customer details
+        const details = await fetchCustomerDetails(paramsToken, paramsUserId);
+        setType(details.preferences?.property_types.map(typeId => 
+          propertyTypes.find(pt => pt.key === typeId.toString())
+        ) || []);
+        setAop(details.preferences?.area_of_purpose.map(aopId => 
+          areaOfPurpose.find(ap => ap.key === aopId.toString())
+        ) || []);
   
         setInputValues({
           name: details.name || '',
@@ -100,16 +94,17 @@ const CustomerProfile = ({route, navigation}) => {
           occupation: details.occupation || '',
           budget: details.preferences?.budget?.toString() || '',
         });
-      })
-      .catch(err => {
+      } catch (err) {
         setError(err.message);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
-  }, []);// Dependency array is empty, so this effect runs once on mount
+      }
+    };
+  
+    initFetch();
+  }, []);
 
-  if (loading) return <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />;
+  if (loading) return <ActivityIndicator size="large" color={PRIMARY_COLOR} style={styles.loadingIndicator} />;
   if (error) return <Text>Error: {error}</Text>;
 
   const toggleEditMode = () => {
@@ -143,8 +138,8 @@ const CustomerProfile = ({route, navigation}) => {
       address: inputValues.address,
 
       preferences: {
-        area_of_purpose: getIdsFromSelection(aop, areaOfPurposeMappings), 
-        property_types: getIdsFromSelection(type, propertyTypeMappings), 
+        area_of_purpose: aop.map(a => parseInt(a.key)), // Convert string keys to integers
+        property_types: type.map(t => parseInt(t.key)), // Convert string keys to integers
         budget: parseInt(inputValues.budget)
       }
     };
@@ -215,21 +210,21 @@ const CustomerProfile = ({route, navigation}) => {
               })
             }
             <View style={[styles.customTextinputContainer, { zIndex: 7000 }]}>
-              <CustomDropdownInput
+            <CustomDropdownInput
                 label="Type"
                 selectedValues={type}
                 setSelectedValues={setType}
                 options={typeOptions}
               />
-            </View>
-            <View style={styles.customTextinputContainer}>
+             </View>
+             <View style={[styles.customTextinputContainer]}>
               <CustomDropdownInput
                 label="Area Of Purpose"
                 selectedValues={aop}
                 setSelectedValues={setAop}
                 options={aopOptions}
-              />
-            </View>
+            />
+            </View>       
             {saveMessage !== '' && (
             <Text style={styles.saveMessage}>{saveMessage}</Text>
             )}
@@ -246,11 +241,11 @@ const CustomerProfile = ({route, navigation}) => {
         ) : (
          <View style={{width: '100%'}}>
           <ProfileHeader
-            onEditPress={toggleEditMode}
-            inputValues={inputValues} 
-            type={type.join(", ")} // Assuming type is an array, join the elements into a string
-            aop={aop.join(", ")} // Assuming aop is an array, join the elements into a string
-          />
+              onEditPress={toggleEditMode}
+              inputValues={inputValues}
+              type={type}
+              aop={aop}
+            />
          </View>
         )
       }

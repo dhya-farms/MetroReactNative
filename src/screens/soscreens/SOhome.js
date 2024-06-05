@@ -30,65 +30,77 @@ const SOhome = ({route, navigation}) => {
   const [updates, setUpdates] = useState([])
   const [nextUpdatesPageUrl, setNextUpdatesPageUrl] = useState(null)
 
+  const initializeScreen = async () => {
+    const paramsToken = route.params?.token;
+    const paramsAdvisorId = route.params?.userId || await AsyncStorage.getItem('userId');
+
+    fetchProperties(paramsToken);
+    fetchCustomers(paramsToken, paramsAdvisorId);
+    fetchedUpdates(paramsToken);
+    fetchAdvisorDetails(paramsAdvisorId, paramsToken);
+  };
+
+  useEffect(() => {
+    initializeScreen();
+  }, []);
+
+  const fetchProperties = async (token) => {
+    try {
+      const { properties, nextPageUrl } = await fetchCommonProperties(token);
+      const sortedProperties = properties.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setProperties(sortedProperties);
+      setNextPageUrl(nextPageUrl);
+      setLoadingProperties(false);
+    } catch (error) {
+      console.error('Error fetching common properties:', error);
+    }
+  };
+
+  const fetchCustomers = async (token, soId) => {
+    setLoadingCustomers(true);
+    try {
+      const { customers, nextPageUrl } = await fetchSoCustomers(token, soId);
+      if (!customers.error) {
+        const sortedCustomers = customers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setCustomers(sortedCustomers);
+        setSoNextPageUrl(nextPageUrl);
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    }
+    setLoadingCustomers(false);
+  };
+
+  const fetchedUpdates = async (token) => {
+    try {
+      const updates = await fetchUpdates(token);
+      if (!updates.error) {
+        const sortedUpdates = updates.updates.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setUpdates(sortedUpdates);
+        setNextUpdatesPageUrl(updates.nextPageUrl);
+        setLoadingUpdates(false);
+      }
+    } catch (error) {
+      console.error('Error fetching updates:', error);
+    }
+  };
+
+  const fetchAdvisorDetails = async (advisorId, token) => {
+    try {
+      const advisorDetails = await fetchSoDetails(advisorId, token);
+      setAdvisor(advisorDetails);
+      setLoadingSo(false);
+    } catch (error) {
+      console.error('Failed to fetch advisor details:', error);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
-      const initializeScreen = async () => {
-        const paramsToken = route.params?.token;
-        let paramsAdvisorId = route.params?.userId;
-        const paramsSoId = route.params?.userId;
-  
-        if (!paramsAdvisorId) {
-          paramsAdvisorId = await AsyncStorage.getItem('userId');
-        }
-  
-        try {
-          const { properties, nextPageUrl } = await fetchCommonProperties(paramsToken);
-          setProperties(properties);
-          setNextPageUrl(nextPageUrl);
-          setLoadingProperties(false);
-          console.log(properties);
-        } catch (error) {
-          console.error('Error fetching common properties:', error);
-        }
-  
-        try {
-          const { customers, nextPageUrl } = await fetchSoCustomers(paramsToken, paramsSoId);
-          if (!customers.error) {
-            const sortedCustomers = customers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            setCustomers(sortedCustomers);
-            setSoNextPageUrl(nextPageUrl);
-            setLoadingCustomers(false);
-          }
-        } catch (error) {
-          console.error('Error fetching customers:', error);
-        }
-  
-        try {
-          const updates = await fetchUpdates(paramsToken);
-          if (!updates.error) {
-            setUpdates(updates.updates);
-            setNextUpdatesPageUrl(updates.nextPageUrl);
-            setLoadingUpdates(false);
-          }
-        } catch (error) {
-          console.error('Error fetching updates:', error);
-        }
-  
-        try {
-          const advisorDetails = await fetchSoDetails(paramsAdvisorId, paramsToken);
-          setAdvisor(advisorDetails);
-          setLoadingSo(false);
-        } catch (error) {
-          console.error('Failed to fetch advisor details:', error);
-        }
-      };
-  
-      initializeScreen();
-  
-      return () => {
-        // Optional cleanup actions
-      };
-    }, [route.params?.token, route.params?.userId]) // Include any variables that your fetching logic depends on
+      const paramsToken = route.params?.token;
+      const paramsSoId = route.params?.userId;
+      fetchCustomers(paramsToken, paramsSoId);
+    }, [route.params?.token, route.params?.userId])
   );
   
  
@@ -169,7 +181,7 @@ const SOhome = ({route, navigation}) => {
       ) : properties.length > 0 ? (
       <View style={{width: '100%'}}>
         <SiteDetailsCard
-        siteData={properties.slice(0,3)}
+        siteData={properties}
         onCardPress={(propertyId, phaseId) => {
           navigation.navigate("SO Sites", {
             screen: "SO Properties Details",

@@ -45,11 +45,11 @@ export const fetchProperties = async (paramsToken, pageUrl = null) => {
     const properties = response.data.results.map(property => {
       if (property.phases && property.phases.length) {
         const filteredImages = property.images.filter(img => img.is_thumbnail && !img.is_slider_image);
-        console.log('properties',)
         return property.phases.map(phase => ({
           ...property,
           id: phase.id, 
           propertyId: property.id,
+          created_at: property.created_at,
           name: `${property.name} Phase-${phase.phase_number}`, 
           phaseDetails: phase, // Include detailed phase info
           displayText: getDisplayInfo(property, phase), // Specific to phase

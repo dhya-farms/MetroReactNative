@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StatusBar, ActivityIndicator} from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, ActivityIndicator} from 'react-native';
 import SlidingCarousel from '../../components/SlidingCarousel';
 import LayoutHeader from '../../components/LayoutHeader';
 import { TabBar } from '../../components/TabComponent';
@@ -11,13 +11,14 @@ import AmenitiesDisplay from '../../components/AmenitiesDisplay';
 import { fetchPropertyDetails } from '../../apifunctions/fetchPropertyDetailsApi';
 import { DetailItems } from '../../functions/DetailItems';
 import { handleBack } from '../../functions/generalHandleBack';
+import { truncateText } from '../../functions/truncateText';
 
 
 const dummyImageUri = require('../../../assets/images/Newmetro.jpeg')
 const dummyImageUris = new Array(3).fill(dummyImageUri); 
 
 const dummyGalleryImageUri = require('../../../assets/images/Newmetro.jpeg');
-const dummyGalleryImageUris = new Array(6).fill(dummyGalleryImageUri);  // Create an array of 6 dummy images
+const dummyGalleryImageUris = new Array(6).fill(dummyGalleryImageUri);  
 
 
 
@@ -118,13 +119,6 @@ const ShowProperties = ({ route, navigation }) => {
     setTextShown(!textShown);
   };
 
-  const truncateText = (text, limit) => {
-    const words = text.split(' ');
-    if (words.length > limit) {
-      return words.slice(0, limit).join(' ') + '...';
-    }
-    return text;
-  };
 
   const ImageToggle = ()=>{
     setImageModalVisible(!imageModalVisible)

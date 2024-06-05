@@ -72,6 +72,7 @@ export const fetchCustomerProperties = async (paramsToken, paramsUserId, pageUrl
         ...prop,
         id: prop.phase.id,
         propertyId: prop.id,
+        created_at: prop?.created_at,
         name: `${prop.property.name} Phase-${prop.phase.phase_number}`,
         location: prop.property.location,
         phaseDetails: prop.phase,

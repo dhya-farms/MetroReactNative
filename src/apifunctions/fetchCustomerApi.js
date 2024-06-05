@@ -13,13 +13,11 @@ const getAuthHeaders = token => ({
 
 // Fetch customers with pagination support
 export const fetchCustomers = async (paramsToken, assignedSoId, pageUrl = null) => {
-    let token;
+    let token; 
     try {
-        // Attempt to fetch the token from AsyncStorage
         token = paramsToken || await AsyncStorage.getItem('userToken');
         if (!token) throw new Error('No token found');
     } catch (error) {
-        // Handle errors related to AsyncStorage or token fetching
         console.error('Token fetch error:', error);
         return { error: 'Failed to fetch token', customers: [], nextPageUrl: null };
     }
@@ -44,7 +42,7 @@ export const fetchCustomers = async (paramsToken, assignedSoId, pageUrl = null) 
                         number: entry.customer.mobile_no,
                         mailId: entry.customer.email,
                         created_at: entry.customer.created_at,
-                        personimage: require('../../assets/images/person.png'),
+                        personimage: entry.customer.image ? { uri: entry.customer.image } : require('../../assets/images/person.png'),
                         property: `${entry.property.name} Phase-${entry.phase.phase_number}`,
                         currentCRMStatus: entry.current_crm_status,
                         currentApprovalStatus: entry.current_approval_status
