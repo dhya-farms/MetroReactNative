@@ -138,8 +138,8 @@ const CustomerProfile = ({route, navigation}) => {
       address: inputValues.address,
 
       preferences: {
-        area_of_purpose: aop.map(a => parseInt(a.key)), // Convert string keys to integers
-        property_types: type.map(t => parseInt(t.key)), // Convert string keys to integers
+        area_of_purpose: aop.map(a => parseInt(a.key)), 
+        property_types: type.map(t => parseInt(t.key)),
         budget: parseInt(inputValues.budget)
       }
     };
@@ -209,7 +209,7 @@ const CustomerProfile = ({route, navigation}) => {
                 );
               })
             }
-            <View style={[styles.customTextinputContainer, { zIndex: 7000 }]}>
+            <View style={[styles.customTextinputContainer]}>
             <CustomDropdownInput
                 label="Type"
                 selectedValues={type}

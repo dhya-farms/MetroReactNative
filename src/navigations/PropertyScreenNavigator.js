@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import CustomerProperties from '../customerscreens/customerhomescreens/CustomerProperties';
-import ShowProperties from '../customerscreens/customerhomescreens/ShowProperties';
-import MyPropertiesDetails from '../customerscreens/customerhomescreens/MyPropertiesDetails';
+import CustomerProperties from '../screens/customerhomescreens/CustomerProperties';
+import ShowProperties from '../screens/customerhomescreens/ShowProperties';
+import MyPropertiesDetails from '../screens/customerhomescreens/MyPropertiesDetails';
 import { PropertiesProvider } from '../contexts/usePropertiesContext';
 import { RefreshProvider } from '../contexts/useRefreshContext';
 

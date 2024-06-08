@@ -177,6 +177,8 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
     marginBottom: 30,
+    textAlign: 'left',  // Ensures text starts from the left
+    textAlignVertical: 'top'  
   },
   qsButton:{
     width: 124,

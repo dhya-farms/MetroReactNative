@@ -43,7 +43,6 @@ const AdminCustomerDetails = ({route, navigation}) => {
   const [siteVisitReFetch, setSiteVisitRefetch] = useState(false)
   const [tokenRefetch, setTokenRefetch] = useState(false)
   const [documentReFetch, setDocumentRefetch] = useState(false)
-  const [paymentRefetch, setPaymentRefetch] = useState(false)
   const effectiveCustomerId= customerId || route.params?.customerId
   const [buttonsDisabled, setButtonsDisabled] = useState(false);
   const [status, setStatus] = useState({
@@ -141,6 +140,10 @@ const AdminCustomerDetails = ({route, navigation}) => {
   };
 
   useEffect(() => {
+    fetchCustomerDetails(effectiveCustomerId);
+  }, [effectiveCustomerId]);
+
+  useEffect(() => {
     const getRole = async () => {
       try {
         const storedRole = await AsyncStorage.getItem('role');
@@ -188,7 +191,7 @@ const AdminCustomerDetails = ({route, navigation}) => {
     const relevantStatusChange = status.documentation.isApproved || status.documentation.isRejected || status.documentation.isCompleted || status.documentation.isPending
 
     if (relevantStatusChange) {
-      console.log("Fetching payment details due to status change in tokenAdvance.");
+      console.log("Fetching documentation details due to status change in tokenAdvance.");
       fetchDocumentationDetails(effectiveCustomerId, setLoading, setStatus, setError);  // `1` is the enum value for token advance
     }
   }, [
@@ -203,7 +206,7 @@ const AdminCustomerDetails = ({route, navigation}) => {
   useEffect(() => {
     const relevantStatusChange = status.payment.isApproved || status.payment.isRejected || status.payment.isCompleted || status.payment.isPending;
     if (relevantStatusChange) {
-      console.log("Fetching payment details due to status change in payment.");
+      console.log("Fetching full payment details due to status change in payment.");
       fetchFullPaymentDetails(effectiveCustomerId, setLoading, setStatus, setError); 
     }
   }, [effectiveCustomerId, status.payment.isApproved ,status.payment.isRejected, 
@@ -212,15 +215,13 @@ const AdminCustomerDetails = ({route, navigation}) => {
   useEffect(() => {
     const relevantStatusChange = status.ddDelivery.isCompleted ;
     if (relevantStatusChange) {
-      console.log("Fetching payment details due to status change in payment.");
+      console.log("Fetching  dd delivery details due to status change in payment.");
       fetchDocumentationDeliveryDetails(effectiveCustomerId, setLoading, setStatus, setError); 
     }
   }, [effectiveCustomerId, status.ddDelivery.isCompleted ]);
 
 
-    useEffect(() => {
-      fetchCustomerDetails(effectiveCustomerId);
-    }, [effectiveCustomerId]);
+ 
 
 
   const toggleDetailsVisibility = (category) => {
@@ -348,7 +349,7 @@ const AdminCustomerDetails = ({route, navigation}) => {
   };
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+    return <ActivityIndicator size="large" color={PRIMARY_COLOR} style={{ flex: 1, justifyContent: 'center' }} />;
   }
 
   if (error) {

@@ -9,7 +9,7 @@ const CustomerTabEntry = ({ route }) => {
   return (
     <CustomerProvider>
       <CustomerPropertiesProvider paramsToken={cusToken} paramsUserId={cusUserId}>
-          <CustomerBottomTab />
+          <CustomerBottomTab  route={route}/>
       </CustomerPropertiesProvider>
     </CustomerProvider>
   );

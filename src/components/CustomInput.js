@@ -7,13 +7,6 @@ const CustomDropdownInput = ({ label, selectedValues, setSelectedValues, options
 
   const [visible, setVisible] = useState(false);
 
-  const CustomDropdownIcon = () => (
-    <Image
-      source={require('../../assets/images/cross.png')} // Ensure the path is correct
-      style={{ width: 24, height: 24 }}
-    />
-  );
-
   const toggleDropdown = () => setVisible(!visible);
 
   const pickItem = (item) => {
@@ -26,7 +19,6 @@ const CustomDropdownInput = ({ label, selectedValues, setSelectedValues, options
   };
 
   return (
-    <Provider>
       <View style={styles.inputContainer}>
         <TouchableOpacity style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}} onPress={toggleDropdown}>
           <TextInput
@@ -36,45 +28,37 @@ const CustomDropdownInput = ({ label, selectedValues, setSelectedValues, options
             outlineColor="#1D9BF0"
             editable={false}
             theme={{ colors: { primary: '#1D9BF0', underlineColor: 'transparent', background: 'white', onSurface: 'black'} }}
-            right={<CustomDropdownIcon />}
             style={styles.input}
           />
-          <Icon name="chevron-down" size={14} color="#1D9BF0" style={{ position: 'absolute', right: 10 }}/>
+          <Icon name={visible ? "chevron-up" : "chevron-down"} size={14} color="#1D9BF0" style={{ position: 'absolute', right: 10 }}/>
         </TouchableOpacity>
 
         {visible && (
-          <View style={styles.dropdown}>
-            <ScrollView nestedScrollEnabled={true}>
+            <ScrollView nestedScrollEnabled={true} style={styles.dropdown}>
             {options.map((item) => (
                 <TouchableOpacity key={item.key.toString()} onPress={() => pickItem(item)} style={styles.dropdownItem}>
                   <Text style={styles.dropdownText}>{item.name}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
-          </View>
         )}
       </View>
-    </Provider>
   );
 };
 
 const styles = StyleSheet.create({
   inputContainer: {
-    position: 'relative',
+    width: '100%',
   },
   dropdown: {
-    position: 'absolute',
     width: '50%',
     backgroundColor: 'white',
-    top: 60, // Adjust the position based on your TextInput height
-    left: 0,
     borderWidth: 1,
     borderColor: '#1D9BF0',
-    zIndex:2500,
     maxHeight: 140, 
+    overflow: 'hidden', // Set a max height for scrollable content
     borderRadius: 5,
-    marginVertical: 10
-  
+    marginVertical: 4,
   }, 
   dropdownItem: {
     padding: 4,

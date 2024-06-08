@@ -6,6 +6,7 @@ import HeaderContainer from '../../components/HeaderContainer';
 import { useProperties } from '../../contexts/usePropertiesContext';
 import { fetchCommonProperties } from '../../apifunctions/fetchCommonProperties';
 import _ from 'lodash'; 
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 
 
@@ -73,7 +74,7 @@ const SOproperties = ({route, navigation}) => {
 
   const renderFooter = () => {
     console.log('Render footer, loading:', loading); 
-    return loading ? <ActivityIndicator size="large" color="#0000ff" /> : null;
+    return loading ? <ActivityIndicator size="large" color={PRIMARY_COLOR} /> : null;
   };
 
   

@@ -6,31 +6,28 @@ export const fetchSiteVisitDetails = async (crmId, setLoading, setStatus, setErr
         const response = await axios.get(`https://splashchemicals.in/metro/api/site-visits/?crm_lead_id=${crmId}`);
         console.log("Site visit details fetched:", response.data.results);
 
-        if (response.data.results.length > 0) {
-            const details = response.data.results[0];
-            console.log("Setting site visit details:", details);
-            setStatus(prevState => {
-                const newState = {
-                    ...prevState,
-                    siteVisit: {
-                        ...prevState.siteVisit,
-                        details: [{
-                            propertyName: details.crm_lead?.property?.name,
-                            date: new Date(details.pickup_date).toLocaleDateString('en-GB'),
-                            pickupAddress: details.pickup_address
-                        }]
-                    }
-                };
-                console.log("New state after setting site visit:", newState);
-                return newState;
-            });
+        if (response.data.results && response.data.results.length > 0) {
+            // Map the results to format details as needed
+            const formattedDetails = response.data.results.map(detail => ({
+                propertyName: detail.crm_lead?.property?.name || '',
+                date: new Date(detail.pickup_date).toLocaleDateString('en-GB'),
+                pickupAddress: detail?.pickup_address || 'Pickup Not Needed',
+            }));
+            console.log("Formatted site visit details:", formattedDetails);
+            setStatus(prevState => ({
+                ...prevState,
+                siteVisit: {
+                    ...prevState.siteVisit,
+                    details: formattedDetails,
+                }
+            }));
         } else {
             console.log("No site visit details available.");
             setStatus(prevState => ({
                 ...prevState,
                 siteVisit: {
                     ...prevState.siteVisit,
-                    details: []
+                    details: [],
                 }
             }));
         }
@@ -41,3 +38,4 @@ export const fetchSiteVisitDetails = async (crmId, setLoading, setStatus, setErr
         setLoading(false);
     }
 };
+

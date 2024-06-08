@@ -26,9 +26,11 @@ export const SoUserProvider = ({ children }) => {
                   clients: '5 Clients',  // Dummy data
                   source: require('../../assets/images/soperson.png')  // Assuming a placeholder image
                 }));
+
+                transformedData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
                 setSoUsers(transformedData);
                 setNextSoPageUrl(nextPage)
-                console.log('global', transformedData)
               }
         };
         loadData();

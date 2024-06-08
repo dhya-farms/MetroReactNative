@@ -20,17 +20,20 @@ const ImageScrollView = ({ properties, navigation }) => {
 
       const interval = setInterval(() => {
         setCurrentIndex(prevIndex => {
-          const nextIndex = prevIndex === properties.length - 1 ? 0 : prevIndex + 1;
-          // Scroll to the next index using the FlatList ref
-          if (flatListRef.current) {
-            flatListRef.current.scrollToIndex({ animated: true, index: nextIndex });
-          }
-          return nextIndex;
+            const nextIndex = prevIndex === properties.length - 1 ? 0 : prevIndex + 1;
+            if (flatListRef.current) {
+                // Ensure the nextIndex is within bounds before scrolling
+                if (nextIndex < properties.length) {
+                    flatListRef.current.scrollToIndex({ animated: true, index: nextIndex });
+                }
+            }
+            return nextIndex;
         });
-      }, 3000); // Change item every 3 seconds, adjust timing as needed
-    
-      return () => clearInterval(interval);
-  }, [properties.length]);
+    }, 3000); // Change item every 3 seconds
+
+    return () => clearInterval(interval);
+   }, [properties.length]);
+
 
   const renderPagination = () => {
     if (properties.length <= 1) {

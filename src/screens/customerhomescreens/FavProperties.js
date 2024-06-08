@@ -6,6 +6,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { fetchMyFavourites } from '../../apifunctions/fetchMyFavouritesApi';
 import _ from 'lodash';
 import SortHeader from '../../components/SortHeader';
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 const FavProperties = ({ route, navigation }) => {
   const [favourites, setFavourites] = useState([]);
@@ -89,7 +90,7 @@ const FavProperties = ({ route, navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={PRIMARY_COLOR} />
       </View>
     );
   }

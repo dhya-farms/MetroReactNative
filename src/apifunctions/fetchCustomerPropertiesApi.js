@@ -60,8 +60,6 @@ export const fetchCustomerProperties = async (paramsToken, paramsUserId, pageUrl
       return { properties: [], nextPageUrl: null };
     }
 
-    console.log("customer", propertiesResponse.results)
-
     const formattedProperties = propertiesResponse.results.map(prop => {
 
       const thumbnailImages = prop.property.images.filter(image => image.is_thumbnail && !image.is_slider_image);
@@ -81,8 +79,6 @@ export const fetchCustomerProperties = async (paramsToken, paramsUserId, pageUrl
         source: displayImage
       };
     });
-
-    console.log('Properties data retrieval success:', formattedProperties);
     return {
       properties: formattedProperties,
       nextPageUrl: propertiesResponse.next // Provide the next page URL for pagination

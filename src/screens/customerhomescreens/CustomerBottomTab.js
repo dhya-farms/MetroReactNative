@@ -68,10 +68,12 @@ const screenOptions = ({ route }) => ({
   tabBarHideOnKeyboard: true,
 });
 
-const CustomerBottomTab = ({}) => {
+const CustomerBottomTab = ({route}) => {
+  const { cusToken, cusUserId } = route.params
   return (
     <Tab.Navigator screenOptions={screenOptions}>
-      <Tab.Screen name="Home" component={CustomerHomeScreenNavigator} />
+      <Tab.Screen name="Home" component={CustomerHomeScreenNavigator} 
+      initialParams={{ token: cusToken, userId: cusUserId }}/>
       <Tab.Screen
         name="properties" component={PropertyScreenNavigator}
       />

@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import CustomerSettings from '../customerscreens/customerhomescreens/CustomerSettings';
-import CustomerSupport from '../customerscreens/customerhomescreens/CustomerSupport';
-import CustomerFaq from '../customerscreens/customerhomescreens/CustomerFaq';
-import CustomerPolicies from '../customerscreens/customerhomescreens/CustomerPolicies';
+import CustomerSettings from '../screens/customerhomescreens/CustomerSettings';
+import CustomerSupport from '../screens/customerhomescreens/CustomerSupport';
+import CustomerFaq from '../screens/customerhomescreens/CustomerFaq';
+import CustomerPolicies from '../screens/customerhomescreens/CustomerPolicies';
 
 const SettingsScreen = createNativeStackNavigator();
 

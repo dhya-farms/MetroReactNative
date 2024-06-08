@@ -12,6 +12,7 @@ import LayoutImageModal from '../../modals/LayoutImageModal';
 import AmenitiesDisplay from '../../components/AmenitiesDisplay';
 import { fetchPropertyDetails } from '../../apifunctions/fetchPropertyDetailsApi';
 import { DetailItems } from '../../functions/DetailItems';
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 
 
@@ -122,7 +123,7 @@ const AdminPropertiesDetails = ({route, navigation}) => {
 
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+    return <ActivityIndicator size="large" color={PRIMARY_COLOR} style={{ flex: 1, justifyContent: 'center' }} />;
   }
 
   if (error) {

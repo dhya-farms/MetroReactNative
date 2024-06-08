@@ -7,6 +7,7 @@ import SoProfileHeader from '../../components/SoProfileHeader';
 import { fetchStatusRequests } from '../../apifunctions/fetchStatusRequests';
 import { fetchCustomers } from '../../apifunctions/fetchCustomerApi';
 import getEnvVars from '../../../config';
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 const { BASE_URL } = getEnvVars();
 
 
@@ -103,7 +104,7 @@ const SalesOfficerDetails = ({route, navigation}) => {
     };
 
     if (loading) {
-      return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+      return <ActivityIndicator size="large" color={PRIMARY_COLOR} style={{ flex: 1, justifyContent: 'center' }} />;
     }
   
     if (error) {

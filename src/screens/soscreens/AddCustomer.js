@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, ScrollView, Image, Text, TouchableOpacity} from 'react-native';
 import SortHeader from '../../components/SortHeader';
 import HeaderContainer from '../../components/HeaderContainer';
@@ -7,30 +7,8 @@ import styles from '../../constants/styles/addcustomerstyles';
 import * as ImagePicker from 'expo-image-picker';
 import { addCustomerApi } from '../../apifunctions/addCustomerApi';
 import { useFocusEffect } from '@react-navigation/native';
+import { fetchPropertyTypes } from '../../apifunctions/propertyTypesApi';
 
-
-
-
-const PropertyType = {
-  DTCP_PLOTS: 1,
-  FARMLANDS: 2,
-  FLAT: 3,
-  VILLA: 4,
-};
-
-const AreaOfPurpose = {
-  RESIDENTIAL: 1,
-  COMMERCIAL: 2,
-};
-
-
-const mapInputToEnum = (input, enumType) => {
-  let values = input.toUpperCase().split(',').map(item => item.trim()); // Assuming CSV input and trim spaces
-  return values.map(value => {
-      let key = Object.keys(enumType).find(key => enumType[key] === value || key === value);
-      return enumType[key];
-  }).filter(value => value); // Filter out undefined values if input does not match
-};
 
 const AddCustomerScreen = ({route, navigation}) => {
     const paramsToken = route.params?.token
@@ -47,6 +25,36 @@ const AddCustomerScreen = ({route, navigation}) => {
     const [imageData, setImageData] = useState(null);
     const [message, setMessage] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
+    const [typeOptions, setTypeOptions] = useState([]);
+    const [aopOptions, setAopOptions] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+  
+      const initFetch = async () => {
+    
+        setLoading(true);
+    
+        try {
+          const { propertyTypes, areaOfPurpose } = await fetchPropertyTypes(paramsToken);
+  
+          console.log("propertyTypes", propertyTypes)
+          console.log("areaOfPurpose", areaOfPurpose)
+    
+          setTypeOptions(propertyTypes.map(t => ({ key: t.key, name: t.name })));
+          setAopOptions(areaOfPurpose.map(a => ({ key: a.key, name: a.name })));
+          
+    
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+    
+      initFetch();
+    }, []);
+  
 
     useFocusEffect(
       React.useCallback(() => {
@@ -73,13 +81,14 @@ const AddCustomerScreen = ({route, navigation}) => {
         setEmail(customerDetails.email);
         setAddress(customerDetails.address)
         setOccupation(customerDetails.occupation)
-        const areaOfPurpose = mapInputToEnum(customerDetails.aop.join(','), AreaOfPurpose);
-        const propertyTypes = mapInputToEnum(customerDetails.type.join(','), PropertyType);
+        const areaOfPurposeKeys = customerDetails.aop.map(a => parseInt(a.key));
+        const propertyTypeKeys = customerDetails.type.map(t => parseInt(t.key));
+
         setPreferences({
-          area_of_purpose: areaOfPurpose,
-          property_types: propertyTypes,
-          budget: customerDetails.budget // Make sure 'budget' is being passed in 'customerDetails'
-      });
+            area_of_purpose: areaOfPurposeKeys,
+            property_types: propertyTypeKeys,
+            budget: customerDetails.budget // Assuming 'budget' is directly an integer or string that doesn't require conversion
+        });
 
         setShowContactForm(false); // Hide contact form and show addImgContainer
     };
@@ -98,7 +107,6 @@ const AddCustomerScreen = ({route, navigation}) => {
           mediaTypes: ImagePicker.MediaTypeOptions.Images, // Ensure only images can be picked
         });
     
-        console.log('Picker result:', pickerResult);
     
         // Check if the operation was not cancelled and if an image was selected
         if (!pickerResult.cancelled && pickerResult.assets && pickerResult.assets.length > 0) {
@@ -183,7 +191,7 @@ const AddCustomerScreen = ({route, navigation}) => {
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} >
      {showContactForm && <SortHeader title="Contact Form"  isSortVisible={false} />}
      {showContactForm && ( <View style={[styles.cfContainer]}>
-        <ContactForm onContinuePress={handleContinuePress}/>
+        <ContactForm onContinuePress={handleContinuePress}  typeOptions={typeOptions} aopOptions={aopOptions}/>
      </View>  
      )}
      {!showContactForm && (<View style={styles.addImgContainer}>

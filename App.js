@@ -9,7 +9,7 @@ import LoginScreenNavigator from './src/navigations/LoginScreenNavigator';
 import { PaperProvider } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeProvider } from './src/contexts/useThemeContext';
-import CustomerTabEntry from './src/customerscreens/customerhomescreens/CustomerTabEntry';
+import CustomerTabEntry from './src/screens/customerhomescreens/CustomerTabEntry';
 import AdminTabEntry from './src/screens/adminscreens/AdminTabEntry';
 import SoTabEntry from './src/screens/soscreens/SoTabEntry';
 import Toast from 'react-native-toast-message';

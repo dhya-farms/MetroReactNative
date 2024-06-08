@@ -14,7 +14,8 @@ export const CustomerProvider = ({ children }) => {
         const loadData = async () => {
             const {customers: fetchedCustomers, nextPageUrl: nextPage} = await fetchCustomers(); // Assuming fetchCustomers returns the data directly
             if (!fetchedCustomers.error) {
-                setCustomers(fetchedCustomers);
+                const sortedCustomers = fetchedCustomers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                setCustomers(sortedCustomers);
                 setNextGlobalCustomerPageUrl(nextPage)
             }
         };

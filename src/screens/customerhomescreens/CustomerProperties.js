@@ -12,6 +12,7 @@ import _ from 'lodash';
 import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 import { fetchMyFavourites } from '../../apifunctions/fetchMyFavouritesApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import PropertiesToggleTab from '../../components/PropertiesTab';
 
 
 const RenderCustomerFooter = React.memo(({ loading }) => {
@@ -20,9 +21,19 @@ const RenderCustomerFooter = React.memo(({ loading }) => {
 });
 
 const RenderPropertyFooter = React.memo(({ loading }) => {
-  console.log('Render Property footer, loading:', loading);
   return loading ? <ActivityIndicator size="large" color="#0000ff" /> : null;
 });
+
+const sortProperties = (properties, sortOrder) => {
+  // Create a new array from properties to avoid mutating the original array
+  return [...properties].sort((a, b) => {
+      const dateA = new Date(a.created_at);
+      const dateB = new Date(b.created_at);
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+  });
+};
+
+
 
  
 const CustomerProperties = ({ navigation, route }) => {
@@ -38,6 +49,7 @@ const CustomerProperties = ({ navigation, route }) => {
   const {nextCustomerPageUrl} = useCustomerProperties();
   const [sortOrder, setSortOrder] = useState('newest');
   const [favorites, setFavorites] = useState([]);
+  const [activeTab, setActiveTab] = useState('My Properties');
 
 
   const { token, customerProperties: routeCustomerProperties, properties: routeProperties, nextPage: routeNextPage, nextPropertyPage: routePropertyPage, source } = 
@@ -49,33 +61,36 @@ const CustomerProperties = ({ navigation, route }) => {
     ...useProperties()
   };
 
-
-
-
-
-  // Determine the correct datasets to use
   const customerProperties = routeCustomerProperties || contextCustomerProperties;
   const properties = routeProperties || contextProperties;
   const nextCustomerPageData = routeNextPage || nextCustomerPageUrl
   const nextPropertyPageData = routePropertyPage || nextGlobalPageUrl
 
   const customerPropertyIds = useMemo(() => {
+    console.log('customer ids', customerProperties.map(p => p.id))
     return new Set(customerProperties.map(p => p.id));
+    
   }, [customerProperties]);
   
   // Initial filter for general properties
   const generalProperties = useMemo(() => {
+    console.log('property ids', properties)
     return properties.filter(p => !customerPropertyIds.has(p.id));
   }, [properties, customerPropertyIds]);
 
+  const sortedCustomerProperties = useMemo(() => {
+    return sortProperties(customerProperties, sortOrder);
+}, [customerProperties, sortOrder]);
+
+ 
   useEffect(() => {
-    setCustomerPropertyData(customerProperties);
+    setCustomerPropertyData(sortedCustomerProperties);
     setCommonPropertyData(generalProperties)
     setNextCustomerPagesUrl(nextCustomerPageData)
     setNextPropertyPageUrl(nextPropertyPageData)
     setInitialCustomerLoading(false)
     setInitialPropertyLoading(false)
-  }, [customerProperties, generalProperties, nextCustomerPageData, nextPropertyPageData]);
+  }, [sortedCustomerProperties, generalProperties, nextCustomerPageData, nextPropertyPageData]);
 
   useEffect(() => {
     let isSubscribed = true;
@@ -99,20 +114,6 @@ const CustomerProperties = ({ navigation, route }) => {
   
     return () => { isSubscribed = false; };
   }, [commonPropertyData]);
-
-  const sortProperties = (properties, sortOrder) => {
-    return properties.sort((a, b) => {
-      const dateA = new Date(a.created_at);
-      const dateB = new Date(b.created_at);
-      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
-    });
-  };
-
-  // Sorting effect
-  useEffect(() => {
-    const sortedData = sortProperties(customerProperties, sortOrder);
-    setCustomerPropertyData(sortedData);
-  }, [customerProperties, sortOrder]);
 
   const handlePropertyPress = useCallback((propertyId, phaseId, isCustomer) => {
     const target = isCustomer ? "Property Details" : "Show Properties";
@@ -207,12 +208,10 @@ const fetchMoreCommonProperties = async () => {
   };
 
 
-  const handleSortChange = () => {
-    setSortOrder(prevSortOrder => prevSortOrder === 'newest' ? 'oldest' : 'newest');
-  };
+  const setSortOrderExplicitly = useCallback((newSortOrder) => {
+    setSortOrder(newSortOrder);
+  }, []);
 
-  
-// Render component
   return (
     <View style={styles.mainContainer}>
       <StatusBar/>
@@ -222,9 +221,10 @@ const fetchMoreCommonProperties = async () => {
         ImageRight={require('../../../assets/images/belliconblue.png')}
         onPress={() => { navigation.navigate("Home") }}
       />
-       {source === "myProperties" ? <>
+       {source === "myProperties" ? 
+       <>
        <View style={{ zIndex: 3000, justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <SortHeader title="My Properties" onSort={handleSortChange} />
+          <SortHeader title="My Properties" onSort={setSortOrderExplicitly} />
         </View>
        </>: null}
        {source === "myProperties" && (
@@ -278,6 +278,10 @@ const fetchMoreCommonProperties = async () => {
         )}
         {!source && (
         <>
+        <PropertiesToggleTab activeTab={activeTab} setActiveTab={setActiveTab}/>
+        <>
+        {activeTab === 'My Properties' && (
+          <>
           <SortHeader title="My Properties" onSortPress={() => {}} isSortVisible={false} />
           <>
           {initialCustomerLoading ? (
@@ -301,6 +305,10 @@ const fetchMoreCommonProperties = async () => {
                    </View>
                    )}
            </>
+           </>
+           )}
+          {activeTab === 'Properties' && (
+          <>
           <SortHeader title="Properties" onSortPress={() => {}} isSortVisible={false} />
           <>
           {initialPropertyLoading ? (
@@ -323,6 +331,9 @@ const fetchMoreCommonProperties = async () => {
             <Text style={styles.nopText}>No New Projects For Now</Text>
           </View>
           )}
+        </>
+        </> 
+        )}
         </>
         </>
       )}

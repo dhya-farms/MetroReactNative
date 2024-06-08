@@ -12,6 +12,7 @@ import { fetchPropertyDetails } from '../../apifunctions/fetchPropertyDetailsApi
 import { DetailItems } from '../../functions/DetailItems';
 import { handleBack } from '../../functions/generalHandleBack';
 import { truncateText } from '../../functions/truncateText';
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 
 const dummyImageUri = require('../../../assets/images/Newmetro.jpeg')
@@ -56,6 +57,7 @@ const ShowProperties = ({ route, navigation }) => {
       try {
         setLoading(true);
         const details = await fetchPropertyDetails(effectivePropertyId, effectivePhaseId, true);
+        console.log('property details', details.propertyDetails)
         setPropertyDetails(details.propertyDetails);
         setPhaseDetails(details.phaseDetails);
 
@@ -103,7 +105,7 @@ const ShowProperties = ({ route, navigation }) => {
 
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+    return <ActivityIndicator size="large" color={PRIMARY_COLOR} style={{ flex: 1, justifyContent: 'center' }} />;
   }
 
   if (error) {
@@ -159,7 +161,7 @@ const ShowProperties = ({ route, navigation }) => {
       <SlidingCarousel images={carouselImages}/>
     </View>
     <View style={styles.cityConatiner}>
-      <Text style={styles.cityText}>{propertyDetails.name}</Text>
+      <Text style={styles.cityText}>{`${propertyDetails.name} (${propertyDetails.property_type?.name_vernacular})` }</Text>
       <Text style={styles.cityAmount}>₹ {phaseDetails.price_from}/sqft</Text>
     </View>
     <LayoutHeader onPress={ImageToggle} gmapUrl={propertyDetails.gmap_url} />

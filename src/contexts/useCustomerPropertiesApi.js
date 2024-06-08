@@ -15,7 +15,6 @@ export const CustomerPropertiesProvider = ({ children}) => {
         const {properties: propertiesResponse, nextPageUrl: nextPage} = await fetchCustomerProperties();
         setCustomerProperties(propertiesResponse || []);
         setNextCustomerPageUrl(nextPage)
-        console.log(propertiesResponse);
       } catch (error) {
         console.error('Failed to fetch customer properties:', error);
       }

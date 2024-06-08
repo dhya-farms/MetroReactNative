@@ -5,7 +5,7 @@ import ShowAllButton from '../../components/ShowAllButton';
 import HeaderContainer from '../../components/HeaderContainer';
 import ReportsScrollView from '../../components/ReportCard';
 import SOcards from '../../components/SOcard';
-import { SECONDARY_COLOR } from '../../constants/constantstyles/colors';
+import { PRIMARY_COLOR, SECONDARY_COLOR } from '../../constants/constantstyles/colors';
 import { useSoUsers } from '../../contexts/useSoData';
 import { fetchStatusRequests } from '../../apifunctions/fetchStatusRequests';
 
@@ -58,7 +58,7 @@ import { fetchStatusRequests } from '../../apifunctions/fetchStatusRequests';
   }, []);
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+    return <ActivityIndicator size="large" color={PRIMARY_COLOR} style={{ flex: 1, justifyContent: 'center' }} />;
   }
 
   return (

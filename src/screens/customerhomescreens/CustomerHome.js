@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, FlatList, ActivityIndicator} 
 from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -54,7 +54,6 @@ import { formatPropertyName } from '../../functions/formatPropertyName';
         const {properties: commonProperties, nextPageUrl: nextPropertyPage} = await fetchProperties(paramsToken);
         const sortedCommonProperties = commonProperties.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         setProperties(sortedCommonProperties);
-        console.log("c properties", commonProperties)
         setNextPropertyPageUrl(nextPropertyPage)
         setLoadingProperties(false); 
 
@@ -73,13 +72,15 @@ import { formatPropertyName } from '../../functions/formatPropertyName';
     initializeScreen();
   }, [route.params?.token, route.params?.userId]);
   
-  const filterCustomerPropertiesByCategory = (customerProperties, categoryId) => {
-    return customerProperties.filter(property => property.property.property_type.id === parseInt(categoryId));
-  };
-
-  const filterPropertiesByCategory = (properties, categoryId) => {
-    return properties.filter(property => property.property_type.id === parseInt(categoryId));
-  };
+  const filterCustomerPropertiesByCategory = useCallback((customerProperties) => {
+    if (selectedCategoryKey === 'filter') return customerProperties;
+    return customerProperties.filter(property => property.property.property_type.id === parseInt(selectedCategoryKey));
+  }, [selectedCategoryKey]);
+  
+  const filterPropertiesByCategory = useCallback((properties) => {
+    if (selectedCategoryKey === 'filter') return properties;
+    return properties.filter(property => property.property_type.id === parseInt(selectedCategoryKey));
+  }, [selectedCategoryKey]);
 
 
   const renderItem = ({ item }) => {
@@ -109,17 +110,19 @@ import { formatPropertyName } from '../../functions/formatPropertyName';
   );
   
   const finalProperties = selectedCategoryKey && selectedCategoryKey !== 'filter'
-  ? filterPropertiesByCategory(filteredProperties, selectedCategoryKey)
+  ? filterPropertiesByCategory(filteredProperties) 
   : filteredProperties;
 
   const finalCustomerProperties = selectedCategoryKey && selectedCategoryKey !== 'filter'
-  ? filterCustomerPropertiesByCategory(customerProperties, selectedCategoryKey): customerProperties
+  ? filterCustomerPropertiesByCategory(customerProperties)
+  : customerProperties;
 
-  const filterPropertiesByName = (properties, searchTerm) => {
-    return properties.filter(property => 
-      property.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filterPropertiesByName = useCallback((properties, search) => {
+    if (!search.trim()) return properties; // If no search term, return all properties
+    return properties.filter(property =>
+      property.name.toLowerCase().includes(search.toLowerCase())
     );
-  };
+  }, []);
 
 
   const finalPropertiesFiltered = useMemo(() => {
@@ -236,10 +239,9 @@ import { formatPropertyName } from '../../functions/formatPropertyName';
             navigation.navigate("properties", { screen: "Customer Properties", 
             params: { customerProperties: customerProperties, source: "myProperties", nextPage: nextCustomerPageUrl, token: token}});
           }}/>
-
       <ScrollView
       style={{width: '100%'}}
-      horizontal
+      horizontal 
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.contentContainer}
     >

@@ -7,7 +7,7 @@ import { View, FlatList, Image, TouchableOpacity, StyleSheet, Dimensions } from 
 const imageWidth = 170;
 const imageHeight = 170; 
 const marginHorizontal = 20;
-
+ 
 
 
 export default function SlidingCarousel({images}) {

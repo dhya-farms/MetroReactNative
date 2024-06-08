@@ -32,6 +32,9 @@ import { postStatusChangeRequest } from '../../apifunctions/postStatusChangeRequ
 import { fetchDocumentationDeliveryDetails } from '../../functions/fetchDocumentDeliveryDetails';
 import { makeCrmLeadInactive } from '../../apifunctions/makeCrmLeadInactive';
 import { updateStatusBasedOnResponse } from '../../functions/soUpdateStatus';
+import getEnvVars from '../../../config';
+const { BASE_URL } = getEnvVars();
+
 
 
 
@@ -41,6 +44,7 @@ const SoCustomerDetails = ({route ,navigation}) => {
   const [homeReftech, setHomeRefetch] = useState(false)
   const { globalCustomerId } = useCustomer();
   const { dummyState, triggerDataRefresh} = useRefresh();
+  const [backscreen, setBackScreen] = useState('')
   const { customerId } = route.params?.params || {};
   const [pickupModalVisible, setPickupModalVisible] = useState(false);
   const [isPickup, setIsPickup] = useState(false);
@@ -191,9 +195,22 @@ const fetchCustomerDetails = async (customerId) => {
     return;
   }
 
+  const nestedBackScreen = route.params?.params?.backScreen;
+    const directBackScreen = route.params?.backScreen;
+    const effectiveBackScreen = nestedBackScreen || directBackScreen;
+    
+    console.log("Effective Back Screen for use:", effectiveBackScreen);
+    if (effectiveBackScreen) {
+        console.log("Navigated from:", effectiveBackScreen);
+        setBackScreen(effectiveBackScreen);
+    } else {
+        console.log("No Back Screen provided in route params.");
+    }
+
+
   setLoading(true);
   try {
-    const response = await axios.get(`https://splashchemicals.in/metro/api/crm-leads/${customerId}/`);
+    const response = await axios.get(`${BASE_URL}/crm-leads/${customerId}/`);
     console.log("Fetch success:", response.data);
     setCustomerDetails(response.data);
     console.log("plot info", plotInfo)
@@ -327,6 +344,7 @@ const fetchCustomerDetails = async (customerId) => {
       </View>
     );
   };
+
 
 
   const navigateToCompletePayment = () => {
@@ -505,6 +523,16 @@ const fetchCustomerDetails = async (customerId) => {
       });
     }
   };
+
+  const handleBack = () => {
+    if (backscreen==="Home") {
+      navigation.navigate("SO Home", {
+        screen: "SO home",
+      });
+    } else {
+      navigation.goBack();
+    }
+  };
   
   
 
@@ -517,7 +545,7 @@ const fetchCustomerDetails = async (customerId) => {
       <HeaderContainer title="Customer Details" 
       ImageLeft={require('../../../assets/images/back arrow icon.png')}
       ImageRight={require('../../../assets/images/belliconblue.png')}
-      onPress={()=>{navigation.goBack()}}/>
+      onPress={handleBack}/>
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
      <View style={styles.customerInfoContainar}>
         <View style={styles.imgContainer}>

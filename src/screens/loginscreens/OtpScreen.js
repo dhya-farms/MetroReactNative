@@ -3,6 +3,7 @@ import { View, TextInput, Text, TouchableOpacity, Image, StyleSheet } from 'reac
 import ButtonComponent from '../../components/ButtonComponent';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
 
 
 
@@ -117,12 +118,16 @@ const OtpScreen = ({ route, navigation }) => {
       if (!user.role) {
         // Role is null or not defined, handle this case by showing an error message
         console.error("User role not defined, cannot proceed with login.");
-        setResetSucessMessage('Contact your Admin to Register your Number and Log in.');
+        Toast.show({
+          type: 'error',
+          text1: 'Contact your Admin to Register your Number and Log in.',
+          visibilityTime: 2490,
+       });
 
         setTimeout(() => {
           navigation.goBack();
         }, 2500);
-        return; // Exit function to prevent further execution
+        return; 
       }
   
       // Store the token and user data
@@ -187,7 +192,11 @@ const OtpScreen = ({ route, navigation }) => {
         default:
           // Define a default navigation if the role doesn't match known values
           console.error('User role is undefined or not recognized');
-          setResetSucessMessage('Contact your Sales Officer to Register your Number and Log in.');
+          Toast.show({
+            type: 'error',
+            text1: 'Contact your Admin to Register your Number and Log in.',
+            visibilityTime: 2490,
+         });
           return;
       }
   
@@ -199,8 +208,11 @@ const OtpScreen = ({ route, navigation }) => {
     } catch (otpError) {
       console.error('Verification error:', otpError.response ? otpError.response.data : otpError.message);
       console.log('Sent OTP:', enteredOtp);
-      setResetSucessMessage('An error occurred. Please try again.');
-  
+      Toast.show({
+        type: 'error',
+        text1: 'Please Enter the Correct OTP and Try Again',
+        visibilityTime: 2000,
+     });
     }
   };
   
@@ -236,13 +248,6 @@ const OtpScreen = ({ route, navigation }) => {
       </TouchableOpacity>
       <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
      </View>
-     <>
-     {resetSucessMessage && 
-     <View style={styles.erContainer}>
-      <Text style={styles.errorMessage}>{resetSucessMessage}</Text> 
-      </View>
-     }
-     </>
      <TouchableOpacity style={styles.changeNumContiner} onPress={changeNumberPress}>
         <Text style={styles.cnText}>{phoneNumber} Change number?</Text>
      </TouchableOpacity>

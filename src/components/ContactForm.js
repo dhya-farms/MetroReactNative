@@ -17,8 +17,18 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }) => {
       />
     );
   };
+const isValidEmail = email => {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+};
 
-const ContactForm = ({onContinuePress}) => {
+const isValidMobile = mobile => {
+    const re = /^[0-9]{10}$/; // Adjust pattern to fit your needs
+    return re.test(mobile);
+};
+
+
+const ContactForm = ({onContinuePress, typeOptions, aopOptions}) => {
   const [name, setName] = useState('')
   const [mobileNumber, setMobileNumber] = useState('');
   const [email, setEmail] = useState('');
@@ -27,31 +37,36 @@ const ContactForm = ({onContinuePress}) => {
   const [aop, setAop] = useState([]);
   const [type, setType] = useState([]);
   const [budget, setBudget] = useState('');
-  const [error, setError] = useState(false);
-  const aopOptions = ['Residential', 'Commercial'];
-  const typeOptions = ['DTCP_PLOTS', 'Farmlands', 'Flat', 'Villa'];
+  const [error, setError] = useState('');
 
-  const handleSubmit = () => {
-    if (!name || !mobileNumber || !email || !address || !aop.length || !occupation || !budget || !type.length) {
-         setError(true); 
-         setTimeout(() => {
-          setError(false); // Reset error state after 2 seconds
-       }, 2000);// Set error to true if any field is empty
-    } else {
-        setError(false); // Reset error state
-        const customerDetails = {
-            name, 
-            mobileNumber, 
-            email, 
-            address, 
-            occupation, 
-            budget, 
-            aop,
-            type,
+  const displayError = (message) => {
+    setError(message);
+    setTimeout(() => {
+        setError(''); // Clear error after 2 seconds
+    }, 2000);
+};
 
-        };
-        onContinuePress(customerDetails); // Proceed with filled data
-    }
+
+const handleSubmit = () => {
+  if (!name || !mobileNumber || !email || !address || !aop.length || !occupation || !budget || !type.length) {
+      displayError('Please fill all the details before continuing.');
+  } else if (!isValidEmail(email)) {
+      displayError('Please ensure the entered email is correct.');
+  } else if (!isValidMobile(mobileNumber)) {
+      displayError('Please enter a valid mobile number.');
+  } else {
+      const customerDetails = {
+          name, 
+          mobileNumber, 
+          email, 
+          address, 
+          occupation, 
+          budget, 
+          aop,
+          type,
+      };
+      onContinuePress(customerDetails); // Proceed with filled data
+  }
 };
 
 
@@ -90,7 +105,7 @@ const ContactForm = ({onContinuePress}) => {
             onChangeText={setBudget}
             keyboardType="numeric"
           />
-          <View style={[styles.customTextinputContainer, {zIndex: 7000, width: '80%'}]}>
+          <View style={[styles.customTextinputContainer]}>
           <CustomDropdownInput
               label="Type"
               selectedValues={type}
@@ -98,7 +113,7 @@ const ContactForm = ({onContinuePress}) => {
               options={typeOptions}
             />
           </View>
-          <View style={[styles.customTextinputContainer, {width: '80%', zIndex: 6000}]}>
+          <View style={[styles.customTextinputContainer]}>
           <CustomDropdownInput
               label="Area Of Purpose"
               selectedValues={aop}
@@ -106,11 +121,13 @@ const ContactForm = ({onContinuePress}) => {
               options={aopOptions}
             />
         </View>
+        <>
         {error && (
         <Text style={{ color: 'red', textAlign: 'center', paddingBottom: 10 }}>
-          Please fill all the details before continuing.
+          {error}
         </Text>
         )}
+        </>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.doneButton} onPress={handleSubmit}>
                 <Text style={styles.doneButtonText}>Continue</Text>
@@ -157,6 +174,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 14,
   },
+  customTextinputContainer:{
+    width: '80%'
+  }
   // ... Add other styles you might need
 });
 

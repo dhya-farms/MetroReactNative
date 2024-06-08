@@ -164,7 +164,7 @@ const SOhome = ({route, navigation}) => {
         <CustomerCard customerData={customers} onCardPress={(customerId) => {
             navigation.navigate("SO Client", { 
               screen: "SO Customer Details",
-              params: { customerId: customerId, backScreen: "Home" } // Pass customerId to the detail screen
+              params: { customerId: customerId, backScreen: "Home" } 
           })
         }}/>
       </View>

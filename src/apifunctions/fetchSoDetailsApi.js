@@ -27,7 +27,6 @@ export const fetchSoDetails = async (paramsAdvisorId, paramsToken) => {
     const url = `${USER_DETAILS_ENDPOINT}${userToFetch}/`;
     const headers = await getAuthHeaders(authToken);
     const response = await axios.get(url, { headers });
-    console.log('User data retrieval success:', response.data);
     return response.data; // Return the user data
   } catch (error) {
     console.error('User data retrieval error:', error.response ? error.response.data : error.message);

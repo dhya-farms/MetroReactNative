@@ -84,7 +84,7 @@ const MobileLoginScreen = ({navigation}) => {
       {otpMessage ? <Text style={styles.otpMessage}>{otpMessage}</Text> : null}
       {errorMessage ? <Text style={styles.errorMessage}>{errorMessage}</Text> : null}
       <ButtonComponent onPress={handleLogin} text="Get OTP" />
-      <Image
+     {/* <Image
         source={require('../../../assets/images/orframe.png')}
         style={styles.orimage}
         resizeMode="contain"
@@ -100,7 +100,7 @@ const MobileLoginScreen = ({navigation}) => {
       </View>
       <TouchableOpacity style={styles.registerButton} onPress={()=> navigation.navigate('REscreen')}>
         <Text style={styles.registerButtonText}>Don't have an account yet?<Text style={{color: '#1D9BF0'}}> Register</Text></Text>
-      </TouchableOpacity>
+     </TouchableOpacity>*/}
       </ScrollView>
   );
 };

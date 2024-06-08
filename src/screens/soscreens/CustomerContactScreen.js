@@ -7,6 +7,7 @@ import styles from '../../constants/styles/customercontactscreenstyles';
 import { useSoCustomers } from '../../contexts/useSoCustomersData';
 import { fetchSoCustomers } from '../../apifunctions/fetchSoCustomersApi';
 import _ from 'lodash'; 
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 
 
@@ -18,11 +19,8 @@ const CustomerContactScreen = ({route, navigation}) => {
   const [customers, setCustomers] = useState([]);
   const {soCustomers} = useSoCustomers()
   const {nextSoGlobalPageUrl} = useSoCustomers()
-  const routeCustomers = route.params?.customers;
-  const routeNextPage = route.params?.nextPage
-  const unsortedCustomerData = routeCustomers || soCustomers;
-  const nextPageData = routeNextPage || nextSoGlobalPageUrl
   const [nextPageUrl, setNextPageUrl] = useState(null);
+  const [intialLoading, setIntialLoading] = useState(false)
   const [loading, setLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState('newest');
   
@@ -41,9 +39,15 @@ const CustomerContactScreen = ({route, navigation}) => {
   
 
   useEffect(() => {
-    setCustomers(sortCustomerData([...unsortedCustomerData]));
-    setNextPageUrl(nextPageData)
-  }, [unsortedCustomerData, sortOrder, nextPageData]);  
+    setIntialLoading(true)
+    if (route.params?.customers || soCustomers) {
+      setCustomers(sortCustomerData([...(route.params?.customers || soCustomers)]));
+      setNextPageUrl(route.params?.nextPage || nextSoGlobalPageUrl);
+      setIntialLoading(false);
+    }
+
+    
+  }, [route.params?.customers, soCustomers, route.params?.nextPage, nextSoGlobalPageUrl, sortOrder]);
 
 
   
@@ -75,7 +79,7 @@ const CustomerContactScreen = ({route, navigation}) => {
         <ContactCard customerData={item} onCardPress={(customerId) => {
             navigation.navigate("SO Client", { 
               screen: "SO Customer Details",
-              params: { customerId: customerId } // Pass customerId to the detail screen
+              params: { customerId: customerId, backScreen: "contactScreen"} // Pass customerId to the detail screen
           })
         }}/>
       </View>
@@ -84,8 +88,9 @@ const CustomerContactScreen = ({route, navigation}) => {
 
   const renderFooter = () => {
     console.log('Render footer, loading:', loading);  // Check if this logs
-    return loading ? <ActivityIndicator size="large" color="#0000ff" /> : null;
+    return loading ? <ActivityIndicator size="large" color={PRIMARY_COLOR} /> : null;
   };
+
 
 
   
@@ -99,7 +104,12 @@ const CustomerContactScreen = ({route, navigation}) => {
          <SortHeader title="Customer List" onSort={setSortOrderExplicitly} />
        </View>
        <>
-        {customers.length > 0 ? (
+       {intialLoading ? (
+        <View style={styles.npContainer}>
+        <ActivityIndicator size="large" color={PRIMARY_COLOR} style={styles.loadingIndicator} />
+        </View>
+      ):
+      customers.length > 0 ? (
       <FlatList
         data={[customers]} // Wrap properties in an array since FlatList expects an array
         renderItem={renderItem}
@@ -112,7 +122,7 @@ const CustomerContactScreen = ({route, navigation}) => {
         />
       ) : (
         <View style={styles.npContainer}>
-          <Text style={styles.nopText}>Customer Not Assigned Yet</Text>
+          <Text style={styles.nopText}>NO customers Assigned Yet</Text>
         </View>
         )}
       </>

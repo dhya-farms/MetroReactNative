@@ -77,8 +77,8 @@ const CustomerPaymentMethod = ({route, navigation}) => {
       setSelectedOption(option.name_vernacular);
       setSelectedOptionId(option.id) // Set the selected option
       setIsOpen(false); // Close the dropdown
-      setShowInputFields(true); // Show the input fields
-      setErrorMessage(''); // Clear any previous error messages
+      setShowInputFields(true); 
+      setErrorMessage(''); 
     };
 
     const renderInputField = () => {

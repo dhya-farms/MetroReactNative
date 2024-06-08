@@ -1,13 +1,12 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { View, ScrollView, StyleSheet, StatusBar, Text, ActivityIndicator, FlatList} from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, StyleSheet, StatusBar, Text, ActivityIndicator, FlatList} from 'react-native';
 import SortHeader from '../../components/SortHeader';
 import HeaderContainer from '../../components/HeaderContainer';
 import CustomerCard from '../../components/CustomerCard';
 import { useCustomers } from '../../contexts/useCustomerdata';
 import { fetchCustomers } from '../../apifunctions/fetchCustomerApi';
 import _ from 'lodash'; 
-
-
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 
 const AdminCustomerList = ({route, navigation}) => {
@@ -50,9 +49,7 @@ const AdminCustomerList = ({route, navigation}) => {
       console.log('Fetch more halted:', { nextPageUrl, loading });
       return;
     }
-  
-    console.log('Fetching more Customers from:', nextPageUrl);
-    console.log('Setting loading true');
+
     setLoading(true);
     try {
       const { customers: newCustomers, nextPageUrl: newNextPageUrl } = await fetchCustomers(null, effectiveSoId, nextPageUrl);
@@ -83,7 +80,7 @@ const AdminCustomerList = ({route, navigation}) => {
 
   const renderFooter = () => {
     console.log('Render footer, loading:', loading);  // Check if this logs
-    return loading ? <ActivityIndicator size="large" color="#0000ff" /> : null;
+    return loading ? <ActivityIndicator size="large" color={PRIMARY_COLOR} /> : null;
   };
 
   

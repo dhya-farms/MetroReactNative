@@ -6,6 +6,7 @@ import HeaderContainer from '../../components/HeaderContainer';
 import OfficeUpdateView from '../../components/OfficeUpdateView';
 import { fetchUpdates } from '../../apifunctions/fetchUpdatesApi';
 import _ from 'lodash'; 
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 
 
@@ -72,7 +73,7 @@ import _ from 'lodash';
   
     const renderFooter = () => {
       console.log('Render footer, loading:', loading);  // Check if this logs
-      return loading ? <ActivityIndicator size="large" color="#0000ff" /> : null;
+      return loading ? <ActivityIndicator size="large" color={PRIMARY_COLOR} /> : null;
     };
 
   

@@ -33,9 +33,7 @@ const styles = StyleSheet.create({
     zIndex: 1000
   },
   customTextinputContainer:{
-    width: '100%',
-    zIndex: 5000
-    
+    width: '100%', 
   },
   input: {
     width: '100%',
@@ -44,8 +42,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins',
     fontSize: 14,
     marginBottom: 10, 
-    color: 'green'
-
   },
   cnText:{
     fontFamily: 'Poppins',

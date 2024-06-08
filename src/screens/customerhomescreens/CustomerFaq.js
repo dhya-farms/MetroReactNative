@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Dimensions, TextInput, StatusBar} 
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput, StatusBar} 
 from 'react-native';
 import HeaderContainer from '../../components/HeaderContainer';
 import FaqDropdown from '../../components/FaqDropdown';
@@ -46,7 +46,7 @@ const CustomerFaq = ({navigation}) => {
       Toast.show({
         type: 'success',
         text1: 'Question uploaded successfully. We will get back to you within 24-48 hours.',
-        visibilityTime: 2200,  
+        visibilityTime: 3000,  
         
       });
       setQuery(''); // Clear the input field after successful submission
@@ -172,7 +172,8 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
     width: '100%',
-    alignSelf: 'center'
+    textAlign: 'left',
+    textAlignVertical: 'top'  
   },
   qsButton:{
     width: 146,

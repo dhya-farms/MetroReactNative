@@ -52,7 +52,6 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
   const [cameFromPickupNo, setCameFromPickupNo] = useState(false);
   const [imageModalVisible, setImageModalVisible] = useState(false)
   const [loading, setLoading] = useState(true);
-  const [currentPropertyId, setCurrentPropertyId] = useState();
   const [propertyDetails, setPropertyDetails] = useState({ details: {} });
   const [showAll, setShowAll] = useState(false);
   const [phaseDetails, setPhaseDetails]= useState([])
@@ -145,8 +144,6 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
   const handlePaymentMethodSelect = (paymentMethod) => {
     setSelectedPaymentMethod(paymentMethod.name_vernacular)
     setSelectedPaymentId(paymentMethod.id);
-    console.log(paymentMethod.id)
-    console.log(paymentMethod.name_vernacular)
   };
 
   const handlePaymentButtonClick = async () => {
@@ -171,7 +168,6 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
         setPhaseDetails(details.phaseDetails);
         setFullDetails(details.fullDetails)
 
-        console.log("fp", details.fullDetails)
 
         const statusName = details.fullDetails.current_approval_status ? details.fullDetails.current_approval_status.name : null;
         const crmStatusName = details.fullDetails.current_crm_status ? details.fullDetails.current_crm_status.name : null;
@@ -220,13 +216,27 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
   setCrmId(effectivePropertyId);
  }, [effectivePropertyId, effectivePhaseId]);
 
+ useEffect(() => {
+  const relevantStatusChange = status.siteVisit.isApproved || status.siteVisit.isRejected || status.siteVisit.isCompleted || status.siteVisit.isPending;
+  if (relevantStatusChange) {
+    fetchSiteVisitDetails(effectivePropertyId, setLoading, setStatus, setError);
+  }
+}, [
+  status.siteVisit.isApproved,
+  status.siteVisit.isRejected,
+  status.siteVisit.isCompleted,
+  status.siteVisit.isPending,
+  siteVisitReFetch,
+  dummyState,
+  effectivePropertyId
+]);
+
 
 
   useEffect(() => {
     const relevantStatusChange = status.tokenAdvance.isApproved || status.tokenAdvance.isRejected || status.tokenAdvance.isCompleted || status.tokenAdvance.isPending;
 
     if (relevantStatusChange) {
-      console.log("Fetching payment details due to status change in tokenAdvance.");
       fetchPaymentDetails(effectivePropertyId, 1, setLoading, setStatus, setError);  // `1` is the enum value for token advance
     }
   }, [
@@ -240,27 +250,12 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
   ]);
 
 
-    useEffect(() => {
-      const relevantStatusChange = status.siteVisit.isApproved || status.siteVisit.isRejected || status.siteVisit.isCompleted || status.siteVisit.isPending;
-      if (relevantStatusChange) {
-        console.log("Fetching site visit details due to relevant status change.");
-        fetchSiteVisitDetails(effectivePropertyId, setLoading, setStatus, setError);
-      }
-    }, [
-      status.siteVisit.isApproved,
-      status.siteVisit.isRejected,
-      status.siteVisit.isCompleted,
-      status.siteVisit.isPending,
-      siteVisitReFetch,
-      dummyState,
-      effectivePropertyId
-    ]);
+    
 
     useEffect(() => {
       const relevantStatusChange = status.documentation.isApproved || status.documentation.isRejected || status.documentation.isCompleted || status.documentation.isPending
   
       if (relevantStatusChange) {
-        console.log("Fetching payment details due to status change in tokenAdvance.");
         fetchDocumentationDetails(effectivePropertyId, setLoading, setStatus, setError);  // `1` is the enum value for token advance
       }
     }, [
@@ -275,7 +270,6 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
     useEffect(() => {
       const relevantStatusChange = status.payment.isApproved || status.payment.isRejected || status.payment.isCompleted || status.payment.isPending;
       if (relevantStatusChange) {
-        console.log("Fetching payment details due to status change in payment.");
         fetchFullPaymentDetails(effectivePropertyId, setLoading, setStatus, setError)
           .then(() => {
             fetchStatus(effectivePropertyId)
@@ -298,7 +292,6 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
     useEffect(() => {
       const relevantStatusChange = status.ddDelivery.isCompleted ;
       if (relevantStatusChange) {
-        console.log("Fetching ddDelivery details due to status change in ddDelivery.");
         fetchDocumentationDeliveryDetails(effectivePropertyId, setLoading, setStatus, setError); 
       }
     }, [effectivePropertyId, status.ddDelivery.isCompleted]);
@@ -415,7 +408,6 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
   
           // Sending the request to the server
           const response = await postSiteVisit(payload);
-          console.log('Booking successful:', response);
           alert('Site visit booked successfully!');
           const statusResponse = await fetchStatus(crmId);
           if (statusResponse && statusResponse.approvalStatus && statusResponse.crmStatus) {
@@ -450,7 +442,6 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
     try {
       // Attempt to create the payment using the API
       const createdPayment = await createPayment(paymentData);
-      console.log('Payment successfully created:', createdPayment);
       const statusResponse = await fetchStatus(effectivePropertyId);
               const updatedStatus = updateStatusBasedOnResponse(status, statusResponse.approvalStatus, statusResponse.crmStatus, plot);
               setStatus(updatedStatus);
@@ -458,7 +449,7 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
       Toast.show({
         type: 'success',
         text1: 'Token Advance Completed Sucessfully',
-        visibilityTime: 1800,  
+        visibilityTime: 1800,   
       });
       toggleModalVisibility('paymentModalVisible', false);
     } catch (error) {
@@ -618,7 +609,7 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
                 <InfoRow label="PropertyName" value={detail?.propertyName || ''}/>
                 <InfoRow label="Site Visit Date" value={detail?.date || ''} />
                 <InfoRow label="Driver Name" value="Pasupathi" />
-                <InfoRow label="PickUp Location" value={detail?.pickupAddress || ''} />
+                <InfoRow label="PickUp Location" value={detail?.pickupAddress || 'Pickup Not Needed'} />
               </View>
             ))
           ) : (

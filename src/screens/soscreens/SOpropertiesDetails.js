@@ -14,6 +14,7 @@ import { fetchSoCustomersList } from '../../apifunctions/fetchSoCustomerList';
 import AmenitiesDisplay from '../../components/AmenitiesDisplay';
 import { fetchPropertyDetails } from '../../apifunctions/fetchPropertyDetailsApi';
 import { DetailItems } from '../../functions/DetailItems';
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 
 
@@ -142,7 +143,7 @@ const SOpropertiesDetails = ({route, navigation}) => {
   }, [currentPropertyId, route.params]);
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+    return <ActivityIndicator size="large" color={PRIMARY_COLOR} style={{ flex: 1, justifyContent: 'center' }} />;
   }
 
   if (error) {

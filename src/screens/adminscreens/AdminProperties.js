@@ -6,6 +6,7 @@ import HeaderContainer from '../../components/HeaderContainer';
 import { useAdminProperties } from '../../contexts/useAdminProperties';
 import { fetchAdminProperties } from '../../apifunctions/fetchAdminPropertiesApi';
 import _ from 'lodash'; 
+import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 
 
@@ -72,7 +73,7 @@ const AdminProperties = ({route, navigation}) => {
 
   const renderFooter = () => {
     console.log('Render footer, loading:', loading);  // Check if this logs
-    return loading ? <ActivityIndicator size="large" color="#0000ff" /> : null;
+    return loading ? <ActivityIndicator size="large" color={PRIMARY_COLOR} /> : null;
   };
 
   

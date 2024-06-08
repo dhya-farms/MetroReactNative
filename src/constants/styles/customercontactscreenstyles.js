@@ -28,6 +28,12 @@ const styles = StyleSheet.create({
       color: '#757575',
       fontFamily: 'Poppins'
     },
+    loadingIndicator:{
+      width: '100%', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      marginVertical: 20,
+    },
     
   });
 

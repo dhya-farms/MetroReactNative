@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView, FlatList, ActivityIndicator } from 'react-native';
 import { TextInput, Provider } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { PRIMARY_COLOR } from '../constants/constantstyles/colors';
@@ -13,14 +13,6 @@ const AddClientModal = ({ label, modalVisible, setModalVisible, selectedValue, s
   const [options, setOptions] = useState(initialOptions); // Use state to manage options
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextPageUrl, setNextPageUrl] = useState(nextCustomerPageUrl);
-
-
-  const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
-    const isClose = layoutMeasurement.height + contentOffset.y >= contentSize.height - 50;
-    console.log("Is close to bottom:", isClose);
-    return isClose;
-  };
-
 
 
   
@@ -114,22 +106,23 @@ const AddClientModal = ({ label, modalVisible, setModalVisible, selectedValue, s
 
           </TouchableOpacity>
 
+          {visible && (
+              <FlatList
+                data={options}
+                renderItem={({ item }) => (
+                  <TouchableOpacity style={styles.dropdownItem} onPress={() => pickItem(item)}>
+                    <Text style={styles.dropdownText}>{item}</Text>
+                  </TouchableOpacity>
+                )}
+                keyExtractor={(item, index) => index.toString()}
+                onEndReached={fetchMoreCustomers}
+                onEndReachedThreshold={0.1}
+                ListFooterComponent={() => loadingMore ? <ActivityIndicator size="small" color="#0000ff" /> : null}
+                style={styles.dropdown}
+              />
+            )}
 
-            {visible && (
-            <ScrollView nestedScrollEnabled={true} style={styles.dropdown} onScroll={({ nativeEvent }) => {
-            if (isCloseToBottom(nativeEvent)) {
-                fetchMoreCustomers();
-            }
-            }}
-            scrollEventThrottle={400}>
-            {options.map((item, index) => (
-                <TouchableOpacity key={index} onPress={() => pickItem(item)} style={styles.dropdownItem}>
-                <Text style={styles.dropdownText}>{item}</Text>
-                </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
-      </View>
+        </View>
            {errorMessage !== '' && (
             <Text style={styles.errorText}>{errorMessage}</Text> // Display the error message
           )}
