@@ -1,9 +1,11 @@
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
 export const fetchSiteVisitDetails = async (crmId, setLoading, setStatus, setError) => {
     setLoading(true);
     try {
-        const response = await axios.get(`https://splashchemicals.in/metro/api/site-visits/?crm_lead_id=${crmId}`);
+        const response = await axios.get(`${BASE_URL}/site-visits/?crm_lead_id=${crmId}`);
         console.log("Site visit details fetched:", response.data.results);
 
         if (response.data.results && response.data.results.length > 0) {

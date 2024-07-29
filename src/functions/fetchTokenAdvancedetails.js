@@ -1,9 +1,11 @@
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
-export const fetchPaymentDetails = async (crmId, paymentFor, setLoading, setStatus, setError) => {
+export const fetchPaymentDetails = async (crmId, setLoading, setStatus, setError) => {
     setLoading(true);
     try {
-        const url = `https://splashchemicals.in/metro/api/payments/?payment_for=${paymentFor}&crm_lead_id=${crmId}`;
+        const url = `${BASE_URL}/payments/?payment_for=1&crm_lead_id=${crmId}`;
         const response = await axios.get(url);
         console.log("Payment details fetched:", response.data.results);
 
@@ -16,7 +18,7 @@ export const fetchPaymentDetails = async (crmId, paymentFor, setLoading, setStat
                 sqFt: `${detail.crm_lead?.plot?.area_size} ${detail.crm_lead?.plot?.area_size_unit?.name_vernacular || ''}`,
                 cornerSite: detail.crm_lead?.plot?.is_corner_site ? "YES" : "NO",
                 status: detail?.crm_lead?.current_approval_status?.name_vernacular || 'Unknown',
-                tokenAmount: detail.amount
+                tokenAmount: detail?.amount || ''
             }));
 
             console.log("Formatted payment details:", formattedDetails);

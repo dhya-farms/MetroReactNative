@@ -47,17 +47,17 @@ const getAuthData = async (paramsToken, paramsDirectorId) => {
 
     switch (property.property_type.name) {
         case 'FLAT':
-            return `${property.details.flat_type}`;
+          return `${plotCount} ${formatPlural(plotCount, 'flat', 'flats')} available`;
         case 'VILLA':
             return `${plotCount} ${formatPlural(plotCount, 'villa', 'villas')} available`;
         case 'DTCP_PLOTS':
             return `${plotCount} ${formatPlural(plotCount, 'plot', 'plots')} available`;
         case 'FARMLANDS':
-            return `${property.details.farmland_type}`;
+          return `${plotCount} ${formatPlural(plotCount, 'farmlands', 'farmlands')} available`;
         default:
             return 'Details unavailable';
     }
-  }
+ }
 
 function formatPropertyDetails(property) {
   let formattedProperties = [];
@@ -75,8 +75,8 @@ function formatPropertyDetails(property) {
               sqFtFrom: phase.area_size_from,
               phaseName: phase.area_size_unit.name_vernacular,
               bgimage: filteredImages.length > 0 ? { uri: filteredImages[0].image } : null,
-              images: filteredImages, // Use the first matching image or null if none
-              phaseDetails: phase // Include phase details
+              images: filteredImages,
+              phaseDetails: phase 
           });
       });
   }
@@ -92,7 +92,6 @@ export async function fetchAdminProperties(paramsToken, paramsDirectorId, pageUr
 
   try {
     const response = await axios.get(url, { headers });
-    console.log("response", response.data.results)
     const formattedProperties = response.data.results.map(formatPropertyDetails).flat(); // Flatten in case of phases
 
     return {

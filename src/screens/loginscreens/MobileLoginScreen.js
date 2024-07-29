@@ -4,7 +4,7 @@ import ButtonComponent from '../../components/ButtonComponent';
 import axios from 'axios';
 
 
-const OTP_GENERATE_URL = 'https://splashchemicals.in/metro/api/otp/generate/'
+const OTP_GENERATE_URL = 'https://dhya.app/metro/api/otp/generate/'
 
 const MobileLoginScreen = ({navigation}) => {
     const [phoneNumber, setPhoneNumber] = useState('')

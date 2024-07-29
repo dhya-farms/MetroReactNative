@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AdminCustomerList from '../screens/adminscreens/AdminCustomersList';
 import AdminCustomerDetails from '../screens/adminscreens/AdminCustomerDetails';
+import { CustomerProvider } from '../contexts/useCustomerContext';
 
 const AdminCustomerScreen = createNativeStackNavigator();
 
@@ -21,10 +22,12 @@ const AdminCustomerScreenNavigator = ({ navigation }) => {
   }, [navigation]);
 
   return (
+    <CustomerProvider>
     <AdminCustomerScreen.Navigator screenOptions={{ headerShown: false }}>
       <AdminCustomerScreen.Screen name="Customer List" component={AdminCustomerList} />
       <AdminCustomerScreen.Screen name="List Customer Details" component={AdminCustomerDetails} />
     </AdminCustomerScreen.Navigator>
+    </CustomerProvider>
   );
 };
 

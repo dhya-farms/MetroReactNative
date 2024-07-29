@@ -44,13 +44,13 @@ const getAuthData = async (paramsToken) => {
 
     switch (property.property_type.name) {
         case 'FLAT':
-            return `${property.details.flat_type}`;
+          return `${plotCount} ${formatPlural(plotCount, 'flat', 'flats')} available`;
         case 'VILLA':
             return `${plotCount} ${formatPlural(plotCount, 'villa', 'villas')} available`;
         case 'DTCP_PLOTS':
             return `${plotCount} ${formatPlural(plotCount, 'plot', 'plots')} available`;
         case 'FARMLANDS':
-            return `${property.details.farmland_type}`;
+          return `${plotCount} ${formatPlural(plotCount, 'farmlands', 'farmlands')} available`;
         default:
             return 'Details unavailable';
     }

@@ -1,9 +1,11 @@
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
 export const fetchTokenPaymentDetails = async (crmId, setLoading, setStatus, setError) => {
     setLoading(true);
     try {
-      const response = await axios.get(`https://splashchemicals.in/metro/api/payments/?payment_for=1&crm_lead_id=${crmId}`);
+      const response = await axios.get(`${BASE_URL}/payments/?payment_for=1&crm_lead_id=${crmId}`);
       console.log("token payment" ,response.data)
       if (response.data && response.data.results) {
         const formattedDetails = response.data.results.map(detail => ({

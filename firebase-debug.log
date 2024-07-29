@@ -1,0 +1,21 @@
+[debug] [2024-07-22T09:02:54.761Z] ----------------------------------------------------------------------
+[debug] [2024-07-22T09:02:54.765Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\dhars\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2024-07-22T09:02:54.766Z] CLI Version:   13.12.0
+[debug] [2024-07-22T09:02:54.766Z] Platform:      win32
+[debug] [2024-07-22T09:02:54.766Z] Node Version:  v20.11.0
+[debug] [2024-07-22T09:02:54.766Z] Time:          Mon Jul 22 2024 14:32:54 GMT+0530 (India Standard Time)
+[debug] [2024-07-22T09:02:54.766Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-07-22T09:02:54.772Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-07-22T09:02:54.773Z] > authorizing via signed-in user (ktsganeshkumar@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\dhars\OneDrive\Desktop\metro\metroproject
+

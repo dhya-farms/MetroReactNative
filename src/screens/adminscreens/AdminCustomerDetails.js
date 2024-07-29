@@ -26,11 +26,14 @@ import { updateStatusBasedOnResponse } from '../../functions/adminUpdateStatus';
 import { InfoRow } from '../../functions/detailsInfoRow';
 import getEnvVars from '../../../config';
 const { BASE_URL } = getEnvVars();
+import { useCustomer } from '../../contexts/useCustomerContext';
 
 
 
 
 const AdminCustomerDetails = ({route, navigation}) => {
+  const { setGlobalCustomerId } = useCustomer();
+  const { globalCustomerId } = useCustomer();
   const { customerId } = route.params?.params || {};
   const { triggerDataRefresh } = useRefresh();
   const [loading, setLoading] = useState(true);
@@ -46,56 +49,24 @@ const AdminCustomerDetails = ({route, navigation}) => {
   const effectiveCustomerId= customerId || route.params?.customerId
   const [buttonsDisabled, setButtonsDisabled] = useState(false);
   const [status, setStatus] = useState({
-    siteVisit: {
-      detailsVisible: false,
-      isProgress: false,
-      isApproved: false,
-      isPending: false,
-      isRejected: false,
-      isCompleted: false,
-      details: []
-    },
-    tokenAdvance: {
-      detailsVisible: false,
-      isProgress: false,
-      isApproved: false,
-      isPending: false,
-      isRejected: false,
-      isCompleted: false,
-      details: []
-    },
-    documentation: {
-      detailsVisible: false,
-      isProgress: false,
-      isApproved: false,
-      isPending: false,
-      isRejected: false,
-      isCompleted: false,
-      details: [],
-    },
-    payment: {
-      detailsVisible: false,
-      isProgress: false,
-      isApproved: false,
-      isPending: false,
-      isRejected: false,
-      isCompleted: false,
-      details: [],
-    },
-    ddDelivery:{
-      detailsVisible: false,
-      isProgress: false,
-      isApproved: false,
-      isPending: false,
-      isRejected: false,
-      isCompleted: false,
-      details: [],
+        siteVisit: { detailsVisible: false, isProgress: false, isApproved: false, isPending: false, isRejected: false, isCompleted: false, details: [] },
+        tokenAdvance: { detailsVisible: false, isProgress: false, isApproved: false, isPending: false, isRejected: false, isCompleted: false, details: [] },
+        documentation: { detailsVisible: false, isProgress: false, isApproved: false, isPending: false, isRejected: false, isCompleted: false, details: [] },
+        payment: { detailsVisible: false, isProgress: false, isApproved: false, isPending: false, isRejected: false, isCompleted: false, details: [] },
+        ddDelivery: { detailsVisible: false, isProgress: false, isApproved: false, isPending: false, isRejected: false, isCompleted: false, details: [] }
+    });
+
+
+  useEffect(() => {
+    if (effectiveCustomerId) {
+      setGlobalCustomerId(effectiveCustomerId);
     }
-  });
+  }, [effectiveCustomerId, setGlobalCustomerId]);
 
 
-  const fetchCustomerDetails = async (effectiveCustomerId) => {
-    if (!effectiveCustomerId) {
+
+  const fetchCustomerDetails = async (customerId) => {
+    if (!customerId) {
         console.log("No customer ID provided");
         setError("No customer ID provided");
         setLoading(false);
@@ -116,21 +87,17 @@ const AdminCustomerDetails = ({route, navigation}) => {
 
     setLoading(true);
     try {
-        const response = await axios.get(`${BASE_URL}/crm-leads/${effectiveCustomerId}/`);
+        const response = await axios.get(`${BASE_URL}/crm-leads/${customerId}/`);
         console.log("Fetch success:", response.data);
         setCustomerDetails(response.data);
         setStatusChangeRequestId(response.data.status_change_request?.id);
 
         const statusName = response.data.current_approval_status ? response.data.current_approval_status.name : null;
         const crmStatusName = response.data.current_crm_status ? response.data.current_crm_status.name : null;
-
-
-        if (crmStatusName) {
+ 
           const updatedStatus = updateStatusBasedOnResponse(statusName, crmStatusName);
           setStatus(updatedStatus);
-        } else {
-          console.log("No current CRM status available.");
-        }
+      
     } catch (error) {
         console.error("Fetch error:", error);
         setError(error.response ? error.response.data.message : error.message);
@@ -140,8 +107,10 @@ const AdminCustomerDetails = ({route, navigation}) => {
   };
 
   useEffect(() => {
-    fetchCustomerDetails(effectiveCustomerId);
-  }, [effectiveCustomerId]);
+    if (globalCustomerId) {
+    fetchCustomerDetails(globalCustomerId);
+    }
+  }, [globalCustomerId]);
 
   useEffect(() => {
     const getRole = async () => {
@@ -160,7 +129,7 @@ const AdminCustomerDetails = ({route, navigation}) => {
     const relevantStatusChange = status.siteVisit.isApproved || status.siteVisit.isRejected || status.siteVisit.isCompleted || status.siteVisit.isPending;
     if (relevantStatusChange) {
       console.log("Fetching site visit details due to relevant status change.");
-      fetchSiteVisitDetails(effectiveCustomerId, setLoading, setStatus, setError);
+      fetchSiteVisitDetails(globalCustomerId, setLoading, setStatus, setError);
     }
   }, [
     status.siteVisit.isApproved,
@@ -168,7 +137,7 @@ const AdminCustomerDetails = ({route, navigation}) => {
     status.siteVisit.isCompleted,
     status.siteVisit.isPending,
     siteVisitReFetch,
-    effectiveCustomerId
+    globalCustomerId,
   ]);
 
   useEffect(() => {
@@ -176,7 +145,7 @@ const AdminCustomerDetails = ({route, navigation}) => {
   
     if (relevantStatusChange) {
       console.log("Fetching payment details due to status change in tokenAdvance.");
-      fetchPaymentDetails(effectiveCustomerId, 1, setLoading, setStatus, setError);  // `1` is the enum value for token advance
+      fetchPaymentDetails(globalCustomerId, setLoading, setStatus, setError);  // `1` is the enum value for token advance
     }
   }, [
       status.tokenAdvance.isApproved,
@@ -184,7 +153,7 @@ const AdminCustomerDetails = ({route, navigation}) => {
       status.tokenAdvance.isCompleted,
       status.tokenAdvance.isPending,
       tokenRefetch,
-      effectiveCustomerId
+      globalCustomerId
   ]);
 
   useEffect(() => {
@@ -192,7 +161,7 @@ const AdminCustomerDetails = ({route, navigation}) => {
 
     if (relevantStatusChange) {
       console.log("Fetching documentation details due to status change in tokenAdvance.");
-      fetchDocumentationDetails(effectiveCustomerId, setLoading, setStatus, setError);  // `1` is the enum value for token advance
+      fetchDocumentationDetails(globalCustomerId, setLoading, setStatus, setError);  // `1` is the enum value for token advance
     }
   }, [
     status.documentation.isApproved,
@@ -200,25 +169,25 @@ const AdminCustomerDetails = ({route, navigation}) => {
     status.documentation.isCompleted,
     status.documentation.isPending,
     documentReFetch,
-    effectiveCustomerId
+    globalCustomerId,
   ]);
 
   useEffect(() => {
     const relevantStatusChange = status.payment.isApproved || status.payment.isRejected || status.payment.isCompleted || status.payment.isPending;
     if (relevantStatusChange) {
       console.log("Fetching full payment details due to status change in payment.");
-      fetchFullPaymentDetails(effectiveCustomerId, setLoading, setStatus, setError); 
+      fetchFullPaymentDetails(globalCustomerId, setLoading, setStatus, setError); 
     }
-  }, [effectiveCustomerId, status.payment.isApproved ,status.payment.isRejected, 
+  }, [globalCustomerId, status.payment.isApproved ,status.payment.isRejected, 
     status.payment.isCompleted, status.payment.isPending]);
 
   useEffect(() => {
     const relevantStatusChange = status.ddDelivery.isCompleted ;
     if (relevantStatusChange) {
       console.log("Fetching  dd delivery details due to status change in payment.");
-      fetchDocumentationDeliveryDetails(effectiveCustomerId, setLoading, setStatus, setError); 
+      fetchDocumentationDeliveryDetails(globalCustomerId, setLoading, setStatus, setError); 
     }
-  }, [effectiveCustomerId, status.ddDelivery.isCompleted ]);
+  }, [globalCustomerId, status.ddDelivery.isCompleted ]);
 
 
  
@@ -378,7 +347,7 @@ const AdminCustomerDetails = ({route, navigation}) => {
             <Text style={styles.nameText}>{customerDetails.customer.name}</Text>
             <Text style={styles.numText}>{customerDetails.customer.mobile_no}</Text>
         </View>
-        <TouchableOpacity style={styles.deleteContainer}  onPress={() => handleDelete(effectiveCustomerId)}>
+        <TouchableOpacity style={styles.deleteContainer}  onPress={() => handleDelete(globalCustomerId)}>
           <Icon name="trash-alt" size={9.92} color="#858585" style={styles.icon} />
         </TouchableOpacity>
       </View>

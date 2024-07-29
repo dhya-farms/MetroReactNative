@@ -237,7 +237,7 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
     const relevantStatusChange = status.tokenAdvance.isApproved || status.tokenAdvance.isRejected || status.tokenAdvance.isCompleted || status.tokenAdvance.isPending;
 
     if (relevantStatusChange) {
-      fetchPaymentDetails(effectivePropertyId, 1, setLoading, setStatus, setError);  // `1` is the enum value for token advance
+      fetchPaymentDetails(effectivePropertyId, setLoading, setStatus, setError);  // `1` is the enum value for token advance
     }
   }, [
     status.tokenAdvance.isApproved,
@@ -696,7 +696,7 @@ const dummyImageUris = new Array(3).fill(dummyImageUri);
         {status.documentation.detailsVisible && (
           <View style={{width: '100%', marginLeft: 10}}>
             <Text style={styles.details}>Documentation Details</Text>
-            {status.documentation.details.length > 0 ? (
+            {status.documentation.details?.length > 0 ? (
                 status.documentation.details.map((doc, index) => (
                   <View key={doc.id} style={styles.documentItem}>
                    <Text style={styles.docDetailText}>

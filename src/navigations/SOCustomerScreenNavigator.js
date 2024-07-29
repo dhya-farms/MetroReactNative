@@ -1,7 +1,5 @@
 import React, { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import AdminCustomerList from '../screens/adminscreens/AdminCustomersList';
-import AdminCustomerDetails from '../screens/adminscreens/AdminCustomerDetails';
 import CustomerContactScreen from '../screens/soscreens/CustomerContactScreen';
 import SoCustomerDetails from '../screens/soscreens/SoCustomerDetails';
 import CustomerTokenAdvance from '../screens/soscreens/CustomerTokenAdvance';
@@ -18,10 +16,7 @@ const SOCustomerScreen = createNativeStackNavigator();
 const SOCustomerScreenNavigator = ({navigation}) => {
   useEffect(() => {
     const unsubscribe = navigation.addListener('tabPress', (e) => {
-      // Prevent default behavior
       e.preventDefault();
-
-      // Navigate to the first screen of the stack
       navigation.navigate('SO Client', {
         screen: 'Customer Contact Screen',
       });

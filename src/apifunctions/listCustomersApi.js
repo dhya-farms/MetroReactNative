@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://splashchemicals.in/metro/api/';
+const API_BASE_URL = 'https://dhya.app/metro/api/';
 const token = '5fe572201a224d600c89ad38382fd2047b36dd75';
 
 const axiosInstance = axios.create({

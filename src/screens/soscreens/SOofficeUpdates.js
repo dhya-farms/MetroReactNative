@@ -83,7 +83,7 @@ import { fetchUpdates } from '../../apifunctions/fetchUpdatesApi';
         ImageRight={require('../../../assets/images/belliconblue.png')}
         onPress={()=>{navigation.goBack()}}/>
         <View style={{ zIndex: 3000, justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <SortHeader title="Customer List" onSort={setSortOrderExplicitly} />
+          <SortHeader title="Office Updates" onSort={setSortOrderExplicitly} />
         </View>
         <>
         {officeUpdates.length > 0 ? (

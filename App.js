@@ -128,7 +128,7 @@ export default function App() {
                     }}
                     initialRouteName={initialNavigationState.routeName} // Default initial route
                   >
-                    <Stack.Screen name='Onboarding' component={HomeScreenNavigator} />
+                    <Stack.Screen name='Onboarding' component={HomeScreenNavigator}  options={{gestureEnabled: false}}/>
                     <Stack.Screen name='LoginScreens' component={LoginScreenNavigator} />
                     <Stack.Screen name='CustomerBottomTab' component={CustomerTabEntry} initialParams={{ cusToken, cusUserId }} />
                     <Stack.Screen name='AdminBottomTab' component={AdminTabEntry} initialParams={{ cusToken, cusUserId }}/>

@@ -22,7 +22,7 @@ export const getStatusStyle = (status) => {
       case 'PENDING':
           return "hourglass-half";
       default:
-          return "question";
+          return "hourglass-half";
     }
   };
   

@@ -50,7 +50,7 @@ const PlotSelectModal = ({ modalVisible, setModalVisible, customerDetails, phase
     is_corner_site: false,
   });
 
-  const fetchPlotsData = async (url = `https://splashchemicals.in/metro/api/plots/?phase_id=${phaseId}`) => {
+  const fetchPlotsData = async (url = `https://dhya.app/metro/api/plots/?phase_id=${phaseId}`) => {
   try {
     const response = await axios.get(url);
     setPlotsData(prevPlots => [...prevPlots, ...response.data.results]);

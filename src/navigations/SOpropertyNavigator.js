@@ -10,7 +10,7 @@ const SOproperty = createNativeStackNavigator();
 const SOpropertyNavigator = () => {
   return (
     <PropertiesProvider>
-    <SOproperty.Navigator screenOptions={{ headerShown: false }}>
+    <SOproperty.Navigator  screenOptions={{ headerShown: false }}>
       <SOproperty.Screen name="SO Properties" component={SOproperties} />
       <SOproperty.Screen name="SO Properties Details" component={SOpropertiesDetails} />
     </SOproperty.Navigator>

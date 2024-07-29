@@ -104,7 +104,7 @@ const handleVerify = async () => {
 
       if (allSuccessful) {
           // All documents uploaded successfully, proceed to patch
-          const patchResponse = await axios.patch(`https://splashchemicals.in/metro/api/crm-leads/${effectivePropertyId}/`, {
+          const patchResponse = await axios.patch(`https://dhya.app/metro/api/crm-leads/${effectivePropertyId}/`, {
               current_crm_status: 3,
               current_approval_status: 1,
           }, 

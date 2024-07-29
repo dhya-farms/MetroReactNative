@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { formatPropertyName } from '../functions/formatPropertyName';
 
 
 const windowWidth = Dimensions.get('window').width;
@@ -31,7 +32,7 @@ const SiteDetailsCard = ({siteData=[], onCardPress})=>{
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
             <SdCard
-              sitename={item.name}
+              sitename={formatPropertyName(item.name)}
               detailInfo={item.detailInfo} // pass additional info if necessary
               pricePerSqFt={item.sqFtFrom}
               phaseName={item.phaseName}

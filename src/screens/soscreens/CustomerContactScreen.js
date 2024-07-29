@@ -10,10 +10,6 @@ import _ from 'lodash';
 import { PRIMARY_COLOR } from '../../constants/constantstyles/colors';
 
 
-
-
-
-
 const CustomerContactScreen = ({route, navigation}) => {
 
   const [customers, setCustomers] = useState([]);

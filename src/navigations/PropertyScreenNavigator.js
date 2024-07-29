@@ -26,7 +26,6 @@ const PropertyScreenNavigator = ({navigation}) => {
     return unsubscribe;
   }, [navigation]);
 
-
   return (
     <RefreshProvider>
     <PropertiesProvider>

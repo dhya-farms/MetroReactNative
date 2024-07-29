@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 
 // Constant value for API base URL
-const BASE_URL = "https://splashchemicals.in/metro/api";
+const BASE_URL = "https://dhya.app/metro/api";
 
 const getEnvVars = () => {
   // The function now simply returns the same base URL for any environment

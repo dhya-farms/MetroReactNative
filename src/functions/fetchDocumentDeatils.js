@@ -1,9 +1,11 @@
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
 export const fetchDocumentationDetails = async (crmId, setLoading, setStatus, setError) => {
     setLoading(true);
     try {
-        const response = await axios.get(`https://splashchemicals.in/metro/api/files/files?file_usage_type=3&crm_lead=${crmId}`);
+        const response = await axios.get(`${BASE_URL}/files/files?file_usage_type=3&crm_lead=${crmId}`);
         console.log("Document details fetched:", response.data);
 
         if (response.data && response.data.length > 0) {

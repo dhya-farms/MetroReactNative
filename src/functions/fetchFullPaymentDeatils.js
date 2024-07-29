@@ -1,11 +1,13 @@
 import axios from 'axios';
+import getEnvVars from '../../config';
+const { BASE_URL } = getEnvVars();
 
-export const fetchFullPaymentDetails = async (crmId, setLoading, setStatus, setError, currentBalance, setBalanceAmount) => {
+export const fetchFullPaymentDetails = async (crmId, setLoading, setStatus, setError) => {
     console.log("Called fetchFullPaymentDetails with crmId:", crmId); // Debug log
     setLoading(true);
     try {
       if(crmId){
-      const response = await axios.get(`https://splashchemicals.in/metro/api/payments/?payment_for=2&crm_lead_id=${crmId}&page=all`);
+      const response = await axios.get(`${BASE_URL}/payments/?payment_for=2&crm_lead_id=${crmId}&page=all`);
       if (response.data && response.data.results) {
         const paymentDetails = response.data.results.map((detail, index) => ({
             id: index + 1,

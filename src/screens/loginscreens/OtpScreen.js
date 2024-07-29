@@ -7,8 +7,8 @@ import Toast from 'react-native-toast-message';
 
 
 
-const VERIFY_URL = 'https://splashchemicals.in/metro/api/otp/verify/'
-const RESEND_URL = 'https://splashchemicals.in/metro/api/otp/resend/'
+const VERIFY_URL = 'https://dhya.app/metro/api/otp/verify/'
+const RESEND_URL = 'https://dhya.app/metro/api/otp/resend/'
 
 const OtpScreen = ({ route, navigation }) => {
   const [otp, setOtp]= useState(new Array(6).fill(''))
@@ -71,7 +71,6 @@ const OtpScreen = ({ route, navigation }) => {
 
   const onKeyPress = ({ nativeEvent: { key }, index }) => {
     if (key === 'Backspace' && otp[index] === '') {
-      // Move focus back if it is not the first input box
       if (index > 0) {
         handleBackspace(otp[index], index);
         const newOtp = [...otp];

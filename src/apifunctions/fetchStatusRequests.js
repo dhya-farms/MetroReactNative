@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import getEnvVars from '../../config';
 const { BASE_URL } = getEnvVars();
 
-const USER_DETAILS_ENDPOINT = `${BASE_URL}/status-change-requests/?approval_status=5`;
+const USER_DETAILS_ENDPOINT = `${BASE_URL}/status-change-requests/`;
 
 const getAuthHeaders = async (token) => {
   const authToken = token || await AsyncStorage.getItem('userToken');
