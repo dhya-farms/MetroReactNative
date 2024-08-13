@@ -36,20 +36,24 @@ function getDisplayInfo(property, prop) {
   }
 }
 
-  function getDetailInfo(property, prop) {
-    switch (property.property_type.name) {
-        case 'FLAT':
-            return `${property.details.flat_type}`;
-        case 'VILLA':
-            return `${prop.no_of_plots} Villas available`;
-        case 'DTCP_PLOTS':
-            return `${prop.no_of_plots} plots available`;
-        case 'FARMLANDS':
-            return `${property.details.farmland_type}`;
-        default:
-            return 'Details unavailable';
-    }
- }
+function getDetailInfo(property, phase) {
+  const plotCount = phase.no_of_plots;
+
+  const formatPlural = (count, singular, plural) => count === 1 ? singular : plural;
+
+  switch (property.property_type.name) {
+      case 'FLAT':
+        return `${plotCount} ${formatPlural(plotCount, 'flat', 'flats')} available`;
+      case 'VILLA':
+          return `${plotCount} ${formatPlural(plotCount, 'villa', 'villas')} available`;
+      case 'DTCP_PLOTS':
+          return `${plotCount} ${formatPlural(plotCount, 'plot', 'plots')} available`;
+      case 'FARMLANDS':
+        return `${plotCount} ${formatPlural(plotCount, 'farmlands', 'farmlands')} available`;
+      default:
+          return 'Details unavailable';
+  }
+}
 export const fetchMyFavourites = async (paramsToken, pageUrl = null) => {
   const endpoint = pageUrl || PROPERTIES_ENDPOINT;
   try {
